@@ -20,4 +20,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="GaithAI.API\" />
+    <Folder Include="GaithAI.Application\" />
+    <Folder Include="GaithAI.Infrastructure\ExternalService\" />
+  </ItemGroup>
+
 </Project>
