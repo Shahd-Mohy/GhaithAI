@@ -1,0 +1,42 @@
+## Combined Visual Studio / Microsoft Office / JetBrains Blacklist
+## Objective: Ignore built binaries, cache files, and user-specific settings
+
+# --- Visual Studio Artifacts ---
+# User-specific files (Layout, opened files, history)
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Built outputs (الفايلات اللي بتنتج عن الـ Build)
+[Dd]ebug/
+[Debug_AnyCPU/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bbin/
+bin/
+obj/
+
+# --- Tools & IDEs ---
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# --- Operating System Files ---
+# Windows thumbnail database
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Secrets & Environment (مهم جداً للأمان) ---
+# Don't commit production secrets!
+.env
+.env.local
+appsettings.Production.json

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace GhaithAI.API.Models
 {
@@ -22,7 +22,6 @@ namespace GhaithAI.API.Models
         public string? Notes { get; set; }
 
         public string Source { get; set; } = "manual";
-
         public DateTime LoggedAt { get; set; } = DateTime.UtcNow;
     }
 }
