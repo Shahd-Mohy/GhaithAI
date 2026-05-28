@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+using GhaithAI.API.DTOs.Chat;
+using GhaithAI.API.GaithAI.Application.DTOs.Chat;
+using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GhaithAI.API.Controllers
@@ -7,5 +10,23 @@ namespace GhaithAI.API.Controllers
     [ApiController]
     public class ChatController : ControllerBase
     {
+        private readonly ILangflowService _langflowService;
+        public ChatController(ILangflowService langflowService)
+        {
+            _langflowService = langflowService;
+        }
+        [HttpPost("send")]
+        public async Task<IActionResult> SendMessage([FromBody] ChatRequestDTO requestDto)
+        {
+            if (string.IsNullOrWhiteSpace(requestDto.Message))
+                return BadRequest("empty msg");
+            var response = await _langflowService.SendMessageAsync(requestDto.Message, requestDto.SessionId);
+
+            return Ok(new ChatResponseDTO
+            {
+                Reply =response,
+                SessionId = requestDto.SessionId
+            });
+        }
     }
 }

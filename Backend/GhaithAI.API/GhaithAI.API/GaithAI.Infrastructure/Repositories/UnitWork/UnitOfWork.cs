@@ -1,6 +1,6 @@
-﻿namespace GhaithAI.API.Repositories.UnitWork
+namespace GhaithAI.API.Repositories.UnitWork
 {
-    public class UnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
     }
 }
