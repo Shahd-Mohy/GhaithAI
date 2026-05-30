@@ -2,8 +2,6 @@ using GhaithAI.API.Configurations;
 using GhaithAI.API.Data;
 using GhaithAI.API.GaithAI.API.Configurations;
 using GhaithAI.API.GaithAI.Application.Helpers;
-using GhaithAI.API.GaithAI.Application.Services.Class;
-using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 builder.Services.AddSwaggerDocumentation();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -32,7 +29,11 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "GhaithAI API v1");
+    });
 }
 
 app.UseAuthorization();

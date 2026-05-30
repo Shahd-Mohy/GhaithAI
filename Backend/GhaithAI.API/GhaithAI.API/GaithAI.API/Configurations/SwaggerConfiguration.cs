@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
+using System;
+
 namespace GhaithAI.API.Configurations
 {
     public static class SwaggerConfiguration
