@@ -1,7 +1,15 @@
+using AutoMapper;
 using GhaithAI.API.GaithAI.API.Configurations;
+using GhaithAI.API.GaithAI.Application.DTOs.Chat;
 using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
+using GhaithAI.API.Models;
+using GhaithAI.API.Repositories.UnitWork;
 using Microsoft.Extensions.Options;
+using System.Runtime;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace GhaithAI.API.GaithAI.Application.Services.Class
 {
@@ -9,69 +17,122 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
     {
         private readonly HttpClient _httpClient;
         private readonly LangflowSettings _langflowSettings;
-
-        public LangflowService(HttpClient httpClient, IOptions<LangflowSettings> langflowSettings)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        private const string AgentNodeId = "Prompt-Agent-xUYMm";
+        public LangflowService(HttpClient httpClient, IOptions<LangflowSettings> langflowSettings , IUnitOfWork unitOfWork , IMapper mapper)
         {
             _httpClient = httpClient;
             _langflowSettings = langflowSettings.Value;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
-        public async Task<string> SendMessageAsync(string userMessage, string sessionId)
+        public async Task<GhaithFinalResultDto> ProcessUserMessageAsync(Guid sessionId, string userMessage)
         {
-            var request = new
+            string conversationHistory = await _unitOfWork.ChatMessages.GetLast30MessagesFormattedAsync(sessionId);
+
+            var requestBody = new LangflowRequestDto
             {
-                input_value = userMessage,
-                session_id = sessionId,
-                output_type = "chat",
-                input_type = "chat"
+                InputValue = userMessage,
+                SessionId = sessionId.ToString(),
+                Tweaks = new Dictionary<string, Dictionary<string, string>>
+                {
+                    {
+                        AgentNodeId, new Dictionary<string, string>
+                        {
+                            { "CONVERSATION_HISTORY_PLACEHOLDER", conversationHistory }
+                        }
+                    }
+                }
             };
 
-            _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add("x-api-key", _langflowSettings.ApiKey);
+            var jsonRequest = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsJsonAsync($"{_langflowSettings.BaseUrl}/api/v1/run/{_langflowSettings.FlowId}?stream=false", request);
+            var requestUrl = $"{_langflowSettings.BaseUrl.TrimEnd('/')}/api/v1/run/{_langflowSettings.FlowId}?stream=false";
 
-            if (!response.IsSuccessStatusCode)
+            var request = new HttpRequestMessage(HttpMethod.Post, requestUrl) { Content = content };
+            request.Headers.Add("x-api-key", _langflowSettings.ApiKey);
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(jsonResponse);
+            var root = doc.RootElement;
+
+            var rawText = root.GetProperty("outputs").EnumerateArray().First()
+                              .GetProperty("outputs").EnumerateArray().First()
+                              .GetProperty("results")
+                              .GetProperty("message")
+                              .GetProperty("text")
+                              .GetString() ?? string.Empty;
+
+            rawText = rawText.Trim();
+
+            var finalResult = new GhaithFinalResultDto();
+            if (rawText.StartsWith("{") && rawText.EndsWith("}"))
             {
-                var error = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Langflow Error: {error}");
+                try
+                {
+                    var internalJson = JsonSerializer.Deserialize<GhaithAiInternalResponseDto>(rawText);
+                    if (internalJson != null)
+                    {
+                        finalResult.AiResponse = internalJson.AiResponse;
+                        finalResult.IsRiskDetected = internalJson.IsRiskDetected;
+                        finalResult.RiskDetails = internalJson.RiskDetails;
+                    }
+                }
+                catch (JsonException)
+                {
+                    finalResult.AiResponse = rawText;
+                    finalResult.IsRiskDetected = false;
+                }
+            }
+            else
+            {
+                finalResult.AiResponse = rawText;
+                finalResult.IsRiskDetected = false;
+                finalResult.RiskDetails = null;
             }
 
-            var result = await response.Content.ReadFromJsonAsync<LangflowResponse>();
 
-            return result!.Outputs[0].Outputs[0].Results.Message.Text;
+            var userMessageEntity = new ChatMessage
+            {
+                MessageId = Guid.NewGuid(),
+                SessionId = sessionId,
+                SenderType = "User",
+                Content = userMessage,
+                SentAt = DateTime.UtcNow
+            };
+
+            var aiMessageEntity = new ChatMessage
+            {
+                MessageId = Guid.NewGuid(),
+                SessionId = sessionId,
+                SenderType = "AI",
+                Content = finalResult.AiResponse,
+                SentAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.ChatMessages.AddAsync(userMessageEntity);
+            await _unitOfWork.ChatMessages.AddAsync(aiMessageEntity);
+
+            if (finalResult.IsRiskDetected && finalResult.RiskDetails != null)
+            {
+                var riskEventEntity = _mapper.Map<RiskEvent>(finalResult.RiskDetails);
+                riskEventEntity.SessionId = sessionId;
+                riskEventEntity.MessageId = userMessageEntity.MessageId;
+
+                await _unitOfWork.RiskEvents.AddAsync(riskEventEntity);
+              
+            }
+
+            await _unitOfWork.CompleteAsync();
+
+            return finalResult;
         }
     }
-
-
-    public class LangflowResponse
-    {
-        [JsonPropertyName("outputs")]
-        public List<OutputItem> Outputs { get; set; } = new();
-    }
-
-    public class OutputItem
-    {
-        [JsonPropertyName("outputs")]
-        public List<OutputData> Outputs { get; set; } = new();
-    }
-
-    public class OutputData
-    {
-        [JsonPropertyName("results")]
-        public ResultData Results { get; set; } = new();
-    }
-
-    public class ResultData
-    {
-        [JsonPropertyName("message")]
-        public MessageData Message { get; set; } = new();
-    }
-
-    public class MessageData
-    {
-        [JsonPropertyName("text")]
-        public string Text { get; set; } = string.Empty;
-    }
-
 }
+    
