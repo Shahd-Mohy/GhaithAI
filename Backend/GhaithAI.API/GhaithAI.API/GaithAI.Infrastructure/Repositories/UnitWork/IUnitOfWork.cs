@@ -8,14 +8,7 @@ namespace GhaithAI.API.Repositories.UnitWork
     /// </summary>
     public interface IUnitOfWork : IDisposable
     {
-        /// <summary>
-        /// Gets the Chat Session repository using lazy initialization.
-        /// </summary>
         IChatRepository Chat { get; }
-
-        /// <summary>
-        /// Gets the Chat Message repository using lazy initialization.
-        /// </summary>
         IMessageRepository Message { get; }
 
         /// <summary>

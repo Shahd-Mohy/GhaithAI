@@ -27,3 +27,8 @@ TestResults/
 *.ntvs*
 *.njsproj
 *.sln.iml
+
+## Project Reference Document
+Docs/GhaithAI_API_Reference.md
+Docs/GhaithAI_Frontend_And_Workflow_Reference.md
+

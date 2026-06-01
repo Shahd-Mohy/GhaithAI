@@ -1,8 +1,7 @@
 using GhaithAI.API.Configurations;
-using GhaithAI.API.Data;
+using GhaithAI.API.Extensions;
 using GhaithAI.API.GaithAI.API.Configurations;
 using GhaithAI.API.GaithAI.Application.Helpers;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,17 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerDocumentation();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+// Register all infrastructure services (DbContext, Unit of Work, Repositories)
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddMapping();
-
-
 
 builder.Services.Configure<LangflowSettings>(builder.Configuration.GetSection("Langflow"));
 
@@ -33,6 +30,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "GhaithAI API v1");
+        options.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
     });
 }
 
