@@ -1,3 +1,4 @@
+using Azure.Core;
 using GhaithAI.API.DTOs.Chat;
 using GhaithAI.API.GaithAI.Application.DTOs.Chat;
 using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
@@ -15,18 +16,28 @@ namespace GhaithAI.API.Controllers
         {
             _langflowService = langflowService;
         }
-        [HttpPost("send")]
-        public async Task<IActionResult> SendMessage([FromBody] ChatRequestDTO requestDto)
-        {
-            if (string.IsNullOrWhiteSpace(requestDto.Message))
-                return BadRequest("empty msg");
-            var response = await _langflowService.SendMessageAsync(requestDto.Message, requestDto.SessionId);
 
-            return Ok(new ChatResponseDTO
+        [HttpPost("send")]
+        public async Task<ActionResult<GhaithFinalResultDto>> SendMessage([FromBody] UserChatRequestDto  requestDto)
+        {
+            if (requestDto == null || string.IsNullOrWhiteSpace(requestDto.Message))
+                return BadRequest("empty msg");
+
+            if (!Guid.TryParse(requestDto.SessionId, out Guid parsedSessionId))
+                return BadRequest("’Ì€… «·‹ SessionId €Ì— ’ÕÌÕ…° ÌÃ» √‰  ﬂÊ‰ Guid.");
+
+            try
             {
-                Reply =response,
-                SessionId = requestDto.SessionId
-            });
+                var aiResult = await _langflowService.ProcessUserMessageAsync(parsedSessionId, requestDto.Message);
+                return Ok(aiResult);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+
+
+
         }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GhaithAI.API.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -246,7 +246,8 @@ namespace GhaithAI.API.Migrations
                     AISummary = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     EmotionalTone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     MoodChange = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MemoryEnabled = table.Column<bool>(type: "bit", nullable: false)
+                    MemoryEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
