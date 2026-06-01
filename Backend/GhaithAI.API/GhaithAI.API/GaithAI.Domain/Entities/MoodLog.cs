@@ -24,5 +24,6 @@ namespace GhaithAI.API.Models
         public string Source { get; set; } = "manual";
 
         public DateTime LoggedAt { get; set; } = DateTime.UtcNow;
+        public bool IsDeleted { get; set; } = false;
     }
 }
