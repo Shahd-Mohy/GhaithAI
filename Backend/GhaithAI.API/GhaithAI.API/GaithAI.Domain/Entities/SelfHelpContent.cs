@@ -1,13 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GhaithAI.API.GaithAI.Domain.Common;
 
 namespace GhaithAI.API.Models
 {
-    public class SelfHelpContent
+    /// <summary>
+    /// Represents self-help content available to users.
+    /// Sensitive clinical entity requiring full audit trail and soft delete capabilities.
+    /// </summary>
+    public class SelfHelpContent : AuditableEntity<Guid>
     {
-
-        [Key]
-        public Guid ContentId { get; set; }
-
         public string Title { get; set; }
 
         public string Type { get; set; }
@@ -21,8 +21,6 @@ namespace GhaithAI.API.Models
         public string DifficultyLevel { get; set; }
 
         public bool IsActive { get; set; } = true;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<UserActivity> UserActivities { get; set; }
     }

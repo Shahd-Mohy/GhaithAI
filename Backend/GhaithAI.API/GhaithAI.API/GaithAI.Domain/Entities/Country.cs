@@ -1,9 +1,13 @@
-﻿namespace GhaithAI.API.Models
-{
-    public class Country
-    {
-        public string CountryCode { get; set; }
+﻿using GhaithAI.API.GaithAI.Domain.Common;
 
+namespace GhaithAI.API.Models
+{
+    /// <summary>
+    /// Represents a country reference entity.
+    /// Global lookup table with string-based country code as primary key.
+    /// </summary>
+    public class Country : BaseEntity<string>
+    {
         public string CountryName { get; set; }
 
         public string IsoCode { get; set; }

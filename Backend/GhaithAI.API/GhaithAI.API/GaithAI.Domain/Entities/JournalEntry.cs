@@ -1,12 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GhaithAI.API.GaithAI.Domain.Common;
 
 namespace GhaithAI.API.Models
 {
-    public class JournalEntry
+    /// <summary>
+    /// Represents a user's journal entry.
+    /// Sensitive clinical entity requiring full audit trail and soft delete capabilities.
+    /// </summary>
+    public class JournalEntry : AuditableEntity<Guid>
     {
-        [Key]
-        public Guid JournalId { get; set; }
-
         public string UserId { get; set; }
 
         public ApplicationUser User { get; set; }
@@ -22,9 +23,5 @@ namespace GhaithAI.API.Models
         public int MoodBefore { get; set; }
 
         public int MoodAfter { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
 }

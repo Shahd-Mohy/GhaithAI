@@ -1,12 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GhaithAI.API.GaithAI.Domain.Common;
 
 namespace GhaithAI.API.Models
 {
-    public class ChatMessage
+    /// <summary>
+    /// Represents a single message within a chat session.
+    /// Immutable transactional log entry that captures point-in-time communication.
+    /// </summary>
+    public class ChatMessage : BaseEntity<Guid>
     {
-        [Key]
-        public Guid MessageId { get; set; }
-
         public Guid SessionId { get; set; }
 
         public ChatSession ChatSession { get; set; }
@@ -20,8 +21,6 @@ namespace GhaithAI.API.Models
         public string? DetectedEmotion { get; set; }
 
         public string? DetectedLanguage { get; set; }
-
-        public DateTime SentAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<RiskEvent> RiskEvents { get; set; }
     }
