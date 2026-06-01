@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GhaithAI.API.Data.Configurations
 {
+    /// <summary>
+    /// Entity configuration for ApplicationUser entity.
+    /// Configures the primary key, properties, and relationships for application users.
+    /// </summary>
     public class UserConfiguration
         : IEntityTypeConfiguration<ApplicationUser>
     {

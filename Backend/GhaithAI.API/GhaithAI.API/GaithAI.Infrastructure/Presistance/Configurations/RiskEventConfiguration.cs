@@ -10,7 +10,7 @@ namespace GhaithAI.API.Data.Configurations
         public void Configure(
             EntityTypeBuilder<RiskEvent> builder)
         {
-            builder.HasKey(x => x.RiskId);
+            builder.HasKey(x => x.Id);
 
             builder.Property(x => x.ConfidenceScore)
                 .HasPrecision(5, 2);
