@@ -1,0 +1,34 @@
+## Visual Studio Tooling
+.vs/
+*/.vs/
+v17/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.dtbcache*
+
+## Compile outputs
+bin/
+obj/
+*/bin/
+*/obj/
+
+## Secret / Configuration management
+appsettings.Development.json
+
+## Testing outputs
+TestResults/
+
+## Rider / Resharper / VS Code
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln.iml
+
+## Project Reference Document
+Docs/GhaithAI_API_Reference.md
+Docs/GhaithAI_Frontend_And_Workflow_Reference.md
+

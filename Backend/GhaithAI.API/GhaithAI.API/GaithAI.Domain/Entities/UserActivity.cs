@@ -1,12 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GhaithAI.API.GaithAI.Domain.Common;
 
 namespace GhaithAI.API.Models
 {
-    public class UserActivity
+    /// <summary>
+    /// Represents a user's activity log for self-help content.
+    /// Immutable transactional log entry capturing point-in-time user activity.
+    /// </summary>
+    public class UserActivity : BaseEntity<Guid>
     {
-        [Key]
-        public Guid ActivityId { get; set; }
-
         public string UserId { get; set; }
 
         public ApplicationUser User { get; set; }
@@ -26,7 +27,5 @@ namespace GhaithAI.API.Models
         public DateTime? CompletedAt { get; set; }
 
         public string? Metadata { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

@@ -1,4 +1,5 @@
-namespace GhaithAI.API.Configurations
+
+namespace GhaithAI.API.GaithAI.API.Configurations
 {
     public class LangflowSettings
     {

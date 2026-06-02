@@ -10,40 +10,34 @@ namespace GhaithAI.API.Extensions
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            services
-                .AddAuthentication(options =>
+            var secretKey = configuration["JWT:SecretKey"];
+
+            if (string.IsNullOrEmpty(secretKey))
+                throw new InvalidOperationException(
+                    "JWT:SecretKey is missing from configuration.");
+
+            var issuer = configuration["JWT:Issuer"];
+            var audience = configuration["JWT:Audience"];
+            var key = Encoding.UTF8.GetBytes(secretKey);
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.DefaultAuthenticateScheme =
-                        JwtBearerDefaults.AuthenticationScheme;
-
-                    options.DefaultChallengeScheme =
-                        JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters =
-                        new TokenValidationParameters
-                        {
-                            ValidateIssuer = true,
-
-                            ValidateAudience = true,
-
-                            ValidateLifetime = true,
-
-                            ValidateIssuerSigningKey = true,
-
-                            ValidIssuer =
-                                configuration["JWT:Issuer"],
-
-                            ValidAudience =
-                                configuration["JWT:Audience"],
-
-                            IssuerSigningKey =
-                                new SymmetricSecurityKey(
-                                    Encoding.UTF8.GetBytes(
-                                        configuration["JWT:SecretKey"]))
-                        };
-                });
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+            });
 
             return services;
         }

@@ -53,13 +53,15 @@ namespace GhaithAI.API.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CountryCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -68,7 +70,8 @@ namespace GhaithAI.API.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("GoogleId")
                         .HasColumnType("nvarchar(max)");
@@ -145,16 +148,16 @@ namespace GhaithAI.API.Migrations
 
             modelBuilder.Entity("GhaithAI.API.Models.ChatMessage", b =>
                 {
-                    b.Property<Guid>("MessageId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ChatSessionSessionId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("DetectedEmotion")
                         .HasColumnType("nvarchar(max)");
@@ -166,36 +169,43 @@ namespace GhaithAI.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<decimal?>("SentimentScore")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<Guid>("SessionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("MessageId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("ChatSessionSessionId");
+                    b.HasIndex("SessionId");
 
                     b.ToTable("ChatMessages");
                 });
 
             modelBuilder.Entity("GhaithAI.API.Models.ChatSession", b =>
                 {
-                    b.Property<Guid>("SessionId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AISummary")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("EmotionalTone")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("EndedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("MemoryEnabled")
                         .HasColumnType("bit");
@@ -207,22 +217,26 @@ namespace GhaithAI.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("SessionId");
+                    b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
@@ -231,18 +245,23 @@ namespace GhaithAI.API.Migrations
 
             modelBuilder.Entity("GhaithAI.API.Models.Country", b =>
                 {
-                    b.Property<string>("CountryCode")
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CountryName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("IsoCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
 
-                    b.HasKey("CountryCode");
+                    b.HasKey("Id");
 
                     b.HasIndex("CountryName")
                         .IsUnique();
@@ -252,7 +271,7 @@ namespace GhaithAI.API.Migrations
 
             modelBuilder.Entity("GhaithAI.API.Models.CrisisResourceConfig", b =>
                 {
-                    b.Property<Guid>("ResourceId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -265,23 +284,27 @@ namespace GhaithAI.API.Migrations
 
                     b.Property<string>("CrisisHotline")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("CrisisTextLine")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("EmergencyNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("WebsiteUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
-                    b.HasKey("ResourceId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CountryCode");
 
@@ -290,33 +313,48 @@ namespace GhaithAI.API.Migrations
 
             modelBuilder.Entity("GhaithAI.API.Models.EmergencyContact", b =>
                 {
-                    b.Property<Guid>("ContactId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("PriorityOrder")
                         .HasColumnType("int");
 
                     b.Property<string>("Relationship")
                         .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("ContactId");
+                    b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
@@ -325,7 +363,7 @@ namespace GhaithAI.API.Migrations
 
             modelBuilder.Entity("GhaithAI.API.Models.JournalEntry", b =>
                 {
-                    b.Property<Guid>("JournalId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -335,6 +373,12 @@ namespace GhaithAI.API.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<int>("MoodAfter")
                         .HasColumnType("int");
@@ -349,8 +393,11 @@ namespace GhaithAI.API.Migrations
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -359,7 +406,7 @@ namespace GhaithAI.API.Migrations
                     b.Property<int>("WordCount")
                         .HasColumnType("int");
 
-                    b.HasKey("JournalId");
+                    b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
@@ -368,21 +415,31 @@ namespace GhaithAI.API.Migrations
 
             modelBuilder.Entity("GhaithAI.API.Models.MoodLog", b =>
                 {
-                    b.Property<Guid>("MoodLogId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("EmotionTags")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("LoggedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MoodLogId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("MoodScore")
                         .HasColumnType("int");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<int>("SleepQuality")
                         .HasColumnType("int");
@@ -398,7 +455,7 @@ namespace GhaithAI.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("MoodLogId");
+                    b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
@@ -407,7 +464,7 @@ namespace GhaithAI.API.Migrations
 
             modelBuilder.Entity("GhaithAI.API.Models.RiskEvent", b =>
                 {
-                    b.Property<Guid>("RiskId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -415,15 +472,22 @@ namespace GhaithAI.API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("ConfidenceScore")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DetectedMarkers")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeletable")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("MessageId")
@@ -443,7 +507,13 @@ namespace GhaithAI.API.Migrations
                     b.Property<string>("SupportingContext")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("RiskId");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("MessageId");
 
@@ -454,7 +524,7 @@ namespace GhaithAI.API.Migrations
 
             modelBuilder.Entity("GhaithAI.API.Models.SelfHelpContent", b =>
                 {
-                    b.Property<Guid>("ContentId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -464,9 +534,13 @@ namespace GhaithAI.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(3000)
+                        .HasColumnType("nvarchar(3000)");
 
                     b.Property<string>("DifficultyLevel")
                         .IsRequired()
@@ -478,28 +552,39 @@ namespace GhaithAI.API.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ContentId");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.ToTable("SelfHelpContents");
                 });
 
             modelBuilder.Entity("GhaithAI.API.Models.UserActivity", b =>
                 {
-                    b.Property<Guid>("ActivityId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ActivityType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("Completed")
                         .HasColumnType("bit");
@@ -517,21 +602,19 @@ namespace GhaithAI.API.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Metadata")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<int>("ProgressPercent")
                         .HasColumnType("int");
-
-                    b.Property<Guid>("SelfHelpContentContentId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("ActivityId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("SelfHelpContentContentId");
+                    b.HasIndex("ContentId");
 
                     b.HasIndex("UserId");
 
@@ -540,27 +623,32 @@ namespace GhaithAI.API.Migrations
 
             modelBuilder.Entity("GhaithAI.API.Models.WeeklyInsightReport", b =>
                 {
-                    b.Property<Guid>("ReportId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal?>("AvgMoodScore")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("BestDay")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("DetectedPatterns")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("GeneratedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DetectedPatterns")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
                     b.Property<string>("InsightSummary")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(3000)
+                        .HasColumnType("nvarchar(3000)");
 
                     b.Property<string>("ToughestDay")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -572,7 +660,7 @@ namespace GhaithAI.API.Migrations
                     b.Property<DateTime>("WeekStart")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("ReportId");
+                    b.HasKey("Id");
 
                     b.HasIndex("UserId", "WeekStart")
                         .IsUnique();
@@ -718,8 +806,7 @@ namespace GhaithAI.API.Migrations
                     b.HasOne("GhaithAI.API.Models.Country", "Country")
                         .WithMany("Users")
                         .HasForeignKey("CountryCode")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Country");
                 });
@@ -728,8 +815,8 @@ namespace GhaithAI.API.Migrations
                 {
                     b.HasOne("GhaithAI.API.Models.ChatSession", "ChatSession")
                         .WithMany("ChatMessages")
-                        .HasForeignKey("ChatSessionSessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("ChatSession");
@@ -740,7 +827,7 @@ namespace GhaithAI.API.Migrations
                     b.HasOne("GhaithAI.API.Models.ApplicationUser", "User")
                         .WithMany("ChatSessions")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -751,7 +838,7 @@ namespace GhaithAI.API.Migrations
                     b.HasOne("GhaithAI.API.Models.Country", "Country")
                         .WithMany("CrisisResourceConfigs")
                         .HasForeignKey("CountryCode")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Country");
@@ -762,7 +849,7 @@ namespace GhaithAI.API.Migrations
                     b.HasOne("GhaithAI.API.Models.ApplicationUser", "User")
                         .WithMany("EmergencyContacts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -773,7 +860,7 @@ namespace GhaithAI.API.Migrations
                     b.HasOne("GhaithAI.API.Models.ApplicationUser", "User")
                         .WithMany("JournalEntries")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -784,7 +871,7 @@ namespace GhaithAI.API.Migrations
                     b.HasOne("GhaithAI.API.Models.ApplicationUser", "User")
                         .WithMany("MoodLogs")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -813,14 +900,14 @@ namespace GhaithAI.API.Migrations
                 {
                     b.HasOne("GhaithAI.API.Models.SelfHelpContent", "SelfHelpContent")
                         .WithMany("UserActivities")
-                        .HasForeignKey("SelfHelpContentContentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("GhaithAI.API.Models.ApplicationUser", "User")
                         .WithMany("UserActivities")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("SelfHelpContent");
@@ -833,7 +920,7 @@ namespace GhaithAI.API.Migrations
                     b.HasOne("GhaithAI.API.Models.ApplicationUser", "User")
                         .WithMany("WeeklyInsightReports")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");

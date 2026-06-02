@@ -43,7 +43,7 @@ namespace GhaithAI.API.Models
         public ICollection<JournalEntry> JournalEntries { get; set; }
 
         public ICollection<UserActivity> UserActivities { get; set; }
-
+        
         public ICollection<EmergencyContact> EmergencyContacts { get; set; }
 
         public ICollection<WeeklyInsightReport> WeeklyInsightReports { get; set; }

@@ -1,12 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GhaithAI.API.GaithAI.Domain.Common;
 
 namespace GhaithAI.API.Models
 {
-    public class CrisisResourceConfig
+    /// <summary>
+    /// Represents crisis resource configuration for a country.
+    /// Immutable reference data capturing point-in-time crisis resources and contact information.
+    /// </summary>
+    public class CrisisResourceConfig : BaseEntity<Guid>
     {
-        [Key]
-        public Guid ResourceId { get; set; }
-
         public string CountryCode { get; set; }
 
         public Country Country { get; set; }
@@ -20,7 +21,5 @@ namespace GhaithAI.API.Models
         public string? WebsiteUrl { get; set; }
 
         public bool IsActive { get; set; } = true;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

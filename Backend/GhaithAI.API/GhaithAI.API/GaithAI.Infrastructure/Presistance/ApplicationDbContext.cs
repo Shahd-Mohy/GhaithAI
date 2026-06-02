@@ -1,11 +1,14 @@
 ﻿using GhaithAI.API.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace GhaithAI.API.Presistance
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public ApplicationDbContext() { }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -60,32 +63,82 @@ namespace GhaithAI.API.Presistance
                 .HasForeignKey(r => r.SessionId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.Entity<RiskEvent>()
-                .HasOne(r => r.ChatMessage)
-                .WithMany(m => m.RiskEvents)
-                .HasForeignKey(r => r.MessageId)
-                .OnDelete(DeleteBehavior.NoAction);
+            // 1. SCAN AND APPLY ALL SEPARATE CONFIGURATION CLASSES AUTOMATICALLY
+            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-            builder.Entity<Country>()
-                .HasKey(c => c.CountryCode);
+            // 2. DYNAMIC GLOBAL QUERY FILTER FOR SOFT DELETE
+            // Automatically appends "WHERE IsDeleted = false" to any entity inheriting from AuditableEntity
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                var isDeletedProperty = entityType.FindProperty("IsDeleted");
+                if (isDeletedProperty != null && isDeletedProperty.ClrType == typeof(bool))
+                {
+                    var parameter = Expression.Parameter(entityType.ClrType, "e");
+                    var propertyAccess = Expression.Property(parameter, isDeletedProperty.PropertyInfo);
+                    var notExpression = Expression.Not(propertyAccess);
+                    var lambda = Expression.Lambda(notExpression, parameter);
 
-            builder.Entity<Country>()
-                .HasIndex(c => c.CountryName)
-                .IsUnique();
+                    builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                }
+            }
+        }
 
-            builder.Entity<ApplicationUser>()
-                .HasOne(u => u.Country)
-                .WithMany(c => c.Users)
-                .HasForeignKey(u => u.CountryCode);
+        // 3. AUTOMATED AUDIT ENGINE & SOFT-DELETE INTERCEPTOR
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var entries = ChangeTracker.Entries();
 
-            builder.Entity<CrisisResourceConfig>()
-                .HasOne(c => c.Country)
-                .WithMany(c => c.CrisisResourceConfigs)
-                .HasForeignKey(c => c.CountryCode);
+            foreach (var entry in entries)
+            {
+                var entityType = entry.Entity.GetType();
 
-            builder.Entity<WeeklyInsightReport>()
-                .HasIndex(r => new { r.UserId, r.WeekStart })
-                .IsUnique();
+                // Handle Auditable & Base Entities during Creation
+                if (entry.State == EntityState.Added)
+                {
+                    var createdAtProp = entityType.GetProperty("CreatedAt");
+                    if (createdAtProp != null && createdAtProp.CanWrite)
+                    {
+                        createdAtProp.SetValue(entry.Entity, DateTime.UtcNow);
+                    }
+                }
+
+                // Handle Auditable Entities during Modification
+                if (entry.State == EntityState.Modified)
+                {
+                    var updatedAtProp = entityType.GetProperty("UpdatedAt");
+                    if (updatedAtProp != null && updatedAtProp.CanWrite)
+                    {
+                        updatedAtProp.SetValue(entry.Entity, DateTime.UtcNow);
+                    }
+
+                    var updatedByProp = entityType.GetProperty("UpdatedBy");
+                    if (updatedByProp != null && updatedByProp.CanWrite)
+                    {
+                        // Placeholder: Can be integrated with an IUserContext service later
+                        updatedByProp.SetValue(entry.Entity, "System");
+                    }
+                }
+
+                // Intercept Hard Delete and Convert to Soft Delete
+                if (entry.State == EntityState.Deleted)
+                {
+                    var isDeletedProp = entityType.GetProperty("IsDeleted");
+                    if (isDeletedProp != null && isDeletedProp.CanWrite)
+                    {
+                        // Change state from Deleted to Modified
+                        entry.State = EntityState.Modified;
+                        isDeletedProp.SetValue(entry.Entity, true);
+
+                        var deletedAtProp = entityType.GetProperty("DeletedAt");
+                        if (deletedAtProp != null && deletedAtProp.CanWrite)
+                        {
+                            deletedAtProp.SetValue(entry.Entity, DateTime.UtcNow);
+                        }
+                    }
+                }
+            }
+
+            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }

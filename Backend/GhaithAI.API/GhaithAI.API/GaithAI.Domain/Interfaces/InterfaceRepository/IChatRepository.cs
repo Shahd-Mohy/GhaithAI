@@ -1,6 +1,10 @@
-﻿namespace GhaithAI.API.Repositories.Interfaces
+using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository;
+using GhaithAI.API.Models;
+
+namespace GhaithAI.API.Repositories.Interfaces
 {
-    public interface IChatRepository
+    public interface IChatRepository : IGenericRepository<ChatMessage>
     {
+        Task<string> GetLast30MessagesFormattedAsync(Guid sessionId);
     }
 }

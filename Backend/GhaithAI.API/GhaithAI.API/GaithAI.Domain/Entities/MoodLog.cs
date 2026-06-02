@@ -1,12 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+using GhaithAI.API.GaithAI.Domain.Common;
 
 namespace GhaithAI.API.Models
 {
-    public class MoodLog
+    public class MoodLog : BaseEntity<Guid>
     {
-        [Key]
-        public Guid MoodLogId { get; set; }
-
         public string UserId { get; set; }
 
         public ApplicationUser User { get; set; }
@@ -22,6 +19,9 @@ namespace GhaithAI.API.Models
         public string? Notes { get; set; }
 
         public string Source { get; set; } = "manual";
+
         public DateTime LoggedAt { get; set; } = DateTime.UtcNow;
+        public bool IsDeleted { get; set; } = false;
+        public Guid MoodLogId { get; internal set; }
     }
 }

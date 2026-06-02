@@ -1,12 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GhaithAI.API.GaithAI.Domain.Common;
 
 namespace GhaithAI.API.Models
 {
-    public class EmergencyContact
+    /// <summary>
+    /// Represents an emergency contact for a user.
+    /// Sensitive clinical entity requiring full audit trail and soft delete capabilities.
+    /// </summary>
+    public class EmergencyContact : AuditableEntity<Guid>
     {
-        [Key]
-        public Guid ContactId { get; set; }
-
         public string UserId { get; set; }
 
         public ApplicationUser User { get; set; }
@@ -18,7 +19,5 @@ namespace GhaithAI.API.Models
         public string PhoneNumber { get; set; }
 
         public int PriorityOrder { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
