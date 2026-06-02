@@ -1,0 +1,124 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+.auth-container{
+  display:flex;
+  min-height:100vh;
+}
+
+.left-panel{
+  width:50%;
+  background:#00897b;
+  color:white;
+  padding:60px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.hero-content{
+  max-width:500px;
+}
+
+.hero-content h1{
+  font-size:60px;
+  line-height:1.1;
+  margin-bottom:25px;
+}
+
+.hero-content p{
+  font-size:22px;
+  line-height:1.8;
+}
+
+.bottom-links{
+  display:flex;
+  gap:40px;
+}
+
+.right-panel{
+  width:50%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f7f7f7;
+}
+
+.form-card{
+  width:500px;
+  background:white;
+  padding:40px;
+  border-radius:20px;
+  box-shadow:0 0 20px rgba(0,0,0,.08);
+}
+
+.form-card h1{
+  margin-bottom:10px;
+}
+
+.form-card p{
+  color:#666;
+}
+
+form{
+  margin-top:30px;
+}
+
+label{
+  display:block;
+  margin-bottom:8px;
+  margin-top:20px;
+}
+
+input{
+  width:100%;
+  height:50px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  padding:0 15px;
+}
+
+button[type="submit"]{
+  width:100%;
+  height:50px;
+  border:none;
+  margin-top:25px;
+  border-radius:10px;
+  background:#00897b;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.divider{
+  margin:30px 0;
+  text-align:center;
+  color:#888;
+}
+
+.social-buttons{
+  display:flex;
+  gap:15px;
+}
+
+.social-buttons button{
+  flex:1;
+  height:50px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  background:white;
+}
+
+.signup-link{
+  text-align:center;
+  margin-top:25px;
+}

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace GhaithAI.API.Models
 {
@@ -26,6 +26,8 @@ namespace GhaithAI.API.Models
         public string? MoodChange { get; set; }
 
         public bool MemoryEnabled { get; set; } = false;
+
+        public string Title { get; set; } = string.Empty;
 
         public ICollection<ChatMessage> ChatMessages { get; set; }
 

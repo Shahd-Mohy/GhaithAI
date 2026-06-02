@@ -1,4 +1,4 @@
-﻿using GhaithAI.API.Models;
+using GhaithAI.API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,7 +12,7 @@ namespace GhaithAI.API.Data.Configurations
         {
             builder.HasKey(x => x.MoodLogId);
 
-            builder.Property(x => x.Note)
+            builder.Property(x => x.Notes)
                 .HasMaxLength(1000);
         }
     }

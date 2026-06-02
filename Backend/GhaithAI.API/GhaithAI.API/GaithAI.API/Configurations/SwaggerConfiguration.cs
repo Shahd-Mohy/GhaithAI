@@ -1,53 +1,52 @@
-﻿using Microsoft.OpenApi.Models;
+//using Microsoft.OpenApi.En;
+//namespace GhaithAI.API.Configurations
+//{
+//    public static class SwaggerConfiguration
+//    {
+//        public static IServiceCollection AddSwaggerDocumentation(
+//            this IServiceCollection services)
+//        {
+//            services.AddSwaggerGen(options =>
+//            {
+//                options.SwaggerDoc(
+//                    "v1",
+//                    new OpenApiInfo
+//                    {
+//                        Title = "GhaithAI API",
+//                        Version = "v1"
+//                    });
 
-namespace GhaithAI.API.Configurations
-{
-    public static class SwaggerConfiguration
-    {
-        public static IServiceCollection AddSwaggerDocumentation(
-            this IServiceCollection services)
-        {
-            services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc(
-                    "v1",
-                    new OpenApiInfo
-                    {
-                        Title = "GhaithAI API",
-                        Version = "v1"
-                    });
+//                options.AddSecurityDefinition(
+//                    "Bearer",
+//                    new OpenApiSecurityScheme
+//                    {
+//                        Name = "Authorization",
+//                        Type = SecuritySchemeType.Http,
+//                        Scheme = "bearer",
+//                        BearerFormat = "JWT",
+//                        In = ParameterLocation.Header,
+//                        Description = "Enter JWT Token"
+//                    });
 
-                options.AddSecurityDefinition(
-                    "Bearer",
-                    new OpenApiSecurityScheme
-                    {
-                        Name = "Authorization",
-                        Type = SecuritySchemeType.Http,
-                        Scheme = "bearer",
-                        BearerFormat = "JWT",
-                        In = ParameterLocation.Header,
-                        Description = "Enter JWT Token"
-                    });
+//                options.AddSecurityRequirement(
+//                    new OpenApiSecurityRequirement
+//                    {
+//                        {
+//                            new OpenApiSecurityScheme
+//                            {
+//                                Reference =
+//                                    new OpenApiReference
+//                                    {
+//                                        Type = ReferenceType.SecurityScheme,
+//                                        Id = "Bearer"
+//                                    }
+//                            },
+//                            Array.Empty<string>()
+//                        }
+//                    });
+//            });
 
-                options.AddSecurityRequirement(
-                    new OpenApiSecurityRequirement
-                    {
-                        {
-                            new OpenApiSecurityScheme
-                            {
-                                Reference =
-                                    new OpenApiReference
-                                    {
-                                        Type = ReferenceType.SecurityScheme,
-                                        Id = "Bearer"
-                                    }
-                            },
-                            Array.Empty<string>()
-                        }
-                    });
-            });
-
-            return services;
-        }
-    }
-}
+//            return services;
+//        }
+//    }
+//}
