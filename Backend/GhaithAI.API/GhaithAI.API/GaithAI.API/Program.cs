@@ -1,7 +1,10 @@
-using GhaithAI.API.Configurations;
+﻿using GhaithAI.API.Configurations;
 using GhaithAI.API.Data;
+using GhaithAI.API.Extensions;
 using GhaithAI.API.GaithAI.API.Configurations;
 using GhaithAI.API.GaithAI.Application.Helpers;
+using GhaithAI.API.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,8 +19,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
 builder.Services.AddRepositories();
 builder.Services.AddServices();
+builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddMapping();
 
 
@@ -36,6 +44,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
