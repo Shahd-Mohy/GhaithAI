@@ -1,8 +1,6 @@
-﻿using GhaithAI.API.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using System.Reflection;
+
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using System.Linq.Expressions;
 
 namespace GhaithAI.API.Data
 {

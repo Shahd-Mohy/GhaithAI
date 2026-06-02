@@ -1,10 +1,4 @@
-using Azure.Core;
-using GhaithAI.API.DTOs.Chat;
-using GhaithAI.API.GaithAI.Application.DTOs.Chat;
-using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-
+global using GhaithAI.API.GaithAI.Application.DTOs.Chat;
 namespace GhaithAI.API.Controllers
 {
     [Route("api/[controller]")]

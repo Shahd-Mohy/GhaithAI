@@ -1,14 +1,11 @@
-using GhaithAI.API.Configurations;
-using GhaithAI.API.Data;
-using GhaithAI.API.Extensions;
-using GhaithAI.API.GaithAI.API.Configurations;
-using GhaithAI.API.GaithAI.Application.Helpers;
-using GhaithAI.API.GaithAI.Application.Services.Class;
-using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
-using GhaithAI.API.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+
+global using GhaithAI.API.Configurations;
+global using GhaithAI.API.Extensions;
+global using GhaithAI.API.GaithAI.API.Configurations;
+global using GhaithAI.API.GaithAI.Application.Helpers;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 

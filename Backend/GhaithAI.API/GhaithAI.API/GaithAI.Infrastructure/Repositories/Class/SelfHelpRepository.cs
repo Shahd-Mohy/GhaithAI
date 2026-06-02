@@ -1,6 +1,11 @@
-﻿namespace GhaithAI.API.Repositories.Class
+global using GhaithAI.API.Data;
+
+namespace GhaithAI.API.Repositories.Class
 {
-    public class SelfHelpRepository
+    public class SelfHelpRepository : GenericRepository<SelfHelpContent>, ISelfHelpRepository
     {
+        public SelfHelpRepository(ApplicationDbContext context) : base(context)
+        {
+        }
     }
 }

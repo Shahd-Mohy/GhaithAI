@@ -1,8 +1,3 @@
-using GhaithAI.API.Data;
-using GhaithAI.API.Repositories.Class;
-using GhaithAI.API.Repositories.Interfaces;
-using GhaithAI.API.Models;
-
 namespace GhaithAI.API.Repositories.UnitWork
 {
     public class UnitOfWork : IUnitOfWork
@@ -11,6 +6,7 @@ namespace GhaithAI.API.Repositories.UnitWork
         private IChatRepository _chat;
         private IMessageRepository _message;
         private IRiskRepository _risk;
+        private ISelfHelpRepository _selfHelp;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -24,6 +20,7 @@ namespace GhaithAI.API.Repositories.UnitWork
 
         public IRiskRepository Risk => _risk ??= new RiskRepository(_context);
 
+        public ISelfHelpRepository SelfHelp => _selfHelp ??= new SelfHelpRepository(_context);
         public async Task<int> CompleteAsync()
         {
             try

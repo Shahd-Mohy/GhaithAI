@@ -7,6 +7,7 @@ namespace GhaithAI.API.Repositories.UnitWork
         IChatRepository Chat { get; }
         IMessageRepository Message { get; }
         IRiskRepository Risk { get; }
+        ISelfHelpRepository SelfHelp { get; }
 
         Task<int> CompleteAsync();
         int Complete();

@@ -1,15 +1,7 @@
-using AutoMapper;
-using GhaithAI.API.GaithAI.API.Configurations;
-using GhaithAI.API.GaithAI.Application.DTOs.Chat;
-using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
-using GhaithAI.API.Models;
-using GhaithAI.API.Repositories.UnitWork;
-using Microsoft.Extensions.Options;
-using System.Runtime;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+
+
+global using System.Text;
+global using System.Text.Json;
 
 namespace GhaithAI.API.GaithAI.Application.Services.Class
 {

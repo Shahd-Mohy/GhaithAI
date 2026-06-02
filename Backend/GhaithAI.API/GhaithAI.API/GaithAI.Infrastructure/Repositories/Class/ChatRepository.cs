@@ -1,9 +1,4 @@
-using GhaithAI.API.Data;
-using GhaithAI.API.GaithAI.Infrastructure.Repositories.Class;
-using GhaithAI.API.Models;
-using GhaithAI.API.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using System.Text;
+
 
 namespace GhaithAI.API.Repositories.Class
 {
