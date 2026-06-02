@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GhaithAI.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260525114613_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260601182117_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -209,6 +209,9 @@ namespace GhaithAI.API.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")

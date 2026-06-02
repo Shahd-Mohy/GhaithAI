@@ -1,13 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GhaithAI.API.GaithAI.Domain.Common;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GhaithAI.API.Models
 {
-    public class RiskEvent
+    /// <summary>
+    /// Represents a detected risk event in a chat session.
+    /// Sensitive clinical entity requiring full audit trail and soft delete capabilities.
+    /// </summary>
+    public class RiskEvent : AuditableEntity<Guid>
     {
-        [Key]
-        public Guid RiskId { get; set; }
-
         public Guid SessionId { get; set; }
 
         [ForeignKey(nameof(SessionId))]
@@ -31,7 +32,5 @@ namespace GhaithAI.API.Models
         public string Status { get; set; } = "open";
 
         public bool IsDeletable { get; set; } = false;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

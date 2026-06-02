@@ -1,12 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GhaithAI.API.GaithAI.Domain.Common;
 
 namespace GhaithAI.API.Models
 {
-    public class WeeklyInsightReport
+    /// <summary>
+    /// Represents a weekly insight report generated for a user.
+    /// Immutable read-only report capturing point-in-time analytics and insights.
+    /// </summary>
+    public class WeeklyInsightReport : BaseEntity<Guid>
     {
-        [Key]   
-        public Guid ReportId { get; set; }
-
         public string UserId { get; set; }
 
         public ApplicationUser User { get; set; }
@@ -24,7 +25,5 @@ namespace GhaithAI.API.Models
         public string? DetectedPatterns { get; set; }
 
         public string? InsightSummary { get; set; }
-
-        public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
     }
 }

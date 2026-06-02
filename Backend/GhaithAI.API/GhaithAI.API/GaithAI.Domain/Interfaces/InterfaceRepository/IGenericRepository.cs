@@ -3,12 +3,13 @@ namespace GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository
     public interface IGenericRepository<T> where T : class
     {
         Task AddAsync(T entity);
+        Task AddRangeAsync(IEnumerable<T> entities);
         void Update(T entity);
-        Task Delete(int id);
+        Task DeleteAsync(object id);
         Task<IEnumerable<T>> GetAllAsync();
-        Task<T?> GetByIdAsync(int id);
+        Task<T?> GetByIdAsync(object id);
         IQueryable<T> GetAllQueryableNoTracking();
         IQueryable<T> GetAllQueryableTracking();
-        Task AddRangeAsync(IEnumerable<T> entities);
+
     }
 }

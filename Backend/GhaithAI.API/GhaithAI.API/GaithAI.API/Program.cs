@@ -1,11 +1,14 @@
-﻿using GhaithAI.API.Configurations;
+using GhaithAI.API.Configurations;
 using GhaithAI.API.Data;
 using GhaithAI.API.Extensions;
 using GhaithAI.API.GaithAI.API.Configurations;
 using GhaithAI.API.GaithAI.Application.Helpers;
+using GhaithAI.API.GaithAI.Application.Services.Class;
+using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
 using GhaithAI.API.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerDocumentation();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -28,9 +32,19 @@ builder.Services.AddServices();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddMapping();
 
-
-
 builder.Services.Configure<LangflowSettings>(builder.Configuration.GetSection("Langflow"));
+
+builder.Services.AddHttpClient<ILangflowService, LangflowService>((serviceProvider, client) =>
+{
+    var settings = serviceProvider.GetRequiredService<IOptions<LangflowSettings>>().Value;
+
+    if (string.IsNullOrEmpty(settings.BaseUrl))
+        throw new InvalidOperationException("Langflow BaseUrl is missing from appsettings.json");
+
+    client.BaseAddress = new Uri(settings.BaseUrl.EndsWith("/") ? settings.BaseUrl : settings.BaseUrl + "/");
+});
+
+
 
 var app = builder.Build();
 
@@ -41,6 +55,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "GhaithAI API v1");
+        options.RoutePrefix = string.Empty;
     });
 }
 
