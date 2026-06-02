@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GhaithAI.API.Repositories.Class
 {
-    public class ChatRepository : GenericRepository<ChatMessage>, IChatRepository
+    public class SessionRepository : GenericRepository<ChatSession>, ISessionRepository
     {
-        public ChatRepository(ApplicationDbContext dbContext) : base(dbContext)
+        public SessionRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
         }
 

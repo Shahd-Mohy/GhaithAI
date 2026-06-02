@@ -57,7 +57,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
 
         public async Task<GhaithFinalResultDto> ProcessUserMessageAsync(Guid sessionId, string userMessage)
         {
-            string conversationHistory = await _unitOfWork.Chat.GetLast30MessagesFormattedAsync(sessionId);
+            string conversationHistory = await _unitOfWork.Session.GetLast30MessagesFormattedAsync(sessionId);
 
             var requestBody = new LangflowRequestDto
             {

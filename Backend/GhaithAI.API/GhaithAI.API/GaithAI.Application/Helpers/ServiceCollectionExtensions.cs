@@ -24,6 +24,7 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IInsightRepository, InsightRepository>();
             // Chat & Risk Repositories
             services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<ISessionRepository, SessionRepository>();
             services.AddScoped<IRiskRepository, RiskRepository>();
             services.AddScoped<ISelfHelpRepository, SelfHelpRepository>();
 

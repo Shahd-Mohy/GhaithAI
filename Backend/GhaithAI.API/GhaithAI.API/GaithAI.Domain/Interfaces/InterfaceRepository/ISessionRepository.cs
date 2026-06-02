@@ -3,7 +3,7 @@ using GhaithAI.API.Models;
 
 namespace GhaithAI.API.Repositories.Interfaces
 {
-    public interface IChatRepository : IGenericRepository<ChatMessage>
+    public interface ISessionRepository : IGenericRepository<ChatSession>
     {
         Task<string> GetLast30MessagesFormattedAsync(Guid sessionId);
     }
