@@ -2,10 +2,6 @@
 
 namespace GhaithAI.API.Models
 {
-    /// <summary>
-    /// Represents a mood log entry for a user.
-    /// Immutable transactional log entry capturing point-in-time mood data.
-    /// </summary>
     public class MoodLog : BaseEntity<Guid>
     {
         public string UserId { get; set; }
@@ -23,5 +19,9 @@ namespace GhaithAI.API.Models
         public string? Notes { get; set; }
 
         public string Source { get; set; } = "manual";
+
+        public DateTime LoggedAt { get; set; } = DateTime.UtcNow;
+        public bool IsDeleted { get; set; } = false;
+        public Guid MoodLogId { get; internal set; }
     }
 }
