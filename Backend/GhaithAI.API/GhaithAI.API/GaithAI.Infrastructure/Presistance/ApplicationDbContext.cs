@@ -1,6 +1,9 @@
+﻿using GhaithAI.API.Models;
+using GhaithAI.GaithAI.Domain.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-global using System.Linq.Expressions;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace GhaithAI.API.Presistance
@@ -35,6 +38,8 @@ namespace GhaithAI.API.Presistance
 
         public DbSet<CrisisResourceConfig> CrisisResourceConfigs { get; set; }
 
+        public DbSet<UserAssessment> UserAssessments { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -61,6 +66,11 @@ namespace GhaithAI.API.Presistance
                 .WithMany(c => c.RiskEvents)
                 .HasForeignKey(r => r.SessionId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<UserAssessment>()
+                .HasOne(x => x.User)
+                .WithOne(x => x.UserAssessment)
+                .HasForeignKey<UserAssessment>(x => x.UserId);
 
             // 1. SCAN AND APPLY ALL SEPARATE CONFIGURATION CLASSES AUTOMATICALLY
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

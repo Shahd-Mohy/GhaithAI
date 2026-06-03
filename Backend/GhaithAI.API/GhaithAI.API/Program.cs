@@ -46,6 +46,20 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddAuthorization();
 
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//.AddJwtBearer(options =>
+//{
+//    options.TokenValidationParameters = new TokenValidationParameters
+//    {
+//        ValidateIssuer = true,
+//        ValidateAudience = true,
+//        ValidateLifetime = true,
+//        ValidateIssuerSigningKey = true,
+//        ValidIssuer = builder.Configuration["JWT:Issuer"],
+//        ValidAudience = builder.Configuration["JWT:Audience"],
+//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
+//    };
+//});
 // 🛡️ تسجيل الـ Authentication مرة واحدة فقط هنا لمنع إيرور الـ Scheme Already Exists
 builder.Services.AddAuthentication(options =>
 {

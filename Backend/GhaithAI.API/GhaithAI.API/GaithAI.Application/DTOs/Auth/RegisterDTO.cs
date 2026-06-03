@@ -29,5 +29,19 @@ namespace GhaithAI.API.DTOs.Auth
         public EmergencyContactDto FirstContact { get; set; }
 
         public EmergencyContactDto SecondContact { get; set; }
+
+        // Assessment
+
+        public int? Age { get; set; }
+
+        public List<string> Concerns { get; set; } = [];
+
+        public string? SleepQuality { get; set; }
+
+        public string? StressLevel { get; set; }
+
+        public bool HasTherapyHistory { get; set; }
+
+        public bool TakesMedication { get; set; }
     }
 }

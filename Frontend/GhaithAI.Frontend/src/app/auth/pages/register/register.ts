@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../services/auth';
+import { RegisterRequest } from '../../../models/auth/register-request.model';
 
 @Component({
   selector: 'app-register',
@@ -54,7 +56,8 @@ export class RegisterComponent implements OnInit {
 
   relationships = ['Parent', 'Spouse / Partner', 'Sibling', 'Friend', 'Colleague', 'Other'];
 
-  constructor(private route: ActivatedRoute) {}
+  constructor (private route: ActivatedRoute,
+  private authService: AuthService) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
@@ -118,10 +121,79 @@ export class RegisterComponent implements OnInit {
   }
 
   submitForm() {
-    this.submitting = true;
-    setTimeout(() => {
-      this.submitting = false;
-      this.submitted = true;
-    }, 1800);
-  }
+
+  const payload: RegisterRequest = {
+
+    fullName:
+      `${this.firstName} ${this.lastName}`,
+
+    email: this.email,
+
+    password: this.password,
+
+    phoneNumber: this.phone,
+
+    countryCode: 'EG',
+
+    preferredLanguage: this.lang,
+
+    acceptedTerms: true,
+
+    acceptedPrivacyPolicy: true,
+
+    acceptedAiChat: true,
+
+    acceptedMoodTracking: true,
+
+    acceptedDataCollection: true,
+
+    firstContact: {
+      fullName: this.ec1name,
+      phoneNumber: this.ec1phone,
+      relationship: this.ec1rel
+    },
+
+    secondContact: {
+      fullName: this.ec2name,
+      phoneNumber: this.ec2phone,
+      relationship: this.ec2rel
+    },
+
+    age: this.age ?? undefined,
+
+    concerns: this.selectedConcerns,
+
+    sleepQuality: this.sleep,
+
+    stressLevel: this.stress,
+
+    hasTherapyHistory:
+      this.therapy === 'yes',
+
+    takesMedication:
+      this.medications === 'yes'
+  };
+
+  this.submitting = true;
+
+  this.authService
+      .register(payload)
+      .subscribe({
+
+        next: (res) => {
+
+          this.submitting = false;
+          this.submitted = true;
+
+          console.log(res);
+        },
+
+        error: (err) => {
+
+          console.error(err);
+
+          this.submitting = false;
+        }
+      });
+}
 }

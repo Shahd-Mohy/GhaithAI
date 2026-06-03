@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using GhaithAI.GaithAI.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace GhaithAI.API.Models
 {
@@ -47,6 +48,8 @@ namespace GhaithAI.API.Models
         public ICollection<EmergencyContact> EmergencyContacts { get; set; }
 
         public ICollection<WeeklyInsightReport> WeeklyInsightReports { get; set; }
+        public UserAssessment UserAssessment { get; set; }
+
         public string? GoogleId { get; set; }
 
         public bool IsGoogleAccount { get; set; } = false;
