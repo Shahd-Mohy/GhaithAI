@@ -1,5 +1,4 @@
 ﻿using GhaithAI.API.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -12,34 +11,58 @@ namespace GhaithAI.API.Helpers
         public static string GenerateToken(
             ApplicationUser user,
             IConfiguration configuration,
-            IList<string> roles)
+            IList<string>? roles = null)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.UserName)
+                new Claim(
+                    ClaimTypes.NameIdentifier,
+                    user.Id),
+
+                new Claim(
+                    ClaimTypes.Email,
+                    user.Email ?? string.Empty),
+
+                new Claim(
+                    ClaimTypes.Name,
+                    user.FullName ?? string.Empty)
             };
 
-            foreach (var role in roles)
+            if (roles != null)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                foreach (var role in roles)
+                {
+                    claims.Add(
+                        new Claim(
+                            ClaimTypes.Role,
+                            role));
+                }
             }
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    configuration["JWT:SecretKey"]));
+            var key =
+                new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(
+                        configuration["JWT:SecretKey"]!));
 
-            var creds = new SigningCredentials(
-                key,
-                SecurityAlgorithms.HmacSha256);
+            var creds =
+                new SigningCredentials(
+                    key,
+                    SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
-                issuer: configuration["JWT:Issuer"],
-                audience: configuration["JWT:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(7),
-                signingCredentials: creds);
+            var token =
+                new JwtSecurityToken(
+                    issuer:
+                        configuration["JWT:Issuer"],
+
+                    audience:
+                        configuration["JWT:Audience"],
+
+                    claims: claims,
+
+                    expires:
+                        DateTime.UtcNow.AddDays(7),
+
+                    signingCredentials: creds);
 
             return new JwtSecurityTokenHandler()
                 .WriteToken(token);

@@ -43,7 +43,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while fetching active self-help content.");
-                throw new ApplicationException("ÕœÀ Œÿ√ √À‰«¡ Ã·» „Õ ÊÏ «·„”«⁄œ… «·–« Ì…° Ì—ÃÏ «·„Õ«Ê·… ·«Õﬁ«.", ex);
+                throw new ApplicationException("An error occurred while fetching self-help content. Please try again later.", ex);
             }
 
            
@@ -75,7 +75,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while accessing the SelfHelp repository.");
-                throw new ApplicationException("ÕœÀ Œÿ√ √À‰«¡ «·Ê’Ê· ≈·Ï „” Êœ⁄ «·„”«⁄œ… «·–« Ì…° Ì—ÃÏ «·„Õ«Ê·… ·«Õﬁ«.", ex);
+                throw new ApplicationException("An error occurred while accessing the self-help repository, please try again later.", ex);
             }
         
         }

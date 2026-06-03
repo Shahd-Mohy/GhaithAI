@@ -1,4 +1,5 @@
 global using GhaithAI.API.Data;
+using GhaithAI.API.Presistance;
 
 namespace GhaithAI.API.Repositories.Class
 {

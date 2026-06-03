@@ -35,7 +35,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Admin Service: Error occurred while fetching all content.");
-                throw new ApplicationException("ÕœÀ Œÿ√ ›Ì «·‰Ÿ«„ √À‰«¡ Ã·» «·»Ì«‰«  ··ÊÕ… «· Õﬂ„.", ex);
+                throw new ApplicationException(" system error occurred while fetching data to the control panel.", ex);
             }
         }
 
@@ -59,18 +59,18 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Admin Service: Error fetching content with ID: {ContentId}", id);
-                throw new ApplicationException($"ÕœÀ Œÿ√ √À‰«¡ „Õ«Ê·… Ã·»  ›«’Ì· «·”Ã· –Ê «·„⁄—› {id}.", ex);
+                throw new ApplicationException($"An error occurred while attempting to retrieve details of the record with the ID{id}.", ex);
             }
         }
 
         public async Task<AdminSelfHelpResponseDto> CreateContentAsync(AdminSelfHelpSaveDto dto, string adminId)
         {
             if (dto == null) 
-                throw new ArgumentNullException(nameof(dto), "»Ì«‰«  «·„Õ ÊÏ «·ÃœÌœ ·« Ì„ﬂ‰ √‰  ﬂÊ‰ ›«—€….");
+                throw new ArgumentNullException(nameof(dto), "New content data cannot be empty.");
             if (string.IsNullOrWhiteSpace(adminId))
             {
                 _logger.LogCritical("Security Warning: Attempted to create content without a valid Admin Identity.");
-                throw new ArgumentException("„⁄—› «·„”ƒÊ· (Admin ID) €Ì— ’«·Õ √Ê „›ﬁÊœ.");
+                throw new ArgumentException("The Admin ID is invalid or missing.");
             }
             try
             {
@@ -92,7 +92,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Admin Service: Failed to create content by Admin: {AdminId}", adminId);
-                throw new ApplicationException("›‘· «·‰Ÿ«„ ›Ì Õ›Ÿ «·„Õ ÊÏ «·ÃœÌœ° Ì—ÃÏ „—«Ã⁄… «·„œŒ·« .", ex);
+                throw new ApplicationException("The system failed to save the new content, please review the input.", ex);
             }
         }
 
@@ -117,10 +117,8 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                     return null!;
                 }
 
-                // œ„Ã «· ⁄œÌ·«  ›Êﬁ «·ﬂ«∆‰ «·√’·Ì «·„  »⁄ „‰ EF
                 _mapper.Map(dto, contentEntity);
 
-                //  ÕœÌÀ «·‹ Audit Trail »œﬁ…
                 contentEntity.UpdatedAt = DateTime.UtcNow;
                 contentEntity.UpdatedBy = adminId.Trim();
 
@@ -132,7 +130,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Admin Service: Failed to update content ID: {ContentId} by Admin: {AdminId}", id, adminId);
-                throw new ApplicationException("ÕœÀ Œÿ√ √À‰«¡ Õ›Ÿ «· ⁄œÌ·«  ⁄·Ï «·„Õ ÊÏ.", ex);
+                throw new ApplicationException("An error occurred while saving changes to the content.", ex);
             }
         }
 
@@ -170,7 +168,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Admin Service: Exception thrown during soft delete of ID: {ContentId} by Admin: {AdminId}", id, adminId);
-                throw new ApplicationException("›‘· «·‰Ÿ«„ ›Ì ≈ „«„ ⁄„·Ì… «·Õ–› «·‰«⁄„.", ex);
+                throw new ApplicationException("The system failed to complete the soft delete operation.", ex);
             }
         }
     }

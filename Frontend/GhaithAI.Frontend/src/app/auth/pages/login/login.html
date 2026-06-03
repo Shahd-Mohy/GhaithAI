@@ -1,0 +1,105 @@
+<div class="auth-container">
+
+  <div class="left-panel">
+
+    <div class="logo">
+      <span>🧠</span>
+      <h2>GhaithAI</h2>
+    </div>
+
+    <div class="hero-content">
+
+      <h1>
+        Welcome back to your safe space.
+      </h1>
+
+      <p>
+        Continue your mental wellness journey with GhaithAI.
+        We're here to support you every step of the way.
+      </p>
+
+    </div>
+
+    <div class="bottom-links">
+
+      <div>
+        ❤️ For Clinicians
+      </div>
+
+      <div>
+        💚 For Individuals
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="right-panel">
+
+    <div class="form-card">
+
+      <h1>Sign In</h1>
+
+      <p>
+        Enter your credentials to access your account
+      </p>
+
+      <form
+        [formGroup]="loginForm"
+        (ngSubmit)="login()">
+
+        <label>Email</label>
+
+        <input
+          type="email"
+          formControlName="email">
+
+        <label>Password</label>
+
+        <input
+          type="password"
+          formControlName="password">
+
+        <button type="submit">
+
+          Sign In
+
+        </button>
+
+      </form>
+
+      <div class="divider">
+
+        OR CONTINUE WITH
+
+      </div>
+
+      <div class="social-buttons">
+
+        <button
+  class="google-btn">
+
+  Google
+
+</button>
+
+        <button>
+          Apple
+        </button>
+
+      </div>
+
+      <p class="signup-link">
+
+        Don't have an account?
+
+        <a routerLink="/register">
+          Sign Up
+        </a>
+      </p>
+
+    </div>
+
+  </div>
+
+</div>

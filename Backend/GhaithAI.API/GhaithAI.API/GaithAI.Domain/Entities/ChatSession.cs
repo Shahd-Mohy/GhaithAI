@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using GhaithAI.API.GaithAI.Domain.Common;
 
 namespace GhaithAI.API.Models
@@ -26,7 +27,9 @@ namespace GhaithAI.API.Models
 
         public bool MemoryEnabled { get; set; } = false;
 
-        public string? Title { get; set; }
+        public string Title { get; set; } = string.Empty;
+
+        //public string? Title { get; set; }
 
         public ICollection<ChatMessage> ChatMessages { get; set; }
 

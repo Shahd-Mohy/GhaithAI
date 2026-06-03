@@ -1,5 +1,6 @@
 ﻿using GhaithAI.API.Data;
 using GhaithAI.API.Models;
+using GhaithAI.API.Presistance;
 using GhaithAI.API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,8 +47,8 @@ namespace GhaithAI.API.Repositories.Class
             // for angular
             var items = await query
                 .OrderByDescending(m => m.LoggedAt)
-                .Skip((page - 1) * pageSize)   
-                .Take(pageSize)                 
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             return (items, total);
@@ -66,7 +67,7 @@ namespace GhaithAI.API.Repositories.Class
                 .OrderBy(m => m.LoggedAt)
                 .ToListAsync();
 
-            
+
             var calendarEntries = logs
                 .GroupBy(m => m.LoggedAt.Date)       // Group all logs on the same day
                 .Select(g => g.OrderByDescending(m => m.LoggedAt).First()) // Take the last one

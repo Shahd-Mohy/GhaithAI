@@ -1,6 +1,7 @@
 
 using GhaithAI.API.Data;
 using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository;
+using GhaithAI.API.Presistance;
 using Microsoft.EntityFrameworkCore;
 
 namespace GhaithAI.API.GaithAI.Infrastructure.Repositories.Class

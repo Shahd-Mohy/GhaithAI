@@ -1,4 +1,4 @@
-
+global using GhaithAI.API.Presistance;
 
 namespace GhaithAI.API.Repositories.Class
 {

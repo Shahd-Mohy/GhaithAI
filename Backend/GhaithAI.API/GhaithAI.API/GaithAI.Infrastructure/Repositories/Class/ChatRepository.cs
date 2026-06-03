@@ -1,5 +1,7 @@
 
 
+using Microsoft.EntityFrameworkCore;
+
 namespace GhaithAI.API.Repositories.Class
 {
     public class ChatRepository : GenericRepository<ChatMessage>, IChatRepository
