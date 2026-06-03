@@ -4,35 +4,80 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogger<SelfHelpUserService> _logger;
 
-        public SelfHelpUserService(IUnitOfWork unitOfWork, IMapper mapper)
+        public SelfHelpUserService(IUnitOfWork unitOfWork, IMapper mapper , ILogger<SelfHelpUserService> logger)
         {
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger=logger ?? throw new ArgumentNullException(nameof(logger)) ;
         }
         public async Task<IEnumerable<UserSelfHelpResponseDto>> GetActiveContentAsync(string? type, string? difficulty)
         {
-            var contents = await _unitOfWork.SelfHelp.GetAllAsync();
-            var query = contents.Where(c => c.IsActive && !c.IsDeleted);
-            if (!string.IsNullOrEmpty(type))
+            try
             {
-                query = query.Where(c => c.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
+                if(_unitOfWork.SelfHelp == null)
+                {
+                    _logger.LogError("SelfHelp repository is not available.");
+                    return Enumerable.Empty<UserSelfHelpResponseDto>();
+                }
+
+                var contents = await _unitOfWork.SelfHelp.GetAllAsync();
+
+                if (contents == null)
+                    return Enumerable.Empty<UserSelfHelpResponseDto>();
+
+                var query = contents.Where(c => c != null && c.IsActive && !c.IsDeleted);
+                if (!string.IsNullOrEmpty(type))
+                {
+                    var cleanType = type.Trim();
+                    query = query.Where(c => c.Type != null && c.Type.Equals(cleanType, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!string.IsNullOrWhiteSpace(difficulty))
+                {
+                    var cleanDifficulty = difficulty.Trim();
+                    query = query.Where(c => c.DifficultyLevel != null && c.DifficultyLevel.Equals(cleanDifficulty, StringComparison.OrdinalIgnoreCase));
+                }
+                return _mapper.Map<IEnumerable<UserSelfHelpResponseDto>>(query);
             }
-            if (!string.IsNullOrEmpty(difficulty))
+            catch (Exception ex)
             {
-                query = query.Where(c => c.DifficultyLevel.Equals(difficulty, StringComparison.OrdinalIgnoreCase));
+                _logger.LogError(ex, "An error occurred while fetching active self-help content.");
+                throw new ApplicationException("ÕœÀ Œÿ√ √À‰«¡ Ã·» „Õ ÊÏ «·„”«⁄œ… «·–« Ì…° Ì—ÃÏ «·„Õ«Ê·… ·«Õﬁ«.", ex);
             }
 
-            return _mapper.Map<IEnumerable<UserSelfHelpResponseDto>>(query);
+           
         }
 
         public async Task<UserSelfHelpResponseDto> GetContentByIdAsync(Guid id)
         {
-            var content = await _unitOfWork.SelfHelp.GetByIdAsync(id);
-            if (content == null || !content.IsActive || content.IsDeleted)
+            if (id == Guid.Empty)
+            {
+                _logger.LogWarning("GetContentByIdAsync called with an empty Guid.");
                 return null!;
+            }
+            try
+            {
+                if (_unitOfWork.SelfHelp == null)
+                {
+                    _logger.LogError("SelfHelp repository is not available.");
+                    return null!;
+                }
+                var content = await _unitOfWork.SelfHelp.GetByIdAsync(id);
+                if (content == null || !content.IsActive || content.IsDeleted)
+                {
+                    return null!;
+                }
 
-            return _mapper.Map<UserSelfHelpResponseDto>(content);
+                return _mapper.Map<UserSelfHelpResponseDto>(content);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while accessing the SelfHelp repository.");
+                throw new ApplicationException("ÕœÀ Œÿ√ √À‰«¡ «·Ê’Ê· ≈·Ï „” Êœ⁄ «·„”«⁄œ… «·–« Ì…° Ì—ÃÏ «·„Õ«Ê·… ·«Õﬁ«.", ex);
+            }
+        
         }
     }
 }

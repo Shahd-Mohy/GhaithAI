@@ -8,69 +8,170 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public SelfHelpAdminService(IUnitOfWork unitOfWork , IMapper mapper)
+        private readonly ILogger<SelfHelpAdminService> _logger;
+        public SelfHelpAdminService(IUnitOfWork unitOfWork , IMapper mapper , ILogger<SelfHelpAdminService> logger)
         {
-            _mapper = mapper;
-            _unitOfWork = unitOfWork;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger=logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<IEnumerable<AdminSelfHelpResponseDto>> GetAllContentAsync()
         {
-            var contents = await _unitOfWork.SelfHelp.GetAllAsync();
-            return _mapper.Map<IEnumerable<AdminSelfHelpResponseDto>>(contents);
+            try
+            {
+                if (_unitOfWork.SelfHelp == null)
+                {
+                    _logger.LogError("Admin Service: SelfHelp Repository is null.");
+                    return Enumerable.Empty<AdminSelfHelpResponseDto>();
+                }
+
+                var contents = await _unitOfWork.SelfHelp.GetAllAsync();
+                if (contents == null)
+                    return Enumerable.Empty<AdminSelfHelpResponseDto>();
+
+                return _mapper.Map<IEnumerable<AdminSelfHelpResponseDto>>(contents);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Admin Service: Error occurred while fetching all content.");
+                throw new ApplicationException("ÕœÀ Œÿ√ ›Ì «·‰Ÿ«„ √À‰«¡ Ã·» «·»Ì«‰«  ··ÊÕ… «· Õﬂ„.", ex);
+            }
         }
 
         public async Task<AdminSelfHelpResponseDto> GetContentByIdAsync(Guid id)
         {
-            var content = await _unitOfWork.SelfHelp.GetByIdAsync(id);
-            if (content == null) return null!;
-            return _mapper.Map<AdminSelfHelpResponseDto>(content);
+            if (id == Guid.Empty)
+            {
+                _logger.LogWarning("Admin Service: GetContentByIdAsync called with an empty Guid.");
+                return null!;
+            }
+            try
+            {
+                if (_unitOfWork.SelfHelp == null)
+                    return null!;
+
+                var content = await _unitOfWork.SelfHelp.GetByIdAsync(id);
+                if (content == null) return null!;
+
+                return _mapper.Map<AdminSelfHelpResponseDto>(content);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Admin Service: Error fetching content with ID: {ContentId}", id);
+                throw new ApplicationException($"ÕœÀ Œÿ√ √À‰«¡ „Õ«Ê·… Ã·»  ›«’Ì· «·”Ã· –Ê «·„⁄—› {id}.", ex);
+            }
         }
 
         public async Task<AdminSelfHelpResponseDto> CreateContentAsync(AdminSelfHelpSaveDto dto, string adminId)
         {
-            var contentEntity = _mapper.Map<SelfHelpContent>(dto);
+            if (dto == null) 
+                throw new ArgumentNullException(nameof(dto), "»Ì«‰«  «·„Õ ÊÏ «·ÃœÌœ ·« Ì„ﬂ‰ √‰  ﬂÊ‰ ›«—€….");
+            if (string.IsNullOrWhiteSpace(adminId))
+            {
+                _logger.LogCritical("Security Warning: Attempted to create content without a valid Admin Identity.");
+                throw new ArgumentException("„⁄—› «·„”ƒÊ· (Admin ID) €Ì— ’«·Õ √Ê „›ﬁÊœ.");
+            }
+            try
+            {
+                if (_unitOfWork.SelfHelp == null)
+                    throw new InvalidOperationException("SelfHelp Repository is unavailable.");
+                var contentEntity = _mapper.Map<SelfHelpContent>(dto);
+                contentEntity.Id = Guid.NewGuid();
+                contentEntity.CreatedAt = DateTime.UtcNow;
+                contentEntity.IsDeleted = false;
+                contentEntity.DeletedAt = null;
+                contentEntity.UpdatedAt = null;
+                contentEntity.UpdatedBy = null;
+                await _unitOfWork.SelfHelp.AddAsync(contentEntity);
+                await _unitOfWork.CompleteAsync();
+                _logger.LogInformation("Admin {AdminId} successfully created SelfHelpContent with ID: {ContentId}", adminId, contentEntity.Id);
+                return _mapper.Map<AdminSelfHelpResponseDto>(contentEntity);
 
-            contentEntity.Id = Guid.NewGuid();
-            contentEntity.CreatedAt = DateTime.UtcNow;
-            contentEntity.IsDeleted = false;
-            contentEntity.DeletedAt = null;
-            contentEntity.UpdatedAt = null;
-            contentEntity.UpdatedBy = null;
-
-
-            await _unitOfWork.SelfHelp.AddAsync(contentEntity);
-            await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<AdminSelfHelpResponseDto>(contentEntity);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Admin Service: Failed to create content by Admin: {AdminId}", adminId);
+                throw new ApplicationException("›‘· «·‰Ÿ«„ ›Ì Õ›Ÿ «·„Õ ÊÏ «·ÃœÌœ° Ì—ÃÏ „—«Ã⁄… «·„œŒ·« .", ex);
+            }
         }
 
         public async Task<AdminSelfHelpResponseDto> UpdateContentAsync(Guid id, AdminSelfHelpSaveDto dto, string adminId)
         {
-            var contentEntity = await _unitOfWork.SelfHelp.GetByIdAsync(id);
-            if (contentEntity == null) return null!;
+            if (id == Guid.Empty || dto == null || string.IsNullOrWhiteSpace(adminId))
+            {
+                _logger.LogWarning("Admin Service: Update called with invalid arguments. ID: {Id}, Admin: {AdminId}", id, adminId);
+                return null!;
+            }
 
-            _mapper.Map(dto, contentEntity);
+            try
+            {
+                if (_unitOfWork.SelfHelp == null)
+                    return null!;
 
-            contentEntity.UpdatedAt = DateTime.UtcNow;
-            contentEntity.UpdatedBy = adminId;
+                var contentEntity = await _unitOfWork.SelfHelp.GetByIdAsync(id);
 
-            await _unitOfWork.CompleteAsync();
-            return _mapper.Map<AdminSelfHelpResponseDto>(contentEntity);
+                if (contentEntity == null || contentEntity.IsDeleted)
+                {
+                    _logger.LogWarning("Admin {AdminId} tried to update a non-existent or soft-deleted record with ID: {ContentId}", adminId, id);
+                    return null!;
+                }
+
+                // œ„Ã «· ⁄œÌ·«  ›Êﬁ «·ﬂ«∆‰ «·√’·Ì «·„  »⁄ „‰ EF
+                _mapper.Map(dto, contentEntity);
+
+                //  ÕœÌÀ «·‹ Audit Trail »œﬁ…
+                contentEntity.UpdatedAt = DateTime.UtcNow;
+                contentEntity.UpdatedBy = adminId.Trim();
+
+                await _unitOfWork.CompleteAsync();
+                _logger.LogInformation("Admin {AdminId} successfully updated content ID: {ContentId}", adminId, id);
+
+                return _mapper.Map<AdminSelfHelpResponseDto>(contentEntity);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Admin Service: Failed to update content ID: {ContentId} by Admin: {AdminId}", id, adminId);
+                throw new ApplicationException("ÕœÀ Œÿ√ √À‰«¡ Õ›Ÿ «· ⁄œÌ·«  ⁄·Ï «·„Õ ÊÏ.", ex);
+            }
         }
 
         public async Task<bool> SoftDeleteContentAsync(Guid id, string adminId)
         {
-            var contentEntity = await _unitOfWork.SelfHelp.GetByIdAsync(id);
-            if (contentEntity == null) return false;
+            if (id == Guid.Empty || string.IsNullOrWhiteSpace(adminId))
+            {
+                _logger.LogWarning("Admin Service: Delete called with invalid identifiers. ID: {Id}, Admin: {AdminId}", id, adminId);
+                return false;
+            }
 
-            // «·Õ–› «·‰«⁄„ (Soft Delete)
-            contentEntity.IsDeleted = true;
-            contentEntity.DeletedAt = DateTime.UtcNow;
-            contentEntity.UpdatedBy = adminId;
+            try
+            {
+                if (_unitOfWork.SelfHelp == null)
+                    return false;
 
-            await _unitOfWork.CompleteAsync();
-            return true;
+                var contentEntity = await _unitOfWork.SelfHelp.GetByIdAsync(id);
+
+                if (contentEntity == null || contentEntity.IsDeleted)
+                {
+                    _logger.LogWarning("Admin {AdminId} attempted to delete an already deleted or missing record ID: {ContentId}", adminId, id);
+                    return false;
+                }
+
+                contentEntity.IsDeleted = true;
+                contentEntity.DeletedAt = DateTime.UtcNow;
+                contentEntity.UpdatedAt = DateTime.UtcNow; 
+                contentEntity.UpdatedBy = adminId.Trim();
+
+                await _unitOfWork.CompleteAsync();
+                _logger.LogWarning("Admin {AdminId} SOFT-DELETED content ID: {ContentId}", adminId, id);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Admin Service: Exception thrown during soft delete of ID: {ContentId} by Admin: {AdminId}", id, adminId);
+                throw new ApplicationException("›‘· «·‰Ÿ«„ ›Ì ≈ „«„ ⁄„·Ì… «·Õ–› «·‰«⁄„.", ex);
+            }
         }
     }
 }
