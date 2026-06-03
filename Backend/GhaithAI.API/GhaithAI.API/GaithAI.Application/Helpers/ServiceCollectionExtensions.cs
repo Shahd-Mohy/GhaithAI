@@ -20,6 +20,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
 
             // Mood
             services.AddScoped<IMoodRepository, MoodRepository>();
+            // Journal
+            services.AddScoped<IJournalRepository, JournalRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IRiskRepository, RiskRepository>();
 
@@ -33,6 +35,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
 
             // Mood
             services.AddScoped<IMoodService, MoodService>();
+            // Journal 
+            services.AddScoped<IJournalService, JournalService>();
 
             return services;
         }
