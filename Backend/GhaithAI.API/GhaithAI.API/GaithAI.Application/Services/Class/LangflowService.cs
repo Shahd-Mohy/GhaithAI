@@ -1,15 +1,8 @@
-using AutoMapper;
+global using GhaithAI.API.GaithAI.Application.DTOs.Chat;
+global using System.Text;
+global using System.Text.Json;
 using GhaithAI.API.GaithAI.API.Configurations;
-using GhaithAI.API.GaithAI.Application.DTOs.Chat;
-using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
-using GhaithAI.API.Models;
-using GhaithAI.API.Repositories.UnitWork;
 using Microsoft.Extensions.Options;
-using System.Runtime;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace GhaithAI.API.GaithAI.Application.Services.Class
 {
@@ -19,13 +12,47 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
         private readonly LangflowSettings _langflowSettings;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+
         private const string AgentNodeId = "Prompt-Agent-xUYMm";
-        public LangflowService(HttpClient httpClient, IOptions<LangflowSettings> langflowSettings , IUnitOfWork unitOfWork , IMapper mapper)
+
+        public LangflowService(
+            HttpClient httpClient,
+            IOptions<LangflowSettings> langflowSettings,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _httpClient = httpClient;
             _langflowSettings = langflowSettings.Value;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+        }
+
+        public async Task<string> SendMessageAsync(string userMessage, string sessionId)
+        {
+            var request = new
+            {
+                input_value = userMessage,
+                session_id = sessionId,
+                output_type = "chat",
+                input_type = "chat"
+            };
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("x-api-key", _langflowSettings.ApiKey);
+
+            var response = await _httpClient.PostAsJsonAsync(
+                $"{_langflowSettings.BaseUrl}/api/v1/run/{_langflowSettings.FlowId}?stream=false",
+                request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Langflow Error: {error}");
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<LangflowResponse>();
+
+            return result!.Outputs[0].Outputs[0].Results.Message.Text;
         }
 
         public async Task<GhaithFinalResultDto> ProcessUserMessageAsync(Guid sessionId, string userMessage)
@@ -57,6 +84,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
 
             var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
+
             var jsonResponse = await response.Content.ReadAsStringAsync();
 
             using var doc = JsonDocument.Parse(jsonResponse);
@@ -72,6 +100,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             rawText = rawText.Trim();
 
             var finalResult = new GhaithFinalResultDto();
+
             if (rawText.StartsWith("{") && rawText.EndsWith("}"))
             {
                 try
@@ -84,7 +113,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                         finalResult.RiskDetails = internalJson.RiskDetails;
                     }
                 }
-                catch (JsonException)
+                catch
                 {
                     finalResult.AiResponse = rawText;
                     finalResult.IsRiskDetected = false;
@@ -94,7 +123,6 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             {
                 finalResult.AiResponse = rawText;
                 finalResult.IsRiskDetected = false;
-                finalResult.RiskDetails = null;
             }
 
             var userMessageEntity = new ChatMessage
@@ -118,11 +146,11 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
 
             if (finalResult.IsRiskDetected && finalResult.RiskDetails != null)
             {
-                var riskEventEntity = _mapper.Map<RiskEvent>(finalResult.RiskDetails);
-                riskEventEntity.SessionId = sessionId;
-                riskEventEntity.MessageId = userMessageEntity.Id;
+                var riskEntity = _mapper.Map<RiskEvent>(finalResult.RiskDetails);
+                riskEntity.SessionId = sessionId;
+                riskEntity.MessageId = userMessageEntity.Id;
 
-                await _unitOfWork.Risk.AddAsync(riskEventEntity);
+                await _unitOfWork.Risk.AddAsync(riskEntity);
             }
 
             await _unitOfWork.CompleteAsync();
@@ -130,5 +158,34 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             return finalResult;
         }
     }
+
+    public class LangflowResponse
+    {
+        [JsonPropertyName("outputs")]
+        public List<OutputItem> Outputs { get; set; } = new();
+    }
+
+    public class OutputItem
+    {
+        [JsonPropertyName("outputs")]
+        public List<OutputData> Outputs { get; set; } = new();
+    }
+
+    public class OutputData
+    {
+        [JsonPropertyName("results")]
+        public ResultData Results { get; set; } = new();
+    }
+
+    public class ResultData
+    {
+        [JsonPropertyName("message")]
+        public MessageData Message { get; set; } = new();
+    }
+
+    public class MessageData
+    {
+        [JsonPropertyName("text")]
+        public string Text { get; set; } = string.Empty;
+    }
 }
-    

@@ -1,13 +1,13 @@
-﻿using GhaithAI.API.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using System.Reflection;
 
-namespace GhaithAI.API.Data
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
+
+namespace GhaithAI.API.Presistance
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public ApplicationDbContext() { }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -35,9 +35,32 @@ namespace GhaithAI.API.Data
 
         public DbSet<CrisisResourceConfig> CrisisResourceConfigs { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=GhaithAI_DB;Trusted_Connection=True;TrustServerCertificate=True;");
+            }
+        }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.Entity<ChatMessage>()
+                .Property(p => p.SentimentScore)
+                .HasColumnType("decimal(18,4)");
+
+            builder.Entity<RiskEvent>()
+                .Property(p => p.ConfidenceScore)
+                .HasColumnType("decimal(18,4)");
+
+            builder.Entity<WeeklyInsightReport>()
+                .Property(p => p.AvgMoodScore)
+                .HasColumnType("decimal(18,4)");
+            builder.Entity<RiskEvent>()
+                .HasOne(r => r.ChatSession)
+                .WithMany(c => c.RiskEvents)
+                .HasForeignKey(r => r.SessionId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             // 1. SCAN AND APPLY ALL SEPARATE CONFIGURATION CLASSES AUTOMATICALLY
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

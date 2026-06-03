@@ -2,14 +2,16 @@
 using GhaithAI.API.GaithAI.Application.DTOs.Journal;
 using GhaithAI.API.Responses;
 using GhaithAI.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace GhaithAI.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize]
+    [Authorize]
     public class JournalController : ControllerBase
     {
         private readonly IJournalService _journalService;
@@ -19,8 +21,9 @@ namespace GhaithAI.API.Controllers
             _journalService = journalService;
         }
 
-        // Hardcoded for development 
-        private string GetUserId() => "test-user-id-123";
+        private string GetUserId() =>
+          User.FindFirstValue(ClaimTypes.NameIdentifier)
+          ?? throw new UnauthorizedAccessException("User ID not found in token");
 
         // GET /api/journal
 
@@ -61,18 +64,8 @@ namespace GhaithAI.API.Controllers
             return Ok(SuccessResponse<JournalDTO>.Ok(result));
         }
 
-        // ─────────────────────────────────────────────────────────────────────
         // POST /api/journal
-        // Creates a new journal entry.
-        // Returns 201 Created with the new entry's ID and metadata.
-        //
-        // Body: CreateJournalDTO
-        //   title      (string?)  — optional
-        //   content    (string)   — required
-        //   promptType (string)   — required ("free" or the prompt text)
-        //   moodBefore (string)   — required ("Happy", "Sad", etc.)
-        //   tags       (string?)  — optional comma-separated
-        // ─────────────────────────────────────────────────────────────────────
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateJournalDTO dto)
         {
@@ -85,16 +78,8 @@ namespace GhaithAI.API.Controllers
             return StatusCode(201, SuccessResponse<JournalCreatedDTO>.Created(result, "Journal entry created successfully."));
         }
 
-        // ─────────────────────────────────────────────────────────────────────
         // PUT /api/journal/{id}
-        // Updates an existing journal entry.
-        // Returns 404 if entry not found or does not belong to current user.
-        //
-        // Body: UpdateJournalDTO
-        //   title   (string?)  — send to update, omit to leave unchanged
-        //   content (string?)  — send to update, omit to leave unchanged
-        //   tags    (string?)  — send to update, omit to leave unchanged
-        // ─────────────────────────────────────────────────────────────────────
+
         [HttpPut("{journalId:guid}")]
         public async Task<IActionResult> Update(Guid journalId, [FromBody] UpdateJournalDTO dto)
         {
@@ -107,11 +92,8 @@ namespace GhaithAI.API.Controllers
             return Ok(ApiResponse.Ok("Journal entry updated successfully."));
         }
 
-        // ─────────────────────────────────────────────────────────────────────
         // DELETE /api/journal/{id}
-        // Permanently deletes a journal entry.
-        // Returns 404 if entry not found or does not belong to current user.
-        // ─────────────────────────────────────────────────────────────────────
+
         [HttpDelete("{journalId:guid}")]
         public async Task<IActionResult> Delete(Guid journalId)
         {

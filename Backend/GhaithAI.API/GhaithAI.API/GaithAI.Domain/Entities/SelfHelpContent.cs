@@ -1,4 +1,4 @@
-﻿using GhaithAI.API.GaithAI.Domain.Common;
+global using GhaithAI.API.GaithAI.Domain.Common;
 
 namespace GhaithAI.API.Models
 {
