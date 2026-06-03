@@ -1,9 +1,10 @@
 ﻿using GhaithAI.API.Models;
 using GhaithAI.GaithAI.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 
 namespace GhaithAI.API.Presistance
 {

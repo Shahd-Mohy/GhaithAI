@@ -1,22 +1,17 @@
-//using GhaithAI.API.Configurations;
-//using GhaithAI.API.Data;
-//using GhaithAI.API.Extensions;
-//using GhaithAI.API.GaithAI.API.Configurations;
-//using GhaithAI.API.GaithAI.Application.Helpers;
-//using GhaithAI.API.GaithAI.Application.Services.Class;
-//using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
-//using GhaithAI.API.Models;
-//using GhaithAI.API.Presistance;
-//using GhaithAI.API.Services.Interfaces;
-//using Microsoft.AspNetCore.Identity;
-//using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.Options;
+//global using GhaithAI.API.Configurations;
+//global using GhaithAI.API.Extensions;
+//global using GhaithAI.API.GaithAI.API.Configurations;
+//global using GhaithAI.API.GaithAI.Application.Helpers;
+//global using Microsoft.AspNetCore.Identity;
+//global using Microsoft.EntityFrameworkCore;
+//global using Microsoft.Extensions.Options;
+//global using GhaithAI.API.Presistance;
 
 //var builder = WebApplication.CreateBuilder(args);
 
 //// Add services to the container.
-
 //builder.Services.AddControllers();
+
 //// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 //builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerDocumentation();
@@ -34,6 +29,8 @@
 //builder.Services.AddJwtAuthentication(builder.Configuration);
 //builder.Services.AddMapping();
 
+
+
 //builder.Services.Configure<LangflowSettings>(builder.Configuration.GetSection("Langflow"));
 
 //builder.Services.AddHttpClient<ILangflowService, LangflowService>((serviceProvider, client) =>
@@ -45,8 +42,6 @@
 
 //    client.BaseAddress = new Uri(settings.BaseUrl.EndsWith("/") ? settings.BaseUrl : settings.BaseUrl + "/");
 //});
-
-
 
 //var app = builder.Build();
 

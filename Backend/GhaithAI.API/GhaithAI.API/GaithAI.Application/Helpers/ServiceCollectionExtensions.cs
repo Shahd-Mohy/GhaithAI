@@ -1,12 +1,11 @@
-using GhaithAI.API.GaithAI.Application.Services.Class;
-using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository;
-using GhaithAI.API.GaithAI.Infrastructure.Repositories.Class;
-using GhaithAI.API.Repositories.Class;
-using GhaithAI.API.Repositories.Interfaces;
-using GhaithAI.API.Repositories.UnitWork;
-using GhaithAI.API.Services.Class;
-using GhaithAI.API.Services.Interfaces;
-using System.Reflection;
+global using GhaithAI.API.GaithAI.Application.Services.Class;
+global using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository;
+global using GhaithAI.API.GaithAI.Infrastructure.Repositories.Class;
+global using GhaithAI.API.Repositories.Class;
+global using GhaithAI.API.Repositories.Interfaces;
+global using GhaithAI.API.Services.Class;
+global using GhaithAI.API.Services.Interfaces;
+global using System.Reflection;
 
 namespace GhaithAI.API.GaithAI.Application.Helpers
 {
@@ -17,10 +16,11 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-            // Mood
+            // Mood & Chat & Risk Repositories
             services.AddScoped<IMoodRepository, MoodRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IRiskRepository, RiskRepository>();
+            services.AddScoped<ISelfHelpRepository, SelfHelpRepository>();
 
             return services;
         }
@@ -30,8 +30,10 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddHttpClient();
             services.AddHttpClient<ILangflowService, LangflowService>();
 
-            // Mood
+            // Services Registration
             services.AddScoped<IMoodService, MoodService>();
+            services.AddScoped<ISelfHelpAdminService, SelfHelpAdminService>();
+            services.AddScoped<ISelfHelpUserService, SelfHelpUserService>();
 
             return services;
         }

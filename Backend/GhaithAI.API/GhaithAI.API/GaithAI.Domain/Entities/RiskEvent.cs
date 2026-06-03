@@ -1,5 +1,5 @@
-﻿using GhaithAI.API.GaithAI.Domain.Common;
-using System.ComponentModel.DataAnnotations.Schema;
+
+global using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GhaithAI.API.Models
 {

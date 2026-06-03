@@ -1,8 +1,4 @@
-using GhaithAI.API.Data;
-using GhaithAI.API.GaithAI.Infrastructure.Repositories.Class;
-using GhaithAI.API.Models;
-using GhaithAI.API.Presistance;
-using GhaithAI.API.Repositories.Interfaces;
+global using GhaithAI.API.Presistance;
 
 namespace GhaithAI.API.Repositories.Class
 {

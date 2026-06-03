@@ -1,19 +1,12 @@
-using GhaithAI.API.Configurations;
+﻿using GhaithAI.API.Configurations;
 using GhaithAI.API.Extensions;
 using GhaithAI.API.GaithAI.API.Configurations;
 using GhaithAI.API.GaithAI.Application.Helpers;
-using GhaithAI.API.GaithAI.Application.Services.Class;
 using GhaithAI.API.Interfaces.InterfaceService;
-using GhaithAI.API.Models;
-using GhaithAI.API.Presistance;
 using GhaithAI.API.Seeders;
 using GhaithAI.API.Services;
-using GhaithAI.API.Services.Class;
-using GhaithAI.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -25,12 +18,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerDocumentation();
 
-//builder.Services.AddRepositories();
-//builder.Services.AddServices();
+// تسجيل الطبقات والـ Extensions من ملف الهيلبر
+builder.Services.AddRepositories();
+builder.Services.AddServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddMapping();
 
+// إعدادات الـ Langflow والـ HttpClient الخاص به
 builder.Services.Configure<LangflowSettings>(builder.Configuration.GetSection("Langflow"));
 builder.Services.AddHttpClient<ILangflowService, LangflowService>((serviceProvider, client) =>
 {
@@ -42,6 +36,7 @@ builder.Services.AddHttpClient<ILangflowService, LangflowService>((serviceProvid
     client.BaseAddress = new Uri(settings.BaseUrl.EndsWith("/") ? settings.BaseUrl : settings.BaseUrl + "/");
 });
 
+// إعدادات الـ Identity
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -65,7 +60,27 @@ builder.Services.AddAuthorization();
 //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
 //    };
 //});
+// 🛡️ تسجيل الـ Authentication مرة واحدة فقط هنا لمنع إيرور الـ Scheme Already Exists
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
+        ValidAudience = builder.Configuration["JWT:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
+    };
+});
 
+// إعدادات الـ CORS عشان فرونت الـ Angular يربط بسلام
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -95,6 +110,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// الـ Seeder لتجهيز الـ Roles أوتوماتيك أول ما المشروع يقوم
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();

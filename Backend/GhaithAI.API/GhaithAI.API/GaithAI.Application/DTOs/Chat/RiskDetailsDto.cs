@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 
 namespace GhaithAI.API.GaithAI.Application.DTOs.Chat
 {

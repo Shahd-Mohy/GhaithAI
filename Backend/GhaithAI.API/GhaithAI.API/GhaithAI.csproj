@@ -32,6 +32,7 @@
 	<ItemGroup>
 		<Folder Include="GaithAI.API\" />
 		<Folder Include="GaithAI.Infrastructure\ExternalService\" />
+		<Folder Include="Migrations\" />
 	</ItemGroup>
 
 	<ItemGroup>
