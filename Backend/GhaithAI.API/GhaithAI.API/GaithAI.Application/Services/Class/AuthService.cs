@@ -6,6 +6,7 @@ using GhaithAI.API.Models;
 using GhaithAI.API.Presistance;
 using GhaithAI.API.Services.Interfaces;
 using GhaithAI.GaithAI.Application.DTOs.Auth;
+using GhaithAI.GaithAI.Domain.Entities;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 
@@ -91,7 +92,29 @@ namespace GhaithAI.API.Services
                 }
             };
 
+
             await _context.EmergencyContacts.AddRangeAsync(contacts);
+            await _context.SaveChangesAsync();
+
+            var profile = new UserAssessment
+            {
+                UserId = user.Id,
+
+                Age = dto.Age,
+
+                Concerns = string.Join(",", dto.Concerns),
+
+                SleepQuality = dto.SleepQuality,
+
+                StressLevel = dto.StressLevel,
+
+                HasTherapyHistory = dto.HasTherapyHistory,
+
+                TakesMedication = dto.TakesMedication
+            };
+
+            await _context.UserAssessments.AddAsync(profile);
+
             await _context.SaveChangesAsync();
 
             var roles =
