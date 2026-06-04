@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.infrastructure\\presistance\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.infrastructure\\presistance\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.infrastructure\\presistance\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.infrastructure\\presistance\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.infrastructure\\extensions\\authenticationextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -86,17 +86,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\Program.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\Program.cs",
               "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\Program.cs",
               "RelativeToolTip": "GhaithAI.API\\Program.cs",
-              "ViewState": "AgIAAE8AAAAAAAAAAAAAAGIAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAADcAAAAAAAAAAAAAAE4AAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-03T16:14:06.809Z",
               "EditorCaption": ""
@@ -127,13 +127,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "ApplicationDbContext.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs",
-              "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs*",
-              "RelativeToolTip": "GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAiAAAAAAAAAA==",
+              "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs",
+              "RelativeToolTip": "GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAA4wAgAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-03T15:47:57.565Z",
               "EditorCaption": ""
