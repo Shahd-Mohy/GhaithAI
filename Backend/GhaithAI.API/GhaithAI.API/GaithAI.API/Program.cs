@@ -1,13 +1,16 @@
-//global using GhaithAI.API.Configurations;
-//global using GhaithAI.API.Extensions;
-//global using GhaithAI.API.GaithAI.API.Configurations;
-//global using GhaithAI.API.GaithAI.Application.Helpers;
-//global using Microsoft.AspNetCore.Identity;
-//global using Microsoft.EntityFrameworkCore;
-//global using Microsoft.Extensions.Options;
-//global using GhaithAI.API.Presistance;
+using GhaithAI.API.Configurations;
+using GhaithAI.API.Data;
+using GhaithAI.API.Extensions;
+using GhaithAI.API.GaithAI.API.Configurations;
+using GhaithAI.API.GaithAI.API.Hubs;
+using GhaithAI.API.GaithAI.Application.Helpers;
+using GhaithAI.API.GaithAI.Application.Services.Class;
+using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
+using GhaithAI.API.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 
-//var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 //// Add services to the container.
 //builder.Services.AddControllers();
@@ -24,10 +27,14 @@
 //    .AddEntityFrameworkStores<ApplicationDbContext>()
 //    .AddDefaultTokenProviders();
 
-//builder.Services.AddRepositories();
-//builder.Services.AddServices();
-//builder.Services.AddJwtAuthentication(builder.Configuration);
-//builder.Services.AddMapping();
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+builder.Services.AddRepositories();
+builder.Services.AddServices();
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddMapping();
+
+builder.Services.AddSignalR();
 
 
 
@@ -59,6 +66,8 @@
 //app.UseAuthentication();
 //app.UseAuthorization();
 
-//app.MapControllers();
+app.MapControllers();
+// add chatHub from  GhaithAI.API.GaithAI.API.Hubs name space
+app.MapHub<ChatHub>("/hubs/chat");
 
 //app.Run();
