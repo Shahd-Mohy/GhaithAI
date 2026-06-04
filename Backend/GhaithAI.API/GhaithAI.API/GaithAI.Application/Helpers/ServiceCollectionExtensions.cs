@@ -18,6 +18,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
 
             // Mood & Chat & Risk Repositories
             services.AddScoped<IMoodRepository, MoodRepository>();
+            // Journal
+            services.AddScoped<IJournalRepository, JournalRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IRiskRepository, RiskRepository>();
             services.AddScoped<ISelfHelpRepository, SelfHelpRepository>();
@@ -32,6 +34,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
 
             // Services Registration
             services.AddScoped<IMoodService, MoodService>();
+            // Journal 
+            services.AddScoped<IJournalService, JournalService>();
             services.AddScoped<ISelfHelpAdminService, SelfHelpAdminService>();
             services.AddScoped<ISelfHelpUserService, SelfHelpUserService>();
 
@@ -41,6 +45,7 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
         public static IServiceCollection AddMapping(this IServiceCollection services)
         {
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
             return services;
         }
     }

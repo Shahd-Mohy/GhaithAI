@@ -96,7 +96,7 @@
               "RelativeDocumentMoniker": "GhaithAI.API\\Program.cs",
               "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\Program.cs",
               "RelativeToolTip": "GhaithAI.API\\Program.cs",
-              "ViewState": "AgIAADcAAAAAAAAAAAAAAE4AAAAzAAAAAAAAAA==",
+              "ViewState": "AgIAAFQAAAAAAAAAAAAAAF0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-03T16:14:06.809Z",
               "EditorCaption": ""
@@ -135,8 +135,7 @@
               "RelativeToolTip": "GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs",
               "ViewState": "AgIAABgAAAAAAAAAAAA4wAgAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-03T15:47:57.565Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-03T15:47:57.565Z"
             },
             {
               "$type": "Document",

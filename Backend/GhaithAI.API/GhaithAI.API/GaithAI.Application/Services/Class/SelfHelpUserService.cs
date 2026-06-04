@@ -28,16 +28,31 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                     return Enumerable.Empty<UserSelfHelpResponseDto>();
 
                 var query = contents.Where(c => c != null && c.IsActive && !c.IsDeleted);
+
                 if (!string.IsNullOrEmpty(type))
                 {
                     var cleanType = type.Trim();
                     query = query.Where(c => c.Type != null && c.Type.Equals(cleanType, StringComparison.OrdinalIgnoreCase));
                 }
+
                 if (!string.IsNullOrWhiteSpace(difficulty))
                 {
                     var cleanDifficulty = difficulty.Trim();
                     query = query.Where(c => c.DifficultyLevel != null && c.DifficultyLevel.Equals(cleanDifficulty, StringComparison.OrdinalIgnoreCase));
                 }
+                //var result = query.Select(src => new UserSelfHelpResponseDto
+                //{
+                //    Id = src.Id,
+                //    Title = src.Title,
+                //    Type = src.Type,
+                //    Description = src.Description,
+                //    ContentUrl = src.ContentUrl,
+                //    DurationMinutes = src.DurationMinutes,
+                //    DifficultyLevel = src.DifficultyLevel
+                //}).ToList();
+
+                //return result;
+
                 return _mapper.Map<IEnumerable<UserSelfHelpResponseDto>>(query);
             }
             catch (Exception ex)

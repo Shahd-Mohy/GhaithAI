@@ -12,7 +12,7 @@ namespace GhaithAI.API.Models
 
         public ApplicationUser User { get; set; }
 
-        public string PromptType { get; set; }
+        public string PromptType { get; set; } = "free";
 
         public string? Title { get; set; }
 
@@ -20,8 +20,10 @@ namespace GhaithAI.API.Models
 
         public int WordCount { get; set; } = 0;
 
-        public int MoodBefore { get; set; }
+        public string MoodBefore { get; set; } = string.Empty;
 
-        public int MoodAfter { get; set; }
+        public string MoodAfter { get; set; } = string.Empty;
+
+        public string? Tags { get; set; }
     }
 }
