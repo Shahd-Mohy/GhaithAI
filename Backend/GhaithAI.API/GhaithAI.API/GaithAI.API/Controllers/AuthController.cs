@@ -21,15 +21,25 @@ namespace GhaithAI.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult>
-            Register(RegisterDTO dto)
+        public async Task<IActionResult> Register(RegisterDTO dto)
         {
-            var result =
-                await _authService
-                    .RegisterAsync(dto);
+            try
+            {
+                var result =
+                await _authService.RegisterAsync(dto);
 
             return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult>

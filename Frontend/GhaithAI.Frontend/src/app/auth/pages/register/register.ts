@@ -21,6 +21,7 @@ export class RegisterComponent implements OnInit {
   lastName = '';
 
   email = '';
+  emailExists = false;
   phone = '';
   password = '';
 
@@ -286,15 +287,49 @@ export class RegisterComponent implements OnInit {
 
     error: (err) => {
 
-      console.error(err);
+  console.error(err);
 
-      this.apiError =
-        err?.error?.message ||
-        err?.error?.title ||
-        'Registration failed';
+  if (err.status === 400) {
 
-      this.submitting = false;
-    }
+    this.apiError =
+      err.error?.message ||
+      'Please check your data and try again.';
+  }
+
+  else if (err.status === 409) {
+
+    this.apiError =
+      'Email already exists.';
+  }
+
+  else if (err.status === 500) {
+
+    this.apiError =
+      'Something went wrong. Please try again later.';
+  }
+
+  else {
+
+    this.apiError =
+      'Registration failed.';
+  }
+  if (
+  err.error?.message
+    ?.toLowerCase()
+    .includes('email')
+) {
+
+  this.emailExists = true;
+
+  this.goToStep(1);
+
+  this.submitting = false;
+
+  return;
+}
+
+  this.submitting = false;
+}
   });
 }
 }

@@ -9,6 +9,8 @@ using GhaithAI.GaithAI.Application.DTOs.Auth;
 using GhaithAI.GaithAI.Domain.Entities;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace GhaithAI.API.Services
 {
@@ -28,113 +30,132 @@ namespace GhaithAI.API.Services
             _context = context;
         }
 
-        public async Task<AuthResponseDTO> RegisterAsync(GhaithAI.API.DTOs.Auth.RegisterDTO dto)
+        public async Task<AuthResponseDTO> RegisterAsync(RegisterDTO dto)
         {
             var exists =
-                await _userManager.FindByEmailAsync(dto.Email);
+            await _userManager.FindByEmailAsync(dto.Email);
 
-            if (exists != null)
-            {
+        if (exists != null)
                 throw new Exception("Email already exists");
-            }
 
-            var user = new ApplicationUser
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
+            try
             {
-                FullName = dto.FullName,
-                UserName = dto.Email,
-                Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
-                CountryCode = dto.CountryCode,
-                PreferredLanguage = dto.PreferredLanguage,
-
-                AcceptedTerms = dto.AcceptedTerms,
-                AcceptedPrivacyPolicy = dto.AcceptedPrivacyPolicy,
-                AcceptedAiChat = dto.AcceptedAiChat,
-                AcceptedMoodTracking = dto.AcceptedMoodTracking,
-                AcceptedDataCollection = dto.AcceptedDataCollection,
-
-                ConsentedAt = DateTime.UtcNow
-            };
-
-            var result =
-                await _userManager.CreateAsync(
-                    user,
-                    dto.Password);
-
-            if (!result.Succeeded)
-            {
-                throw new Exception(
-                    result.Errors.First().Description);
-            }
-
-            await _userManager.AddToRoleAsync(
-                user,
-                Roles.User);
-
-            var contacts = new List<EmergencyContact>
-            {
-                new EmergencyContact
+                var user = new ApplicationUser
                 {
-                    UserId = user.Id,
-                    FullName = dto.FirstContact.FullName,
-                    Relationship = dto.FirstContact.Relationship,
-                    PhoneNumber = dto.FirstContact.PhoneNumber,
-                    PriorityOrder = 1
-                },
+                    FullName = dto.FullName,
+                    UserName = dto.Email,
+                    Email = dto.Email,
+                    PhoneNumber = dto.PhoneNumber,
+                    CountryCode = dto.CountryCode,
+                    PreferredLanguage = dto.PreferredLanguage,
 
-                new EmergencyContact
+                    AcceptedTerms = dto.AcceptedTerms,
+                    AcceptedPrivacyPolicy = dto.AcceptedPrivacyPolicy,
+                    AcceptedAiChat = dto.AcceptedAiChat,
+                    AcceptedMoodTracking = dto.AcceptedMoodTracking,
+                    AcceptedDataCollection = dto.AcceptedDataCollection,
+
+                    ConsentedAt = DateTime.UtcNow
+                };
+
+                var result =
+                    await _userManager.CreateAsync(
+                        user,
+                        dto.Password);
+
+                if (!result.Succeeded)
                 {
-                    UserId = user.Id,
-                    FullName = dto.SecondContact.FullName,
-                    Relationship = dto.SecondContact.Relationship,
-                    PhoneNumber = dto.SecondContact.PhoneNumber,
-                    PriorityOrder = 2
+                    throw new Exception(
+                        result.Errors.First().Description);
                 }
-            };
 
+                var roleResult =
+                    await _userManager.AddToRoleAsync(
+                        user,
+                        Roles.User);
 
-            await _context.EmergencyContacts.AddRangeAsync(contacts);
-            await _context.SaveChangesAsync();
+                if (!roleResult.Succeeded)
+                {
+                    throw new Exception(
+                        roleResult.Errors.First().Description);
+                }
 
-            var profile = new UserAssessment
+                var contacts = new List<EmergencyContact>();
+
+                contacts.Add(
+                    new EmergencyContact
+                    {
+                        UserId = user.Id,
+                        FullName = dto.FirstContact.FullName,
+                        Relationship = dto.FirstContact.Relationship,
+                        PhoneNumber = dto.FirstContact.PhoneNumber,
+                        PriorityOrder = 1
+                    });
+
+                if (dto.SecondContact != null)
+                {
+                    contacts.Add(
+                        new EmergencyContact
+                        {
+                            UserId = user.Id,
+                            FullName = dto.SecondContact.FullName,
+                            Relationship = dto.SecondContact.Relationship,
+                            PhoneNumber = dto.SecondContact.PhoneNumber,
+                            PriorityOrder = 2
+                        });
+                }
+
+                await _context.EmergencyContacts
+                    .AddRangeAsync(contacts);
+
+                var profile = new UserAssessment
+                {
+                    UserId = user.Id,
+                    Age = dto.Age,
+                    Concerns = string.Join(",", dto.Concerns),
+                    SleepQuality = dto.SleepQuality,
+                    StressLevel = dto.StressLevel,
+                    HasTherapyHistory = dto.HasTherapyHistory,
+                    TakesMedication = dto.TakesMedication
+                };
+
+                await _context.UserAssessments
+                    .AddAsync(profile);
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                var roles =
+                    await _userManager.GetRolesAsync(user);
+
+                var token =
+                    JWTTokenHelper.GenerateToken(
+                        user,
+                        _configuration,
+                        roles);
+
+                return new AuthResponseDTO
+                {
+                    Token = token,
+                    Email = user.Email,
+                    FullName = user.FullName,
+                    ProfilePicture = user.ProfilePicture,
+                    Expiration = DateTime.UtcNow.AddDays(7)
+                };
+            }
+            catch
             {
-                UserId = user.Id,
+                await transaction.RollbackAsync();
+                throw;
+            }
 
-                Age = dto.Age,
 
-                Concerns = string.Join(",", dto.Concerns),
-
-                SleepQuality = dto.SleepQuality,
-
-                StressLevel = dto.StressLevel,
-
-                HasTherapyHistory = dto.HasTherapyHistory,
-
-                TakesMedication = dto.TakesMedication
-            };
-
-            await _context.UserAssessments.AddAsync(profile);
-
-            await _context.SaveChangesAsync();
-
-            var roles =
-                await _userManager.GetRolesAsync(user);
-
-            var token =
-                JWTTokenHelper.GenerateToken(
-                    user,
-                    _configuration,
-                    roles);
-
-            return new AuthResponseDTO
-            {
-                Token = token,
-                Email = user.Email,
-                FullName = user.FullName,
-                ProfilePicture = user.ProfilePicture,
-                Expiration = DateTime.UtcNow.AddDays(7)
-            };
         }
+
 
         public async Task<AuthResponseDTO> LoginAsync(LoginDTO dto)
         {

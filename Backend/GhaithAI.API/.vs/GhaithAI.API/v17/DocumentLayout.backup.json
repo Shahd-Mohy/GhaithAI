@@ -3,40 +3,24 @@
   "WorkspaceRootPath": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.application\\services\\class\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.application\\services\\class\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.infrastructure\\presistance\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.infrastructure\\presistance\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.infrastructure\\extensions\\authenticationextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.infrastructure\\extensions\\authenticationextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.application\\dtos\\auth\\registerdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.application\\dtos\\auth\\registerdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.domain\\entities\\userassessment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.domain\\entities\\userassessment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.application\\services\\class\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.application\\services\\class\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.domain\\entities\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.domain\\entities\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|solutionrelative:ghaithai.api\\gaithai.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4E9F60D3-43F8-4F0D-9E99-7BC34F8E7373}|GhaithAI.API\\GhaithAI.csproj|d:\\full stack .net iti\\gaithai\\backend\\ghaithai.api\\ghaithai.api\\gaithai.application\\dtos\\auth\\googlelogindto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -86,11 +70,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\Program.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\Program.cs",
@@ -103,55 +87,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "AuthenticationExtensions.cs",
-              "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Infrastructure\\Extensions\\AuthenticationExtensions.cs",
-              "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Infrastructure\\Extensions\\AuthenticationExtensions.cs",
-              "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Infrastructure\\Extensions\\AuthenticationExtensions.cs",
-              "RelativeToolTip": "GhaithAI.API\\GaithAI.Infrastructure\\Extensions\\AuthenticationExtensions.cs",
-              "ViewState": "AgIAAA4AAAAAAAAAAAAAACwAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-03T16:13:46.599Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\appsettings.json",
-              "RelativeDocumentMoniker": "GhaithAI.API\\appsettings.json",
-              "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\appsettings.json",
-              "RelativeToolTip": "GhaithAI.API\\appsettings.json",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAQwA8AAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-06-03T16:09:07.347Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs",
-              "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs",
-              "RelativeToolTip": "GhaithAI.API\\GaithAI.Infrastructure\\Presistance\\ApplicationDbContext.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAA4wAgAAAAiAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-03T15:47:57.565Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "UserAssessment.cs",
-              "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Domain\\Entities\\UserAssessment.cs",
-              "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Domain\\Entities\\UserAssessment.cs",
-              "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Domain\\Entities\\UserAssessment.cs",
-              "RelativeToolTip": "GhaithAI.API\\GaithAI.Domain\\Entities\\UserAssessment.cs",
-              "ViewState": "AgIAAAIAAAAAAAAAAAAYwBsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-03T15:45:48.877Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 4,
               "Title": "ApplicationUser.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Domain\\Entities\\ApplicationUser.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Domain\\Entities\\ApplicationUser.cs",
@@ -163,19 +99,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 0,
               "Title": "AuthService.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\Services\\Class\\AuthService.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Application\\Services\\Class\\AuthService.cs",
-              "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\Services\\Class\\AuthService.cs",
-              "RelativeToolTip": "GhaithAI.API\\GaithAI.Application\\Services\\Class\\AuthService.cs",
-              "ViewState": "AgIAAMsAAAAAAAAAAAAwwO0AAAABAAAAAAAAAA==",
+              "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\Services\\Class\\AuthService.cs*",
+              "RelativeToolTip": "GhaithAI.API\\GaithAI.Application\\Services\\Class\\AuthService.cs*",
+              "ViewState": "AgIAAJYAAAAAAAAAAAAowKoAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-28T09:34:19.765Z"
+              "WhenOpened": "2026-05-28T09:34:19.765Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "RegisterDTO.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\DTOs\\Auth\\RegisterDTO.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Application\\DTOs\\Auth\\RegisterDTO.cs",
@@ -187,19 +124,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 1,
               "Title": "AuthController.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.API\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.API\\Controllers\\AuthController.cs",
-              "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.API\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "GhaithAI.API\\GaithAI.API\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAABsAAAAAAAAAAAAgwDMAAAAnAAAAAAAAAA==",
+              "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.API\\Controllers\\AuthController.cs*",
+              "RelativeToolTip": "GhaithAI.API\\GaithAI.API\\Controllers\\AuthController.cs*",
+              "ViewState": "AgIAABMAAAAAAAAAAAAQwCgAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-28T09:37:57.194Z"
+              "WhenOpened": "2026-05-28T09:37:57.194Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 5,
               "Title": "GoogleLoginDTO.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\DTOs\\Auth\\GoogleLoginDTO.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Application\\DTOs\\Auth\\GoogleLoginDTO.cs",
@@ -211,7 +149,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 6,
               "Title": "EmergencyContactDTO.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\DTOs\\Emergency\\EmergencyContactDTO.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Application\\DTOs\\Emergency\\EmergencyContactDTO.cs",
@@ -223,7 +161,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 7,
               "Title": "IAuthService.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Domain\\Interfaces\\InterfaceService\\IAuthService.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Domain\\Interfaces\\InterfaceService\\IAuthService.cs",
@@ -235,7 +173,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 8,
               "Title": "UserService.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\Services\\Class\\UserService.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Application\\Services\\Class\\UserService.cs",
@@ -247,7 +185,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 9,
               "Title": "UserController.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.API\\Controllers\\UserController.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.API\\Controllers\\UserController.cs",
@@ -259,7 +197,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 10,
               "Title": "IUserService.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Domain\\Interfaces\\InterfaceService\\IUserService.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Domain\\Interfaces\\InterfaceService\\IUserService.cs",
@@ -271,7 +209,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 11,
               "Title": "UserProfileDTO.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\DTOs\\User\\UserProfileDTO.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Application\\DTOs\\User\\UserProfileDTO.cs",
@@ -283,7 +221,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 12,
               "Title": "UpdateProfileDTO.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\DTOs\\User\\UpdateProfileDTO.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Application\\DTOs\\User\\UpdateProfileDTO.cs",
@@ -295,7 +233,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 13,
               "Title": "AuthResponseDTO.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\DTOs\\Auth\\AuthResponseDTO.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Application\\DTOs\\Auth\\AuthResponseDTO.cs",
@@ -307,7 +245,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 14,
               "Title": "LoginDTO.cs",
               "DocumentMoniker": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Application\\DTOs\\Auth\\LoginDTO.cs",
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Application\\DTOs\\Auth\\LoginDTO.cs",
