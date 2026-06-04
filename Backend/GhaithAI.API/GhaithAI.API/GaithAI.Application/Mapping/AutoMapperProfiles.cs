@@ -18,7 +18,7 @@ namespace GhaithAI.API.Mapping
 
             CreateMap<CreateJournalDTO, JournalEntry>();
 
-            CreateMap<SendMessageDTO, ChatMessage>();
+            CreateMap<SendMessageResponseDTO, ChatMessage>();
 
             CreateMap<ApplicationUser, UserProfileDTO>();
         }

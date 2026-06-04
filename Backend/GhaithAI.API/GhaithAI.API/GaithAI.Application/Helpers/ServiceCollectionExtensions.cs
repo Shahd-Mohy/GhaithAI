@@ -13,16 +13,13 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
     {
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            // services.AddScoped<IUnitOfWork, UnitOfWork>();
+            // services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-            // Mood 
+            // Mood
             services.AddScoped<IMoodRepository, MoodRepository>();
             // Journal
             services.AddScoped<IJournalRepository, JournalRepository>();
-            //Home
-            services.AddScoped<IInsightRepository, InsightRepository>();
-            // Chat & Risk Repositories
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<ISessionRepository, SessionRepository>();
             services.AddScoped<IRiskRepository, RiskRepository>();
@@ -33,11 +30,12 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
 
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
-            services.AddHttpClient();
-            services.AddHttpClient<ILangflowService, LangflowService>();
+            //services.AddHttpClient();
+            //services.AddHttpClient<ILangflowService, LangflowService>();
 
             // Services Registration
-            // mood
+            services.AddScoped<IChatService, ChatService>();
+            // Mood
             services.AddScoped<IMoodService, MoodService>();
             // Journal 
             services.AddScoped<IJournalService, JournalService>();
