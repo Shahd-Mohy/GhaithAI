@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute , Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth';
 import { RegisterRequest } from '../../../models/auth/register-request.model';
@@ -17,115 +17,200 @@ export class RegisterComponent implements OnInit {
   currentStep = 1;
   accountType = 'individual';
 
-  // Step 1
   firstName = '';
   lastName = '';
+
   email = '';
   phone = '';
   password = '';
+
   showPassword = false;
   termsAccepted = false;
 
   errors: Record<string, boolean> = {};
 
-  // Step 2
   ec1name = '';
   ec1phone = '';
   ec1rel = '';
+
   ec2name = '';
   ec2phone = '';
   ec2rel = '';
+
   ecError = false;
 
-  // Step 3
   age: number | null = null;
+
   lang = 'en';
+
   selectedConcerns: string[] = [];
+
   sleep = '';
   stress = '';
+
   therapy = '';
   medications = '';
+
   submitting = false;
   submitted = false;
 
+  apiError = '';
+
   concerns = [
-    'Anxiety', 'Depression', 'Stress', 'Sleep Issues',
-    'Relationship Problems', 'Work/School Pressure',
-    'Grief/Loss', 'Self-Esteem', 'Anger Management', 'Other'
+    'Anxiety',
+    'Depression',
+    'Stress',
+    'Sleep Issues',
+    'Relationship Problems',
+    'Work/School Pressure',
+    'Grief/Loss',
+    'Self-Esteem',
+    'Anger Management',
+    'Other'
   ];
 
-  relationships = ['Parent', 'Spouse / Partner', 'Sibling', 'Friend', 'Colleague', 'Other'];
+  relationships = [
+    'Parent',
+    'Spouse / Partner',
+    'Sibling',
+    'Friend',
+    'Colleague',
+    'Other'
+  ];
 
-  constructor (private route: ActivatedRoute,
-  private authService: AuthService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.accountType = params['type'] || 'individual';
     });
   }
 
   get typeBadgeLabel(): string {
-    return this.accountType === 'clinician' ? 'Clinician Account' : 'Personal Support Account';
+    return this.accountType === 'clinician'
+      ? 'Clinician Account'
+      : 'Personal Support Account';
   }
 
-  goToStep(n: number) {
-    this.currentStep = n;
+  goToStep(step: number): void {
+    this.currentStep = step;
   }
 
-  isStepActive(n: number)  { return n === this.currentStep; }
-  isStepDone(n: number)    { return n < this.currentStep; }
-  isStepPending(n: number) { return n > this.currentStep; }
-
-  togglePassword() { this.showPassword = !this.showPassword; }
-
-  toggleConcern(concern: string) {
-    const idx = this.selectedConcerns.indexOf(concern);
-    if (idx > -1) this.selectedConcerns.splice(idx, 1);
-    else this.selectedConcerns.push(concern);
+  isStepActive(step: number) {
+    return this.currentStep === step;
   }
 
-  isConcernSelected(concern: string) {
+  isStepDone(step: number) {
+    return step < this.currentStep;
+  }
+
+  isStepPending(step: number) {
+    return step > this.currentStep;
+  }
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConcern(concern: string): void {
+
+    const index =
+      this.selectedConcerns.indexOf(concern);
+
+    if (index > -1)
+      this.selectedConcerns.splice(index, 1);
+    else
+      this.selectedConcerns.push(concern);
+  }
+
+  isConcernSelected(concern: string): boolean {
     return this.selectedConcerns.includes(concern);
   }
 
-  step1Next() {
+  step1Next(): void {
+
     this.errors = {};
+
     let valid = true;
 
-    if (!this.firstName.trim()) { this.errors['firstName'] = true; valid = false; }
-    if (!this.lastName.trim())  { this.errors['lastName']  = true; valid = false; }
+    if (!this.firstName.trim()) {
+      this.errors['firstName'] = true;
+      valid = false;
+    }
 
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim());
-    if (!emailOk) { this.errors['email'] = true; valid = false; }
+    if (!this.lastName.trim()) {
+      this.errors['lastName'] = true;
+      valid = false;
+    }
 
-    if (!this.phone.trim()) { this.errors['phone'] = true; valid = false; }
+    const emailValid =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        .test(this.email.trim());
 
-    const pwOk = this.password.length >= 8 &&
-                 /\d/.test(this.password) &&
-                 /[!@#$%^&*(),.?":{}|<>_\-]/.test(this.password);
-    if (!pwOk) { this.errors['password'] = true; valid = false; }
+    if (!emailValid) {
+      this.errors['email'] = true;
+      valid = false;
+    }
 
-    if (!this.termsAccepted) { this.errors['terms'] = true; valid = false; }
+    if (!this.phone.trim()) {
+      this.errors['phone'] = true;
+      valid = false;
+    }
 
-    if (valid) this.goToStep(2);
+    const passwordValid =
+      this.password.length >= 8 &&
+      /\d/.test(this.password) &&
+      /[!@#$%^&*(),.?":{}|<>_\-]/.test(this.password);
+
+    if (!passwordValid) {
+      this.errors['password'] = true;
+      valid = false;
+    }
+
+    if (!this.termsAccepted) {
+      this.errors['terms'] = true;
+      valid = false;
+    }
+
+    if (valid)
+      this.goToStep(2);
   }
 
-  step2Next() {
-    if (!this.ec1name.trim() || !this.ec1phone.trim()) {
+  step2Next(): void {
+
+    if (
+      !this.ec1name.trim() ||
+      !this.ec1phone.trim()
+    ) {
       this.ecError = true;
       return;
     }
+
     this.ecError = false;
+
     this.goToStep(3);
   }
 
-  submitForm() {
+  step3Valid(): boolean {
+
+    return (
+      this.age !== null &&
+      this.sleep !== '' &&
+      this.stress !== ''
+    );
+  }
+
+  submitForm(): void {
+
+  this.apiError = '';
 
   const payload: RegisterRequest = {
 
-    fullName:
-      `${this.firstName} ${this.lastName}`,
+    fullName: `${this.firstName} ${this.lastName}`,
 
     email: this.email,
 
@@ -137,7 +222,7 @@ export class RegisterComponent implements OnInit {
 
     preferredLanguage: this.lang,
 
-    acceptedTerms: true,
+    acceptedTerms: this.termsAccepted,
 
     acceptedPrivacyPolicy: true,
 
@@ -154,9 +239,9 @@ export class RegisterComponent implements OnInit {
     },
 
     secondContact: {
-      fullName: this.ec2name,
-      phoneNumber: this.ec2phone,
-      relationship: this.ec2rel
+      fullName: this.ec2name || 'N/A',
+      phoneNumber: this.ec2phone || 'N/A',
+      relationship: this.ec2rel || 'Other'
     },
 
     age: this.age ?? undefined,
@@ -168,7 +253,8 @@ export class RegisterComponent implements OnInit {
     stressLevel: this.stress,
 
     hasTherapyHistory:
-      this.therapy === 'yes',
+      this.therapy === 'current' ||
+      this.therapy === 'past',
 
     takesMedication:
       this.medications === 'yes'
@@ -176,24 +262,39 @@ export class RegisterComponent implements OnInit {
 
   this.submitting = true;
 
-  this.authService
-      .register(payload)
-      .subscribe({
+  this.authService.register(payload).subscribe({
 
-        next: (res) => {
+    next: (response: any) => {
 
-          this.submitting = false;
-          this.submitted = true;
+      console.log('Register Success');
+      console.log(response);
 
-          console.log(res);
-        },
+      if (response?.token) {
+        localStorage.setItem('token', response.token);
+      }
 
-        error: (err) => {
+      localStorage.setItem(
+        'user',
+        JSON.stringify(response)
+      );
 
-          console.error(err);
+      this.submitting = false;
+      this.submitted = true;
 
-          this.submitting = false;
-        }
-      });
+      this.router.navigateByUrl('/dashboard');
+    },
+
+    error: (err) => {
+
+      console.error(err);
+
+      this.apiError =
+        err?.error?.message ||
+        err?.error?.title ||
+        'Registration failed';
+
+      this.submitting = false;
+    }
+  });
 }
 }
