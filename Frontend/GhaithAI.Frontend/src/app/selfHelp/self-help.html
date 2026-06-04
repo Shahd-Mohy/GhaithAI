@@ -1,0 +1,118 @@
+<div class="tools-container">
+
+  <div class="header-section">
+    <h1 class="page-title">Self-Help Tools</h1>
+    <p class="page-sub">Evidence-based techniques for your wellbeing</p>
+  </div>
+  <!--
+  <div class="mb-10">
+    <h2 class="section-title">Quick Relief</h2>
+    <div class="quick-grid">
+      @for (tool of quickTools; track tool.title) {
+      <div class="quick-card">
+        <div class="icon-wrapper">
+          {{ tool.icon }}
+        </div>
+        <h3 class="card-title">{{ tool.title }}</h3>
+        <p class="card-desc">{{ tool.description }}</p>
+        <span class="card-duration">⏱ {{ tool.duration }}</span>
+      </div>
+      }
+    </div>
+  </div> -->
+  <div class="mb-10">
+    <h2 class="section-title">Quick Relief</h2>
+
+    @if (isLoading) {
+    <div style="font-size: 12px; color: #94a3b8; text-align: center; padding: 20px;">
+      Loading quick tools...
+    </div>
+    } @else {
+    <div class="quick-grid">
+      @for (tool of quickTools; track tool.title) {
+      <div class="quick-card">
+        <div class="icon-wrapper">
+          {{ tool.icon }}
+        </div>
+        <h3 class="card-title" style="font-size: 13px; line-height: 1.4;">{{ tool.title }}</h3>
+        <p class="card-desc">{{ tool.description }}</p>
+        <span class="card-duration">⏱ {{ tool.duration }}</span>
+      </div>
+      }
+    </div>
+    }
+  </div>
+  <div>
+    <h2 class="section-title">Browse by Category</h2>
+
+    @if (isLoading) {
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">Connecting to database...</p>
+    </div>
+    } @else {
+
+    <div class="category-list">
+
+      @if (categoriesList && categoriesList.length > 0) {
+      @for (cat of categoriesList; track cat.name) {
+      <div class="category-row">
+        <div class="category-left">
+          <div class="category-icon" [ngClass]="cat.bgClass">
+            {{ cat.icon }}
+          </div>
+          <div>
+            <h3 class="cat-title">
+              {{ cat.name }}
+              <span style="font-size: 11px; color: #94a3b8; font-weight: normal; margin-left: 6px;">
+                ({{ cat.count }} items)
+              </span>
+            </h3>
+            <p class="cat-desc">{{ cat.description }}</p>
+          </div>
+        </div>
+        <div class="arrow-icon">➔</div>
+      </div>
+      }
+      } @else {
+      <div class="category-row">
+        <div class="category-left">
+          <div class="category-icon breathing-bg">💨</div>
+          <div>
+            <h3 class="cat-title">Breathing Exercises <span
+                style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo Mode)</span></h3>
+            <p class="cat-desc">Calm your mind with guided breathing techniques</p>
+          </div>
+        </div>
+        <div class="arrow-icon">➔</div>
+      </div>
+
+      <div class="category-row">
+        <div class="category-left">
+          <div class="category-icon mindfulness-bg">🧠</div>
+          <div>
+            <h3 class="cat-title">Mindfulness <span style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo
+                Mode)</span></h3>
+            <p class="cat-desc">Practice being present in the moment</p>
+          </div>
+        </div>
+        <div class="arrow-icon">➔</div>
+      </div>
+
+      <div class="category-row">
+        <div class="category-left">
+          <div class="category-icon relaxation-bg">🌙</div>
+          <div>
+            <h3 class="cat-title">Relaxation <span style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo
+                Mode)</span></h3>
+            <p class="cat-desc">Techniques to help you unwind and de-stress</p>
+          </div>
+        </div>
+        <div class="arrow-icon">➔</div>
+      </div>
+      }
+
+    </div>
+    }
+  </div>
+</div>
