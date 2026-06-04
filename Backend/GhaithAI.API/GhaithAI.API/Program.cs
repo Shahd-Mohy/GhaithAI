@@ -1,6 +1,7 @@
 ﻿using GhaithAI.API.Configurations;
 using GhaithAI.API.Extensions;
 using GhaithAI.API.GaithAI.API.Configurations;
+using GhaithAI.API.GaithAI.API.Hubs;
 using GhaithAI.API.GaithAI.Application.Helpers;
 using GhaithAI.API.Interfaces.InterfaceService;
 using GhaithAI.API.Seeders;
@@ -9,7 +10,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +23,9 @@ builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddMapping();
+
+//builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddSignalR();
 
 // إعدادات الـ Langflow والـ HttpClient الخاص به
 builder.Services.Configure<LangflowSettings>(builder.Configuration.GetSection("Langflow"));
@@ -78,6 +81,23 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["JWT:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/chat"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // إعدادات الـ CORS عشان فرونت الـ Angular يربط بسلام
@@ -109,6 +129,8 @@ app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapHub<ChatHub>("/hubs/chat");
 
 // الـ Seeder لتجهيز الـ Roles أوتوماتيك أول ما المشروع يقوم
 using (var scope = app.Services.CreateScope())
