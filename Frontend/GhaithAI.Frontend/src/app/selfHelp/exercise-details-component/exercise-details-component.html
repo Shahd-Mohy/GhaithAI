@@ -1,0 +1,5 @@
+<div *ngIf="exercise" style="padding: 24px; max-width: 800px; margin: 0 auto;">
+  <h2>{{ exercise.title }}</h2>
+  <p>{{ exercise.description }}</p>
+  <video [src]="exercise.contentUrl" controls width="100%" style="border-radius: 12px;"></video>
+</div>

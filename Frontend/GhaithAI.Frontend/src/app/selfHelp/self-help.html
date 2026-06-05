@@ -1,25 +1,12 @@
 <div class="tools-container">
 
+  <!-- الـ Header الرئيسي -->
   <div class="header-section">
     <h1 class="page-title">Self-Help Tools</h1>
     <p class="page-sub">Evidence-based techniques for your wellbeing</p>
   </div>
-  <!--
-  <div class="mb-10">
-    <h2 class="section-title">Quick Relief</h2>
-    <div class="quick-grid">
-      @for (tool of quickTools; track tool.title) {
-      <div class="quick-card">
-        <div class="icon-wrapper">
-          {{ tool.icon }}
-        </div>
-        <h3 class="card-title">{{ tool.title }}</h3>
-        <p class="card-desc">{{ tool.description }}</p>
-        <span class="card-duration">⏱ {{ tool.duration }}</span>
-      </div>
-      }
-    </div>
-  </div> -->
+
+  <!-- قسم الـ Quick Relief -->
   <div class="mb-10">
     <h2 class="section-title">Quick Relief</h2>
 
@@ -30,7 +17,7 @@
     } @else {
     <div class="quick-grid">
       @for (tool of quickTools; track tool.title) {
-      <div class="quick-card">
+      <div class="quick-card" (click)="goToExercise(tool.id)" style="cursor: pointer;">
         <div class="icon-wrapper">
           {{ tool.icon }}
         </div>
@@ -42,6 +29,8 @@
     </div>
     }
   </div>
+
+  <!-- قسم الـ Browse by Category -->
   <div>
     <h2 class="section-title">Browse by Category</h2>
 
@@ -51,30 +40,57 @@
       <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">Connecting to database...</p>
     </div>
     } @else {
-
     <div class="category-list">
 
       @if (categoriesList && categoriesList.length > 0) {
       @for (cat of categoriesList; track cat.name) {
-      <div class="category-row">
-        <div class="category-left">
-          <div class="category-icon" [ngClass]="cat.bgClass">
-            {{ cat.icon }}
+      <div
+        style="border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px;">
+
+        <div class="category-row" (click)="toggleCategory(cat.name)"
+          style="border: none; border-radius: 0; box-shadow: none; margin-bottom: 0;">
+          <div class="category-left">
+            <div class="category-icon" [ngClass]="cat.bgClass">
+              {{ cat.icon }}
+            </div>
+            <div>
+              <h3 class="cat-title">
+                {{ cat.name }}
+                <span style="font-size: 11px; color: #94a3b8; font-weight: normal; margin-left: 6px;">
+                  ({{ cat.count }} items)
+                </span>
+              </h3>
+              <p class="cat-desc">{{ cat.description }}</p>
+            </div>
           </div>
-          <div>
-            <h3 class="cat-title">
-              {{ cat.name }}
-              <span style="font-size: 11px; color: #94a3b8; font-weight: normal; margin-left: 6px;">
-                ({{ cat.count }} items)
-              </span>
-            </h3>
-            <p class="cat-desc">{{ cat.description }}</p>
-          </div>
+          <div class="arrow-icon"
+            [style.transform]="activeCategoryName === cat.name ? 'rotate(90deg)' : 'rotate(0deg)'">➔</div>
         </div>
-        <div class="arrow-icon">➔</div>
+
+        @if (activeCategoryName === cat.name) {
+        <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 8px 16px;">
+          @for (subEx of cat.subExercises; track subEx.id) {
+          <div (click)="goToExercise(subEx.id)"
+            style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; border-radius: 8px; transition: background 0.2s;"
+            onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='transparent'">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 14px;">🎯</span>
+              <div>
+                <h4 style="font-size: 13px; font-weight: 600; color: #334155; margin: 0;">{{ subEx.title }}</h4>
+                <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">{{ subEx.difficultyLevel }} · ⏱ {{
+                  subEx.durationMinutes }} mins</p>
+              </div>
+            </div>
+            <span style="color: #059669; font-size: 12px; font-weight: 500;">ابدأ الآن ➔</span>
+          </div>
+          }
+        </div>
+        }
+
       </div>
       }
       } @else {
+      <!-- الـ Demo Mode في حال مفيش داتا رجعت خالص -->
       <div class="category-row">
         <div class="category-left">
           <div class="category-icon breathing-bg">💨</div>
@@ -114,5 +130,6 @@
 
     </div>
     }
+
   </div>
 </div>

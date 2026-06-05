@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SelfHelp as SelfHelpService, GhaithExercise } from '../services/self-help';
 import { ExerciseCard } from './exercise-card/exercise-card';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-self-help-dashboard',
@@ -14,6 +15,7 @@ export class SelfHelpComponent implements OnInit {
   exercises: GhaithExercise[] = [];
   categoriesList: any[] = [];
   isLoading = true;
+  activeCategoryName: string | null = null;
 
   // quickTools = [
   //   { title: 'Quick Calm', description: '60-second anxiety relief', icon: '🌊', duration: '1 min' },
@@ -29,13 +31,14 @@ export class SelfHelpComponent implements OnInit {
   get quickTools() {
     if (!this.exercises || this.exercises.length === 0) {
       return [
-        { title: 'Quick Calm', description: '60-second anxiety relief', icon: '🌊', duration: '1 min' },
-        { title: 'Energy Boost', description: 'Quick energizing exercise', icon: '☀️', duration: '2 min' },
-        { title: 'Focus Reset', description: 'Clear your mind and refocus', icon: '🎯', duration: '3 min' },
-        { title: 'Nature Sounds', description: 'Calming ambient soundscape', icon: '🍃', duration: '∞' }
+        { id: '00000000-0000-0000-0000-000000000001', title: 'Quick Calm', description: '60-second anxiety relief', icon: '🌊', duration: '1 min' },
+        { id: '00000000-0000-0000-0000-000000000002', title: 'Energy Boost', description: 'Quick energizing exercise', icon: '☀️', duration: '2 min' },
+        { id: '00000000-0000-0000-0000-000000000003', title: 'Focus Reset', description: 'Clear your mind and refocus', icon: '🎯', duration: '3 min' },
+        { id: '00000000-0000-0000-0000-000000000004', title: 'Nature Sounds', description: 'Calming ambient soundscape', icon: '🍃', duration: '∞' }
       ];
     }
     return this.exercises.slice(0, 4).map(item => ({
+      id: item.id,
       title: item.title,
       description: item.description,
       icon: this.categoryMeta[item.type]?.icon || '✨',
@@ -59,7 +62,8 @@ export class SelfHelpComponent implements OnInit {
   // }
   constructor(
     private selfHelpService: SelfHelpService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) { }
   ngOnInit() {
     this.loadExercises();
@@ -80,7 +84,8 @@ export class SelfHelpComponent implements OnInit {
             icon: this.categoryMeta[type]?.icon || '✨',
             bgClass: this.categoryMeta[type]?.class || 'relaxation-bg',
             description: this.categoryMeta[type]?.desc || 'Evidence-based techniques for your wellbeing',
-            count: this.exercises.filter(e => e.type === type).length
+            count: this.exercises.filter(e => e.type === type).length,
+            subExercises: this.exercises.filter(e => e.type === type)
           }));
         } else {
           this.categoriesList = [];
@@ -97,5 +102,16 @@ export class SelfHelpComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+  toggleCategory(categoryName: string) {
+    if (this.activeCategoryName === categoryName) {
+      this.activeCategoryName = null; // لو مضغوط عليها يقفلها
+    } else {
+      this.activeCategoryName = categoryName; // يفتح الفئة الجديدة
+    }
+  }
+  goToExercise(exerciseId: string) {
+    if (!exerciseId) return;
+    this.router.navigate(['dashboard/self-help/exercise', exerciseId]);
   }
 }
