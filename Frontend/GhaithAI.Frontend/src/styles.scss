@@ -19,6 +19,18 @@ html {
   );
 }
 
+:root {
+  --chat-primary: #0d9488;
+  --chat-primary-hover: #0f766e;
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --border: #e5e5e5;
+  --destructive: #dc2626;
+  --chat-secondary: #f0fdfa;
+}
+
 body {
   // Default the application to a light color theme. This can be changed to
   // `dark` to enable the dark color theme, or to `light dark` to defer to the

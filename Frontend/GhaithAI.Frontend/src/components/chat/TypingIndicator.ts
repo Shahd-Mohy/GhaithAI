@@ -40,7 +40,8 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       gap: 6px;
-      background-color: var(--secondary, #f5f5f5);
+      background-color: var(--chat-secondary, #f0fdfa);
+      border: 1px solid var(--border, #e5e5e5);
     }
   `],
   template: `
@@ -48,12 +49,12 @@ import { CommonModule } from '@angular/common';
       <div class="d-flex gap-3 align-items-end" role="status" aria-label="GhaithAI is typing">
 
         <!-- AI avatar -->
-        <div class="typing-avatar" style="background-color: color-mix(in srgb, var(--chat-primary) 15%, transparent);">
-          <i class="bi bi-cpu small" style="color: var(--chat-primary, #0d9488);"></i>
+        <div class="typing-avatar shadow-sm border" style="background-color: var(--chat-secondary, #f0fdfa); border-color: var(--chat-primary, #0d9488) !important;">
+          <i class="bi bi-robot" style="color: var(--chat-primary, #0d9488);"></i>
         </div>
 
         <!-- Animated dots bubble -->
-        <div class="typing-bubble">
+        <div class="typing-bubble shadow-sm">
           <span class="dot" style="animation-delay: 0ms;"></span>
           <span class="dot" style="animation-delay: 150ms;"></span>
           <span class="dot" style="animation-delay: 300ms;"></span>

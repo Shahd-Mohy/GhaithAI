@@ -70,27 +70,20 @@ const NEAR_BOTTOM_THRESHOLD = 120;
     }
 
     /* ── Suggested prompts ───────────────────────────────────── */
-    .prompts-bar {
-      flex-shrink: 0;
-      padding: 0 1rem 0.75rem;
-    }
-    @media (min-width: 768px) {
-      .prompts-bar { padding: 0 1.5rem 0.75rem; }
-    }
-    .prompt-pill {
-      background-color: var(--muted, #f5f5f5);
-      color: var(--muted-foreground, #737373);
+    .prompt-card {
+      background-color: var(--background, #fff);
+      color: var(--foreground, #1a1a1a);
       border: 1px solid var(--border, #e5e5e5);
-      border-radius: 999px;
-      padding: 0.25rem 0.75rem;
-      font-size: 0.75rem;
-      transition: background-color 0.15s ease, transform 0.1s ease;
-      white-space: nowrap;
+      border-radius: 0.75rem;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
     }
-    .prompt-pill:hover {
-      background-color: var(--secondary, #f0f0f0);
-      color: var(--secondary-foreground, #1a1a1a);
-      transform: translateY(-1px);
+    .prompt-card:hover {
+      background-color: var(--chat-secondary, #f0fdfa);
+      border-color: var(--chat-primary, #0d9488);
+      color: var(--chat-primary, #0d9488);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
   `],
   template: `
@@ -134,20 +127,30 @@ const NEAR_BOTTOM_THRESHOLD = 120;
       </div>
     </div>
 
-    <!-- ── Suggested Prompts ─────────────────────────────────── -->
-    @if (!isLoading && showSuggestedPrompts && suggestedPrompts.length > 0) {
-      <div class="prompts-bar">
-        <p class="mb-2" style="font-size: 0.75rem; color: var(--muted-foreground);">
-          Not sure where to start? Try one of these:
+    <!-- ── Empty State / Suggested Prompts ─────────────────── -->
+    @if (!isLoading && showSuggestedPrompts) {
+      <div class="h-100 d-flex flex-column align-items-center justify-content-center text-center p-4">
+        <div class="mb-4">
+          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; background-color: var(--chat-secondary, #f0fdfa);">
+            <i class="bi bi-robot" style="font-size: 2.5rem; color: var(--chat-primary);"></i>
+          </div>
+        </div>
+        <h2 class="h4 mb-3 fw-bold" style="color: var(--foreground);">How can I help you today?</h2>
+        <p class="text-muted mb-4 max-w-md" style="max-width: 450px;">
+          I'm here to listen and support you. You can share your feelings or choose a topic below to start a conversation.
         </p>
-        <div class="d-flex flex-wrap gap-2">
+        
+        <div class="row g-3 w-100" style="max-width: 600px;">
           @for (prompt of suggestedPrompts; track prompt) {
-            <button
-              type="button"
-              class="prompt-pill btn p-0"
-              (click)="promptSelected.emit(prompt)">
-              {{ prompt }}
-            </button>
+            <div class="col-12 col-md-6">
+              <button
+                type="button"
+                class="btn w-100 h-100 p-3 text-start prompt-card shadow-sm d-flex align-items-center"
+                (click)="promptSelected.emit(prompt)">
+                <i class="bi bi-chat-left-text me-3" style="color: var(--chat-primary); opacity: 0.8;"></i>
+                <span class="fw-medium">{{ prompt }}</span>
+              </button>
+            </div>
           }
         </div>
       </div>

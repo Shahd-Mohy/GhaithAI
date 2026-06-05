@@ -90,14 +90,15 @@ import { ChatMessageModel } from '../../types/chat.types';
          [class.flex-row-reverse]="message.senderType === 'User'">
 
       <!-- Avatar -->
-      <div class="msg-avatar"
+      <div class="msg-avatar shadow-sm border"
+           [style.border-color]="message.senderType === 'AI' ? 'var(--chat-primary)' : 'transparent'"
            [style.background-color]="message.senderType === 'AI'
-             ? 'color-mix(in srgb, var(--chat-primary) 15%, transparent)'
-             : 'color-mix(in srgb, var(--chat-primary) 5%, transparent)'">
+             ? 'var(--chat-secondary, #f0fdfa)'
+             : 'var(--chat-primary, #0d9488)'">
         @if (message.senderType === 'AI') {
-          <i class="bi bi-cpu small" style="color: var(--chat-primary, #0d9488);"></i>
+          <i class="bi bi-robot" style="color: var(--chat-primary, #0d9488);"></i>
         } @else {
-          <i class="bi bi-person-fill small" style="color: var(--chat-muted-foreground, #737373);"></i>
+          <i class="bi bi-person-fill" style="color: #ffffff;"></i>
         }
       </div>
 
@@ -107,13 +108,13 @@ import { ChatMessageModel } from '../../types/chat.types';
            style="max-width: 80%;">
 
         <!-- Bubble -->
-        <div class="msg-bubble"
+        <div class="msg-bubble shadow-sm"
              [class.bubble-ai]="message.senderType === 'AI'"
              [class.bubble-user]="message.senderType === 'User'"
              [class.opacity-50]="message.isOptimistic || message.status === 'sending'"
-             [style.background-color]="message.senderType === 'AI' ? 'var(--secondary, #f5f5f5)' : 'var(--primary, #1a1a1a)'"
-             [style.color]="message.senderType === 'AI' ? 'var(--secondary-foreground, #1a1a1a)' : 'var(--primary-foreground, #f8f8f8)'"
-             [style.border]="message.status === 'error' ? '1.5px solid var(--destructive, #dc2626)' : '1px solid transparent'">
+             [style.background-color]="message.senderType === 'AI' ? 'var(--chat-secondary, #f0fdfa)' : 'var(--chat-primary, #0d9488)'"
+             [style.color]="message.senderType === 'AI' ? 'var(--foreground, #1a1a1a)' : '#ffffff'"
+             [style.border]="message.status === 'error' ? '1.5px solid var(--destructive, #dc2626)' : (message.senderType === 'AI' ? '1px solid var(--border, #e5e5e5)' : '1px solid transparent')">
 
           {{ message.content }}
 

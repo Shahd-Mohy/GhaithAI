@@ -34,6 +34,19 @@ import { CrisisOverlay } from '../../../components/chat/CrisisOverlay';
       overflow: hidden;
       background-color: var(--chat-bg, #ffffff);
     }
+    .chat-header {
+      flex-shrink: 0;
+      padding: 1rem 1.5rem;
+      background-color: var(--background, #ffffff);
+      border-bottom: 1px solid var(--border, #e5e5e5);
+      z-index: 10;
+    }
+    .chat-header .logo-text {
+      color: var(--chat-primary, #0d9488);
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin: 0;
+    }
     .chat-page-inner {
       flex: 1 1 0%;
       display: flex;
@@ -42,13 +55,7 @@ import { CrisisOverlay } from '../../../components/chat/CrisisOverlay';
       max-width: 900px;
       margin: 0 auto;
       width: 100%;
-      padding: 1rem;
-    }
-    @media (min-width: 768px) {
-      .chat-page-inner { padding: 1.5rem; }
-    }
-    @media (min-width: 992px) {
-      .chat-page-inner { padding: 2rem; }
+      padding: 0;
     }
     .status-banner {
       flex-shrink: 0;
@@ -61,10 +68,21 @@ import { CrisisOverlay } from '../../../components/chat/CrisisOverlay';
     }
     .input-wrapper {
       flex-shrink: 0;
-      padding-top: 1rem;
     }
   `],
   template: `
+    <!-- Header -->
+    <header class="chat-header d-flex justify-content-between align-items-center sticky-top shadow-sm">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-robot fs-4" style="color: var(--chat-primary);"></i>
+        <h1 class="logo-text mb-0">GhaithAI</h1>
+      </div>
+      <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2 fw-semibold" (click)="onCrisisHelpRequested()">
+        <i class="bi bi-telephone-fill"></i>
+        <span class="d-none d-sm-inline">Crisis Support</span>
+      </button>
+    </header>
+
     <!-- Connection Status Banner -->
     @if (chatStore.connectionStatus() === 'connecting' || chatStore.connectionStatus() === 'reconnecting') {
       <div class="status-banner">
