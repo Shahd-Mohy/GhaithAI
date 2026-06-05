@@ -23,119 +23,177 @@ const WARN_THRESHOLD = 1800;
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
-    /* ── Outer wrapper ───────────────────────────────── */
-    .input-wrapper {
+    /* ── Floating Command Deck (Phase 2) ──────────────────────── */
+    .floating-deck-wrapper {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0 1rem 0.75rem 1rem;
+      background: linear-gradient(to top, rgba(255,255,255,1) 20%, rgba(255,255,255,0) 100%);
+      pointer-events: none; /* Let clicks pass through the gradient */
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      align-items: center;
     }
 
-    /* ── Input container ─────────────────────────────── */
-    .input-container {
-      transition: all 0.2s ease;
-      background-color: var(--background, #fff);
-    }
-    .input-container:focus-within {
-      border-color: var(--chat-primary, #0d9488) !important;
-      box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25) !important;
+    .floating-deck {
+      pointer-events: auto; /* Re-enable clicks for the deck */
+      width: 100%;
+      max-width: 800px;
+      background: var(--bg-glass, rgba(255, 255, 255, 0.75));
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid var(--border-subtle, rgba(226, 232, 240, 0.8));
+      border-radius: 99px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+      padding: 0.25rem 0.5rem 0.25rem 1.25rem;
     }
 
-    /* ── Textarea ────────────────────────────────────── */
+    .floating-deck:focus-within {
+      border-color: var(--chat-primary, #0d9488);
+      box-shadow: 0 0 0 3px var(--chat-primary-glow, rgba(13, 148, 136, 0.15));
+    }
+
+    /* ── Input Box Layer ─────────────────────────────── */
+    .input-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 0.75rem;
+    }
+
     textarea {
       flex: 1 1 0%;
       resize: none;
       background: transparent;
       outline: none;
       border: none;
-      color: var(--foreground, #1a1a1a);
-      font-size: 0.875rem;
-      line-height: 1.5rem;
-      min-height: 2.5rem;
-      max-height: 7.5rem;
+      color: var(--text-main, #0f172a);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      min-height: 1.5rem;
+      max-height: 80px;
       overflow-y: auto;
-      padding: 0;
-      padding-top: 2px;
+      padding: 0.5rem 0;
+      scrollbar-width: none; /* Hide scrollbar for cleaner look */
     }
+    textarea::-webkit-scrollbar { display: none; }
     textarea::placeholder {
-      color: var(--muted-foreground, #737373);
+      color: var(--text-muted, #64748b);
+      font-weight: 400;
     }
 
-    /* ── Send button ─────────────────────────────────── */
+    /* ── Send Button (Absolute Perfect Circle) ───────── */
     .send-btn {
-      transition: transform 0.15s ease, background-color 0.15s ease;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--chat-primary, #0d9488);
+      color: #ffffff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
     }
+    
+    .send-btn i {
+      font-size: 1.15rem;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     .send-btn:hover:not(:disabled) {
-      transform: scale(1.05);
-      background-color: var(--chat-primary-hover, #0f766e) !important;
+      background-color: var(--chat-primary-dark, #0f766e);
+      transform: translateY(-1px);
     }
+    
+    .send-btn:hover:not(:disabled) i {
+      transform: scale(1.05) translateY(-1px);
+    }
+
     .send-btn:disabled {
-      opacity: 0.4;
+      background-color: var(--border-light, #e2e8f0);
+      color: var(--text-subtle, #94a3b8);
       cursor: not-allowed;
     }
 
-    /* ── Character counter ───────────────────────────── */
     .char-counter {
-      display: flex;
-      justify-content: flex-end;
-      padding: 0 4px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      font-family: monospace;
+      padding-left: 1rem;
+      flex-shrink: 0;
+    }
+
+    .page-footer-zone {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--text-muted, #64748b);
+      opacity: 0.65;
+      letter-spacing: 0.01em;
+      pointer-events: auto;
     }
   `],
   template: `
-    <div class="input-wrapper px-3 pb-3 pt-2 w-100 mx-auto" style="max-width: 900px;">
+    <div class="floating-deck-wrapper">
+      <div class="floating-deck">
+        
+        <div class="input-row">
+          <textarea
+            #textareaRef
+            [placeholder]="placeholder"
+            [disabled]="disabled"
+            [attr.maxlength]="maxChars"
+            [value]="inputText()"
+            (input)="onInput($event)"
+            (keydown.enter)="onEnterKey($event)"
+            rows="1"
+            [style.opacity]="disabled ? '0.6' : '1'"
+            [style.cursor]="disabled ? 'not-allowed' : 'text'"
+            aria-label="Message input">
+          </textarea>
 
-      <!-- Input row -->
-      <div class="input-container d-flex align-items-end gap-2 p-2 border rounded-4 shadow-sm position-relative">
-        <textarea
-          #textareaRef
-          class="form-control border-0 shadow-none bg-transparent resize-none py-2"
-          [placeholder]="placeholder"
-          [disabled]="disabled"
-          [attr.maxlength]="maxChars"
-          [value]="inputText()"
-          (input)="onInput($event)"
-          (keydown.enter)="onEnterKey($event)"
-          rows="1"
-          style="min-height: 44px; max-height: 120px;"
-          [style.opacity]="disabled ? '0.5' : '1'"
-          [style.cursor]="disabled ? 'not-allowed' : 'text'"
-          aria-label="Message input">
-        </textarea>
+          @if (charCount() > warnThreshold) {
+            <div class="char-counter"
+                 [style.color]="charCount() >= maxChars ? 'var(--destructive, #dc2626)' : 'var(--text-muted, #64748b)'">
+              {{ charCount() }}/{{ maxChars }}
+            </div>
+          }
 
-        <button
-          type="button"
-          class="send-btn btn rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0 mb-1 me-1"
-          style="width: 36px; height: 36px; background-color: var(--chat-primary, #0d9488); color: white;"
-          [disabled]="!canSend()"
-          (click)="sendMessage()"
-          aria-label="Send message">
-          <i class="bi bi-arrow-up-short fs-4"></i>
-        </button>
-      </div>
-
-      <!-- Character counter (shown near limit) -->
-      @if (charCount() > warnThreshold) {
-        <div class="char-counter">
-          <span class="small"
-                [style.color]="charCount() >= maxChars ? 'var(--destructive, #dc2626)' : 'var(--muted-foreground, #737373)'">
-            {{ charCount() }} / {{ maxChars }}
-          </span>
+          <button
+            type="button"
+            class="send-btn"
+            [disabled]="!canSend()"
+            (click)="sendMessage()"
+            aria-label="Send message">
+            <i class="bi bi-send-fill"></i>
+          </button>
         </div>
-      }
-
-      <!-- Medical Disclaimer -->
-      <div class="text-center mt-2 px-3">
-        <small class="text-muted d-block" style="font-size: 0.75rem;">
-          GhaithAI is an AI companion and does not provide professional medical advice, diagnosis, or treatment. 
-          If you are in a crisis, please use the <strong class="text-danger">Crisis Support</strong> button.
-        </small>
       </div>
 
+      <!-- Decoupled Footer -->
+      <div class="page-footer-zone">
+        GhaithAI is an AI companion and does not provide medical advice.  
+        If in crisis, use the <strong style="color: var(--destructive); font-weight: 600;">Crisis Support</strong> button.
+      </div>
     </div>
   `,
 })
 export class ChatInput {
   @Input() disabled: boolean = false;
-  @Input() placeholder: string = 'Type your message...';
+  @Input() placeholder: string = 'Message GhaithAI...';
   @Output() messageSent = new EventEmitter<string>();
 
   @ViewChild('textareaRef') private textareaRef!: ElementRef<HTMLTextAreaElement>;

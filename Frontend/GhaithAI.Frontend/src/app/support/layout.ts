@@ -72,9 +72,9 @@ import { Navbar } from '../../components/layout/Navbar';
 
     /* ── Bootstrap override: ensure sidebar/main fill full height ── */
     .support-sidebar-col {
-      width: 280px;
-      min-width: 280px;
-      max-width: 280px;
+      width: 240px;
+      min-width: 240px;
+      max-width: 240px;
       border-right: 1px solid var(--chat-sidebar-border);
       height: 100%;
       overflow: hidden;

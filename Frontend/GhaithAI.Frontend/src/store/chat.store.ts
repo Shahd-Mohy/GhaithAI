@@ -1,6 +1,7 @@
 // File: src/store/chat.store.ts
 
 import { Injectable, signal, computed } from '@angular/core';
+import { Subject } from 'rxjs';
 import {
   ChatMessageModel,
   SessionModel,
@@ -15,6 +16,7 @@ export class ChatStore {
   readonly messages         = signal<ChatMessageModel[]>([]);
   readonly sessions         = signal<SessionModel[]>([]);
   readonly isAiTyping       = signal<boolean>(false);
+  readonly typingBufferActive = signal<boolean>(false);
   readonly isRiskDetected   = signal<boolean>(false);
   readonly riskDetails      = signal<RiskAlertPayload | null>(null);
   readonly connectionStatus = signal<ConnectionStatus>('disconnected');
@@ -27,6 +29,11 @@ export class ChatStore {
   readonly messageCount     = computed(() => this.messages().length);
   readonly isConnected      = computed(() => this.connectionStatus() === 'connected');
   readonly isReconnecting   = computed(() => this.connectionStatus() === 'reconnecting');
+  readonly displayTyping    = computed(() => this.isAiTyping() || this.typingBufferActive());
+
+  // ── Streams ──────────────────────────────────────────────────────────────────
+  private readonly _apiResponseSubject = new Subject<ChatMessageModel>();
+  readonly apiResponse$ = this._apiResponseSubject.asObservable();
 
   // ── Mutators ─────────────────────────────────────────────────────────────────
 
@@ -40,6 +47,15 @@ export class ChatStore {
 
   /** Append a single message to the end of the list. */
   addMessage(msg: ChatMessageModel): void {
+    if (msg.senderType === 'AI' && msg.status === 'sent') {
+      this._apiResponseSubject.next(msg);
+    } else {
+      this.messages.update(msgs => [...msgs, msg]);
+    }
+  }
+
+  /** Commit AI message after buffer completes */
+  commitAiMessage(msg: ChatMessageModel): void {
     this.messages.update(msgs => [...msgs, msg]);
   }
 
@@ -108,6 +124,7 @@ export class ChatStore {
     this.messages.set([]);
     this.sessions.set([]);
     this.isAiTyping.set(false);
+    this.typingBufferActive.set(false);
     this.isRiskDetected.set(false);
     this.riskDetails.set(null);
     this.connectionStatus.set('disconnected');
