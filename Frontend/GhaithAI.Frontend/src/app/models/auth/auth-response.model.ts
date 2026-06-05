@@ -2,6 +2,6 @@ export interface AuthResponse {
   token: string;
   email: string;
   fullName: string;
-  profilePicture: string;
+  profilePicture?: string;
   expiration: string;
 }

@@ -207,129 +207,81 @@ export class RegisterComponent implements OnInit {
 
   submitForm(): void {
 
-  this.apiError = '';
+    this.apiError = '';
 
-  const payload: RegisterRequest = {
+    const secondContact =
+      this.ec2name.trim() && this.ec2phone.trim()
+        ? {
+            fullName: this.ec2name,
+            phoneNumber: this.ec2phone,
+            relationship: this.ec2rel || 'Other'
+          }
+        : null;
 
-    fullName: `${this.firstName} ${this.lastName}`,
+    const payload: RegisterRequest = {
+      fullName: `${this.firstName} ${this.lastName}`,
+      email: this.email,
+      password: this.password,
+      phoneNumber: this.phone,
+      countryCode: 'EG',
+      preferredLanguage: this.lang,
+      acceptedTerms: this.termsAccepted,
+      acceptedPrivacyPolicy: true,
+      acceptedAiChat: true,
+      acceptedMoodTracking: true,
+      acceptedDataCollection: true,
+      firstContact: {
+        fullName: this.ec1name,
+        phoneNumber: this.ec1phone,
+        relationship: this.ec1rel
+      },
+      secondContact,
+      age: this.age ?? undefined,
+      concerns: this.selectedConcerns,
+      sleepQuality: this.sleep,
+      stressLevel: this.stress,
+      hasTherapyHistory:
+        this.therapy === 'current' || this.therapy === 'past',
+      takesMedication: this.medications === 'yes'
+    };
 
-    email: this.email,
+    this.submitting = true;
 
-    password: this.password,
+    this.authService.register(payload).subscribe({
 
-    phoneNumber: this.phone,
+      next: (response) => {
+        this.authService.saveSession(response);
+        this.submitting = false;
+        this.submitted = true;
+        this.router.navigateByUrl('/dashboard');
+      },
 
-    countryCode: 'EG',
+      error: (err) => {
+        console.error(err);
 
-    preferredLanguage: this.lang,
+        const message = err.error?.message || '';
 
-    acceptedTerms: this.termsAccepted,
 
-    acceptedPrivacyPolicy: true,
+        if (
+          err.status === 400 &&
+          message.toLowerCase().includes('email')
+        ) {
+          this.emailExists = true;
+          this.apiError = 'This email is already registered.';
+          this.goToStep(1);
+        }
+        else if (err.status === 400) {
+          this.apiError = message || 'Please check your data and try again.';
+        }
+        else if (err.status === 500) {
+          this.apiError = 'Something went wrong. Please try again later.';
+        }
+        else {
+          this.apiError = 'Registration failed. Please try again.';
+        }
 
-    acceptedAiChat: true,
-
-    acceptedMoodTracking: true,
-
-    acceptedDataCollection: true,
-
-    firstContact: {
-      fullName: this.ec1name,
-      phoneNumber: this.ec1phone,
-      relationship: this.ec1rel
-    },
-
-    secondContact: {
-      fullName: this.ec2name || 'N/A',
-      phoneNumber: this.ec2phone || 'N/A',
-      relationship: this.ec2rel || 'Other'
-    },
-
-    age: this.age ?? undefined,
-
-    concerns: this.selectedConcerns,
-
-    sleepQuality: this.sleep,
-
-    stressLevel: this.stress,
-
-    hasTherapyHistory:
-      this.therapy === 'current' ||
-      this.therapy === 'past',
-
-    takesMedication:
-      this.medications === 'yes'
-  };
-
-  this.submitting = true;
-
-  this.authService.register(payload).subscribe({
-
-    next: (response: any) => {
-
-      console.log('Register Success');
-      console.log(response);
-
-      if (response?.token) {
-        localStorage.setItem('token', response.token);
+        this.submitting = false;
       }
-
-      localStorage.setItem(
-        'user',
-        JSON.stringify(response)
-      );
-
-      this.submitting = false;
-      this.submitted = true;
-
-      this.router.navigateByUrl('/dashboard');
-    },
-
-    error: (err) => {
-
-  console.error(err);
-
-  if (err.status === 400) {
-
-    this.apiError =
-      err.error?.message ||
-      'Please check your data and try again.';
+    });
   }
-
-  else if (err.status === 409) {
-
-    this.apiError =
-      'Email already exists.';
-  }
-
-  else if (err.status === 500) {
-
-    this.apiError =
-      'Something went wrong. Please try again later.';
-  }
-
-  else {
-
-    this.apiError =
-      'Registration failed.';
-  }
-  if (
-  err.error?.message
-    ?.toLowerCase()
-    .includes('email')
-) {
-
-  this.emailExists = true;
-
-  this.goToStep(1);
-
-  this.submitting = false;
-
-  return;
-}
-
-  this.submitting = false;
-}
-  });
-}
 }

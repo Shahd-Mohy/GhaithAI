@@ -6,8 +6,8 @@ from './auth/pages/login/login';
 import { RegisterComponent }
 from './auth/pages/register/register';
 
-import { ProfileComponent }
-from './auth/pages/profile/profile';
+// import { ProfileComponent }
+// from './auth/pages/profile/profile';
 
 import { DashboardComponent }
 from './auth/pages/dashboard/dashboard';
@@ -39,13 +39,13 @@ export const routes: Routes = [
       .then(m => m.RegisterComponent)
   },
 
-  {
-    path:'profile',
-    canActivate:[authGuard],
-    loadComponent:() =>
-      import('./auth/pages/profile/profile')
-      .then(m => m.ProfileComponent)
-  },
+  // {
+  //   path:'profile',
+  //   canActivate:[authGuard],
+  //   loadComponent:() =>
+  //     import('./auth/pages/profile/profile')
+  //     .then(m => m.ProfileComponent)
+  // },
 
   {
     path:'dashboard',

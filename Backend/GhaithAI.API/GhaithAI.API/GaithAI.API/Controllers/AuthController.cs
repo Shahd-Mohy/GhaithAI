@@ -6,16 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace GhaithAI.API.Controllers
 {
     [ApiController]
-
     [Route("api/[controller]")]
-    public class AuthController
-        : ControllerBase
+    public class AuthController : ControllerBase
     {
-        private readonly IAuthService
-            _authService;
+        private readonly IAuthService _authService;
 
-        public AuthController(
-            IAuthService authService)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
         }
@@ -25,43 +21,41 @@ namespace GhaithAI.API.Controllers
         {
             try
             {
-                var result =
-                await _authService.RegisterAsync(dto);
-
-            return Ok(result);
+                var result = await _authService.RegisterAsync(dto);
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
+                return BadRequest(new { message = ex.Message });
             }
-
         }
 
-
         [HttpPost("login")]
-        public async Task<IActionResult>
-            Login(LoginDTO dto)
+        public async Task<IActionResult> Login(LoginDTO dto)
         {
-            var result =
-                await _authService
-                    .LoginAsync(dto);
-
-            return Ok(result);
+            try
+            {
+                var result = await _authService.LoginAsync(dto);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("google-login")]
-        public async Task<IActionResult>
-            GoogleLogin(
-            GoogleLoginDTO dto)
+        public async Task<IActionResult> GoogleLogin(GoogleLoginDTO dto)
         {
-            var result =
-                await _authService
-                .GoogleLoginAsync(dto);
-
-            return Ok(result);
+            try
+            {
+                var result = await _authService.GoogleLoginAsync(dto);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

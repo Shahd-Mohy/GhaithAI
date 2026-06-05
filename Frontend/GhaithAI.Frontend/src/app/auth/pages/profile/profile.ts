@@ -1,97 +1,97 @@
-import { Component, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule
-} from '@angular/forms';
+// import { Component, OnInit } from '@angular/core';
+// import {
+//   FormBuilder,
+//   FormGroup,
+//   ReactiveFormsModule
+// } from '@angular/forms';
 
-import { CommonModule } from '@angular/common';
+// import { CommonModule } from '@angular/common';
 
-import { AuthService }
-from '../../../services/auth';
+// import { AuthService }
+// from '../../../services/auth';
 
-@Component({
-  selector:'app-profile',
-  standalone:true,
-  imports:[
-    CommonModule,
-    ReactiveFormsModule
-  ],
-  templateUrl:'./profile.html',
-  styleUrl:'./profile.css'
-})
-export class ProfileComponent
-implements OnInit{
+// @Component({
+//   selector:'app-profile',
+//   standalone:true,
+//   imports:[
+//     CommonModule,
+//     ReactiveFormsModule
+//   ],
+//   templateUrl:'./profile.html',
+//   styleUrl:'./profile.css'
+// })
+// export class ProfileComponent
+// implements OnInit{
 
-  profileForm!:FormGroup;
+//   profileForm!:FormGroup;
 
-  constructor(
-    private fb:FormBuilder,
-    private auth:AuthService
-  ){}
+//   constructor(
+//     private fb:FormBuilder,
+//     private auth:AuthService
+//   ){}
 
-  ngOnInit(){
+//   ngOnInit(){
 
-    this.profileForm =
-      this.fb.group({
+//     this.profileForm =
+//       this.fb.group({
 
-        fullName:[''],
+//         fullName:[''],
 
-        preferredLanguage:['en'],
+//         preferredLanguage:['en'],
 
-        memoryEnabled:[false]
-      });
+//         memoryEnabled:[false]
+//       });
 
-    this.loadProfile();
-  }
+//     this.loadProfile();
+//   }
 
-  loadProfile(){
+//   loadProfile(){
 
-    this.auth
-      .getProfile()
-      .subscribe({
+//     this.auth
+//       .getProfile()
+//       .subscribe({
 
-        next:(res:any)=>{
+//         next:(res:any)=>{
 
-          this.profileForm
-            .patchValue({
+//           this.profileForm
+//             .patchValue({
 
-              fullName:
-                res.fullName,
+//               fullName:
+//                 res.fullName,
 
-              preferredLanguage:
-                res.preferredLanguage,
+//               preferredLanguage:
+//                 res.preferredLanguage,
 
-              memoryEnabled:
-                res.memoryEnabled
-            });
-        }
-      });
-  }
+//               memoryEnabled:
+//                 res.memoryEnabled
+//             });
+//         }
+//       });
+//   }
 
-  updateProfile(){
+//   updateProfile(){
 
-    this.auth
-      .updateProfile(
-        this.profileForm.value
-      )
-      .subscribe({
+//     this.auth
+//       .updateProfile(
+//         this.profileForm.value
+//       )
+//       .subscribe({
 
-        next:()=>{
+//         next:()=>{
 
-          alert(
-            'Profile Updated'
-          );
-        }
-      });
-  }
+//           alert(
+//             'Profile Updated'
+//           );
+//         }
+//       });
+//   }
 
-  logout(){
+//   logout(){
 
-    localStorage.removeItem(
-      'token'
-    );
+//     localStorage.removeItem(
+//       'token'
+//     );
 
-    location.href='/login';
-  }
-}
+//     location.href='/login';
+//   }
+// }

@@ -3,14 +3,12 @@ using GhaithAI.API.Data;
 using GhaithAI.API.DTOs.Auth;
 using GhaithAI.API.Helpers;
 using GhaithAI.API.Models;
-using GhaithAI.API.Presistance;
 using GhaithAI.API.Services.Interfaces;
 using GhaithAI.GaithAI.Application.DTOs.Auth;
 using GhaithAI.GaithAI.Domain.Entities;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace GhaithAI.API.Services
 {
@@ -32,10 +30,9 @@ namespace GhaithAI.API.Services
 
         public async Task<AuthResponseDTO> RegisterAsync(RegisterDTO dto)
         {
-            var exists =
-            await _userManager.FindByEmailAsync(dto.Email);
+            var exists = await _userManager.FindByEmailAsync(dto.Email);
 
-        if (exists != null)
+            if (exists != null)
                 throw new Exception("Email already exists");
 
             await using var transaction =
@@ -61,16 +58,13 @@ namespace GhaithAI.API.Services
                     ConsentedAt = DateTime.UtcNow
                 };
 
-                var result =
-                    await _userManager.CreateAsync(
-                        user,
-                        dto.Password);
+                var result = await _userManager.CreateAsync(
+                    user,
+                    dto.Password);
 
                 if (!result.Succeeded)
-                {
                     throw new Exception(
                         result.Errors.First().Description);
-                }
 
                 var roleResult =
                     await _userManager.AddToRoleAsync(
@@ -78,38 +72,36 @@ namespace GhaithAI.API.Services
                         Roles.User);
 
                 if (!roleResult.Succeeded)
-                {
                     throw new Exception(
                         roleResult.Errors.First().Description);
-                }
 
-                var contacts = new List<EmergencyContact>();
+                var contacts = new List<EmergencyContact>
+        {
+            new EmergencyContact
+            {
+                UserId = user.Id,
+                FullName = dto.FirstContact.FullName,
+                Relationship = dto.FirstContact.Relationship,
+                PhoneNumber = dto.FirstContact.PhoneNumber,
+                PriorityOrder = 1
+            }
+        };
 
-                contacts.Add(
-                    new EmergencyContact
+                if (dto.SecondContact != null &&
+                    !string.IsNullOrWhiteSpace(dto.SecondContact.FullName) &&
+                    !string.IsNullOrWhiteSpace(dto.SecondContact.PhoneNumber))
+                {
+                    contacts.Add(new EmergencyContact
                     {
                         UserId = user.Id,
-                        FullName = dto.FirstContact.FullName,
-                        Relationship = dto.FirstContact.Relationship,
-                        PhoneNumber = dto.FirstContact.PhoneNumber,
-                        PriorityOrder = 1
+                        FullName = dto.SecondContact.FullName,
+                        Relationship = dto.SecondContact.Relationship,
+                        PhoneNumber = dto.SecondContact.PhoneNumber,
+                        PriorityOrder = 2
                     });
-
-                if (dto.SecondContact != null)
-                {
-                    contacts.Add(
-                        new EmergencyContact
-                        {
-                            UserId = user.Id,
-                            FullName = dto.SecondContact.FullName,
-                            Relationship = dto.SecondContact.Relationship,
-                            PhoneNumber = dto.SecondContact.PhoneNumber,
-                            PriorityOrder = 2
-                        });
                 }
 
-                await _context.EmergencyContacts
-                    .AddRangeAsync(contacts);
+                await _context.EmergencyContacts.AddRangeAsync(contacts);
 
                 var profile = new UserAssessment
                 {
@@ -122,8 +114,7 @@ namespace GhaithAI.API.Services
                     TakesMedication = dto.TakesMedication
                 };
 
-                await _context.UserAssessments
-                    .AddAsync(profile);
+                await _context.UserAssessments.AddAsync(profile);
 
                 await _context.SaveChangesAsync();
 
@@ -150,41 +141,39 @@ namespace GhaithAI.API.Services
             catch
             {
                 await transaction.RollbackAsync();
+
+                var createdUser =
+                    await _userManager.FindByEmailAsync(dto.Email);
+
+                if (createdUser != null)
+                {
+                    await _userManager.DeleteAsync(createdUser);
+                }
+
                 throw;
             }
-
-
         }
-
 
         public async Task<AuthResponseDTO> LoginAsync(LoginDTO dto)
         {
-            var user =
-                await _userManager.FindByEmailAsync(dto.Email);
+            var user = await _userManager.FindByEmailAsync(dto.Email);
 
             if (user == null)
                 throw new Exception("Invalid Email");
 
-            var valid =
-                await _userManager.CheckPasswordAsync(
-                    user,
-                    dto.Password);
+            if (user.IsGoogleAccount && string.IsNullOrEmpty(user.PasswordHash))
+                throw new Exception("This account uses Google Sign-In. Please login with Google.");
+
+            var valid = await _userManager.CheckPasswordAsync(user, dto.Password);
 
             if (!valid)
                 throw new Exception("Invalid Password");
 
             user.LastLoginAt = DateTime.UtcNow;
-
             await _userManager.UpdateAsync(user);
 
-            var roles =
-                await _userManager.GetRolesAsync(user);
-
-            var token =
-                JWTTokenHelper.GenerateToken(
-                    user,
-                    _configuration,
-                    roles);
+            var roles = await _userManager.GetRolesAsync(user);
+            var token = JWTTokenHelper.GenerateToken(user, _configuration, roles);
 
             return new AuthResponseDTO
             {
@@ -196,16 +185,20 @@ namespace GhaithAI.API.Services
             };
         }
 
-        public async Task<AuthResponseDTO> GoogleLoginAsync(
-            GoogleLoginDTO dto)
+        public async Task<AuthResponseDTO> GoogleLoginAsync(GoogleLoginDTO dto)
         {
-            var payload =
-                await GoogleJsonWebSignature
-                    .ValidateAsync(dto.IdToken);
+            GoogleJsonWebSignature.Payload payload;
 
-            var user =
-                await _userManager
-                    .FindByEmailAsync(payload.Email);
+            try
+            {
+                payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken);
+            }
+            catch
+            {
+                throw new Exception("Invalid Google token. Please try again.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(payload.Email);
 
             if (user == null)
             {
@@ -220,31 +213,31 @@ namespace GhaithAI.API.Services
                     ProfilePicture = payload.Picture,
                     CountryCode = "EG",
                     PreferredLanguage = "en",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    LastLoginAt = DateTime.UtcNow
                 };
 
-                var result =
-                    await _userManager.CreateAsync(user);
+                var result = await _userManager.CreateAsync(user);
 
                 if (!result.Succeeded)
-                {
-                    throw new Exception(
-                        result.Errors.First().Description);
-                }
+                    throw new Exception(result.Errors.First().Description);
 
-                await _userManager.AddToRoleAsync(
-                    user,
-                    Roles.User);
+                await _userManager.AddToRoleAsync(user, Roles.User);
+            }
+            else
+            {
+                user.GoogleId = payload.Subject;
+                user.IsGoogleAccount = true;
+                user.LastLoginAt = DateTime.UtcNow;
+
+                if (string.IsNullOrEmpty(user.ProfilePicture))
+                    user.ProfilePicture = payload.Picture;
+
+                await _userManager.UpdateAsync(user);
             }
 
-            var roles =
-                await _userManager.GetRolesAsync(user);
-
-            var token =
-                JWTTokenHelper.GenerateToken(
-                    user,
-                    _configuration,
-                    roles);
+            var roles = await _userManager.GetRolesAsync(user);
+            var token = JWTTokenHelper.GenerateToken(user, _configuration, roles);
 
             return new AuthResponseDTO
             {

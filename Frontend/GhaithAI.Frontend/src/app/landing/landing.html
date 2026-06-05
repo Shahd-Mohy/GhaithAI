@@ -13,8 +13,15 @@
     <a href="#about">About</a>
   </div>
   <div class="nav-actions">
-    <a routerLink="/login" class="btn-ghost">Sign In</a>
-    <a routerLink="/register" class="btn-nav">Get Started</a>
+    <ng-container *ngIf="auth.isLoggedIn(); else guestNav">
+      <a routerLink="/dashboard" class="btn-nav">
+        Dashboard
+      </a>
+    </ng-container>
+    <ng-template #guestNav>
+      <a routerLink="/login" class="btn-ghost">Sign In</a>
+      <a routerLink="/register" class="btn-nav">Get Started</a>
+    </ng-template>
   </div>
 </nav>
 

@@ -21,9 +21,11 @@ namespace GhaithAI.API.Extensions
                     "Ensure it exists in appsettings.json under ConnectionStrings section.");
             }
 
+            //services.AddDbContext<ApplicationDbContext>(options =>
+            //    options.UseSqlServer(connectionString,
+            //        sqlOptions => sqlOptions.EnableRetryOnFailure(maxRetryCount: 3)));
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString,
-                    sqlOptions => sqlOptions.EnableRetryOnFailure(maxRetryCount: 3)));
+            options.UseSqlServer(connectionString));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
