@@ -20,23 +20,23 @@ import { Navbar } from '../../components/layout/Navbar';
       background-color: var(--chat-bg);
 
       /* ── Design tokens scoped to the support layout ────────────── */
-      --chat-bg:                 #ffffff;
-      --chat-fg:                 #1a1a1a;
-      --chat-primary:            #0d9488;
-      --chat-primary-fg:         #ffffff;
-      --chat-secondary:          #e6f4ea;
-      --chat-secondary-fg:       #064e3b;
-      --chat-muted:              #f3f4f6;
-      --chat-muted-fg:           #4b5563;
-      --chat-accent:             #e6f4ea;
-      --chat-accent-fg:          #0f766e;
-      --chat-destructive:        #dc2626;
-      --chat-destructive-fg:     #fff8f8;
-      --chat-border:             #e5e7eb;
-      --chat-sidebar:            #f4fbf8;
-      --chat-sidebar-fg:         #1e293b;
-      --chat-sidebar-border:     #e2e8f0;
-      --chat-ring:               #0d9488;
+      --chat-bg:                 #F4F9FB; /* Light blue-teal tint */
+      --chat-fg:                 #0D1B3E; /* Dark navy */
+      --chat-primary:            #0B8FAC; /* Teal brand primary */
+      --chat-primary-fg:         #ffffff; /* White text on primary buttons */
+      --chat-secondary:          rgba(11, 143, 172, 0.08); /* Light teal-blue tint */
+      --chat-secondary-fg:       #076E86; /* Darker brand accent */
+      --chat-muted:              #F4F9FB;
+      --chat-muted-fg:           #64748B; /* Slate gray */
+      --chat-accent:             rgba(11, 143, 172, 0.08);
+      --chat-accent-fg:          #076E86;
+      --chat-destructive:        #DC2626; /* Warning/crisis red */
+      --chat-destructive-fg:     #ffffff;
+      --chat-border:             #E2ECF0; /* Soft border */
+      --chat-sidebar:            #ffffff; /* White background sidebar */
+      --chat-sidebar-fg:         #4A5568; /* Slate gray sidebar text */
+      --chat-sidebar-border:     #E2ECF0;
+      --chat-ring:               #0B8FAC;
 
       /* Fallback aliases so child components using old var() names still resolve */
       --background:              var(--chat-bg);

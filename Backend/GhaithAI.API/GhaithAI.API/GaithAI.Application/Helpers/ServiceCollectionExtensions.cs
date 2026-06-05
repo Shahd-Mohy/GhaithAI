@@ -20,8 +20,9 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IMoodRepository, MoodRepository>();
             // Journal
             services.AddScoped<IJournalRepository, JournalRepository>();
+            services.AddScoped<IInsightRepository, InsightRepository>();
             //services.AddScoped<IChatRepository, ChatRepository>();
-            services.AddScoped<ISessionRepository, SessionRepository>();
+            //services.AddScoped<ISessionRepository, SessionRepository>();
             services.AddScoped<IRiskRepository, RiskRepository>();
             services.AddScoped<ISelfHelpRepository, SelfHelpRepository>();
 

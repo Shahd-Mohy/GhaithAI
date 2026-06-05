@@ -1,6 +1,6 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { SelfHelpComponent } from '../../../selfHelp/self-help';
 import { MoodTrackerComponent } from '../../../support/mood/mood';
 import { JournalComponent } from '../../../support/journal/journal';
@@ -29,6 +29,9 @@ interface QuickAction {
 export class DashboardComponent implements OnInit, AfterViewInit {
 
   @ViewChild('moodChart') moodChartRef!: ElementRef<HTMLCanvasElement>;
+
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   activePage = 'home';
   selectedMood: string | null = null;
@@ -77,14 +80,34 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   moodData = [3, 4, 2, 5, 3, 4, 4];
   moodDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const page = params['page'];
+      if (page) {
+        this.activePage = page;
+      }
+    });
+  }
 
   ngAfterViewInit() {
     this.drawMoodChart();
   }
 
   navigate(page: string) {
+    if (page === 'chat') {
+      this.router.navigate(['/support/chat']);
+      return;
+    }
+    if (page === 'crisis') {
+      this.router.navigate(['/support/crisis']);
+      return;
+    }
     this.activePage = page;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: page },
+      queryParamsHandling: 'merge'
+    });
   }
 
   selectMood(key: string) {

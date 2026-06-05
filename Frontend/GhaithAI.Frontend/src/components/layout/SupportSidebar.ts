@@ -17,19 +17,20 @@ interface NavItem {
   label: string;
   icon: string;
   path: string;
+  queryParams?: { page: string };
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Home',            icon: 'bi-house',         path: '/support/dashboard' },
+  { label: 'Home',            icon: 'bi-house',         path: '/dashboard', queryParams: { page: 'home' } },
   { label: 'Talk to AI',      icon: 'bi-chat',          path: '/support/chat' },
-  { label: 'Mood Tracker',    icon: 'bi-graph-up',      path: '/support/mood' },
-  { label: 'Journal',         icon: 'bi-journal',       path: '/support/journal' },
-  { label: 'Self-Help Tools', icon: 'bi-sliders',       path: '/support/tools' },
-  { label: 'Learn',           icon: 'bi-book',          path: '/support/learn' },
+  { label: 'Mood Tracker',    icon: 'bi-graph-up',      path: '/dashboard', queryParams: { page: 'mood' } },
+  { label: 'Journal',         icon: 'bi-journal',       path: '/dashboard', queryParams: { page: 'journal' } },
+  { label: 'Self-Help Tools', icon: 'bi-sliders',       path: '/dashboard', queryParams: { page: 'tools' } },
+  { label: 'Learn',           icon: 'bi-book',          path: '/dashboard', queryParams: { page: 'learn' } },
 ];
 
 const GET_HELP_ITEMS: NavItem[] = [
-  { label: 'Find a Professional', icon: 'bi-person-badge', path: '/support/professional' },
+  { label: 'Find a Professional', icon: 'bi-person-badge', path: '/dashboard', queryParams: { page: 'professionals' } },
 ];
 
 @Component({
@@ -44,6 +45,7 @@ const GET_HELP_ITEMS: NavItem[] = [
       height: 100%;
       background-color: var(--sidebar, #f9f9f9);
       overflow: hidden;
+      font-family: 'Sora', sans-serif;
     }
 
     /* ── Scrollable area ───────────────────────────────────────────── */
@@ -214,30 +216,38 @@ const GET_HELP_ITEMS: NavItem[] = [
       flex-shrink: 0;
     }
     .logo-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 0.5rem;
+      width: 38px;
+      height: 38px;
+      background-color: var(--primary, #0B8FAC);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: var(--primary, #1a1a1a);
       flex-shrink: 0;
+    }
+    .logo-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
     }
   `],
   template: `
     <!-- ── Header / Logo ──────────────────────────────────────── -->
     <div class="p-3 flex-shrink-0">
-      <a routerLink="/support/dashboard"
+      <a routerLink="/dashboard"
+         [queryParams]="{ page: 'home' }"
          class="d-flex align-items-center gap-2 px-2 py-2 rounded text-decoration-none"
          style="transition: background-color 0.15s ease;"
          onmouseenter="this.style.backgroundColor='var(--accent)'"
          onmouseleave="this.style.backgroundColor='transparent'">
         <div class="logo-icon">
-          <i class="bi bi-cpu-fill small" style="color: var(--primary-foreground, #f8f8f8);"></i>
+          <svg viewBox="0 0 24 24" fill="white">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+          </svg>
         </div>
         <div>
-          <p class="mb-0 fw-semibold small lh-sm" style="color: var(--sidebar-foreground);">GhaithAI</p>
-          <p class="mb-0 lh-sm" style="font-size: 0.7rem; color: var(--muted-foreground);">Personal Support</p>
+          <p class="mb-0 fw-bold lh-sm" style="color: var(--foreground); font-size: 15px;">GhaithAI</p>
+          <p class="mb-0 lh-sm" style="font-size: 11px; color: var(--muted-foreground);">Personal Support</p>
         </div>
       </a>
     </div>
@@ -341,11 +351,12 @@ const GET_HELP_ITEMS: NavItem[] = [
       <!-- Navigation -->
       <div class="mt-4">
         <p class="section-label">Your Space</p>
-        @for (item of navItems; track item.path) {
+        @for (item of navItems; track item.path + (item.queryParams?.page || '')) {
           <a [routerLink]="item.path"
+             [queryParams]="item.queryParams"
              routerLinkActive="active-nav"
              class="sidebar-nav-link"
-             [routerLinkActiveOptions]="{ exact: item.path === '/support/dashboard' }">
+             [routerLinkActiveOptions]="{ exact: true }">
             <i class="bi {{ item.icon }} small"></i>
             {{ item.label }}
           </a>
@@ -355,11 +366,12 @@ const GET_HELP_ITEMS: NavItem[] = [
       <!-- Get Help Section -->
       <div class="mt-4">
         <p class="section-label">Get Help</p>
-        @for (item of getHelpItems; track item.path) {
+        @for (item of getHelpItems; track item.path + (item.queryParams?.page || '')) {
           <a [routerLink]="item.path"
+             [queryParams]="item.queryParams"
              routerLinkActive="active-nav"
              class="sidebar-nav-link"
-             [routerLinkActiveOptions]="{ exact: false }">
+             [routerLinkActiveOptions]="{ exact: true }">
             <i class="bi {{ item.icon }} small"></i>
             {{ item.label }}
           </a>
