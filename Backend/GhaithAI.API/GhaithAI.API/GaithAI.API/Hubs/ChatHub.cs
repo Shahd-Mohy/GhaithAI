@@ -1,4 +1,4 @@
-﻿using GhaithAI.API.DTOs.Chat;
+using GhaithAI.API.DTOs.Chat;
 using GhaithAI.API.GaithAI.Application.DTOs.Chat;
 using GhaithAI.API.GaithAI.Domain.Exceptions;
 using GhaithAI.API.Services.Interfaces;
