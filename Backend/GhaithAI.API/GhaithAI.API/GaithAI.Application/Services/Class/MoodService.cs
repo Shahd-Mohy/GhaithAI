@@ -17,36 +17,36 @@ namespace GhaithAI.API.Services.Class
                 _moodRepository = moodRepository;
             }
 
-            // POST /api/mood/log
-            public async Task<MoodLogCreatedDTO> LogMoodAsync(string userId, CreateMoodLogDTO dto)
+        // POST /api/mood/log
+        public async Task<MoodLogCreatedDTO> LogMoodAsync(string userId, CreateMoodLogDTO dto)
+        {
+            var moodLog = new MoodLog
             {
-                var moodLog = new MoodLog
-                {
-                    MoodLogId = Guid.NewGuid(),
-                    UserId = userId,
-                    MoodScore = dto.MoodScore,
-                    EmotionTags = dto.EmotionTags?.Trim(),
-                    StressLevel = dto.StressLevel,
-                    SleepQuality = dto.SleepQuality,
-                    Notes = dto.Notes?.Trim(),
-                    Source = dto.Source,
-                    LoggedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                };
+                Id = Guid.NewGuid(),          
+                UserId = userId,
+                MoodScore = dto.MoodScore,
+                EmotionTags = dto.EmotionTags?.Trim(),
+                StressLevel = dto.StressLevel,
+                SleepQuality = dto.SleepQuality,
+                Notes = dto.Notes?.Trim(),
+                Source = dto.Source,
+                LoggedAt = DateTime.UtcNow,
+                IsDeleted = false
+            };
 
-                await _moodRepository.AddAsync(moodLog);
-                await _moodRepository.SaveChangesAsync();
+            await _moodRepository.AddAsync(moodLog);
+            await _moodRepository.SaveChangesAsync();
 
-                return new MoodLogCreatedDTO
-                {
-                    MoodLogId = moodLog.MoodLogId,
-                    LoggedAt = moodLog.LoggedAt,
-                    MoodLabel = MoodTypes.GetLabel(moodLog.MoodScore)
-                };
-            }
+            return new MoodLogCreatedDTO
+            {
+                MoodLogId = moodLog.Id,      
+                LoggedAt = moodLog.LoggedAt,
+                MoodLabel = MoodTypes.GetLabel(moodLog.MoodScore)
+            };
+        }
 
-            // GET /api/mood/history
-            public async Task<(List<MoodHistoryDTO> Items, int TotalCount)> GetHistoryAsync(
+        // GET /api/mood/history
+        public async Task<(List<MoodHistoryDTO> Items, int TotalCount)> GetHistoryAsync(
                 string userId, DateTime? from, DateTime? to, int page, int pageSize)
             {
                 var (logs, total) = await _moodRepository.GetByUserIdAsync(userId, from, to, page, pageSize);
@@ -195,7 +195,7 @@ namespace GhaithAI.API.Services.Class
             {
                 return new MoodHistoryDTO
                 {
-                    MoodLogId = log.MoodLogId,
+                    MoodLogId = log.Id,
                     MoodScore = log.MoodScore,
                     MoodLabel = MoodTypes.GetLabel(log.MoodScore),
                     MoodBadge = MoodTypes.GetBadge(log.MoodScore),

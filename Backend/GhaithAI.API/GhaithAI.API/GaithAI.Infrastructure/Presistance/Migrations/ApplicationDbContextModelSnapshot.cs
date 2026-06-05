@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace GhaithAI.Migrations
+namespace GhaithAI.GaithAI.Infrastructure.Presistance.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -436,9 +436,6 @@ namespace GhaithAI.Migrations
                     b.Property<DateTime>("LoggedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("MoodLogId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("MoodScore")
                         .HasColumnType("int");
 
@@ -671,6 +668,48 @@ namespace GhaithAI.Migrations
                         .IsUnique();
 
                     b.ToTable("WeeklyInsightReports");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.UserAssessment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Concerns")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("HasTherapyHistory")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SleepQuality")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StressLevel")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TakesMedication")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserAssessments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -931,6 +970,17 @@ namespace GhaithAI.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.UserAssessment", b =>
+                {
+                    b.HasOne("GhaithAI.API.Models.ApplicationUser", "User")
+                        .WithOne("UserAssessment")
+                        .HasForeignKey("GhaithAI.GaithAI.Domain.Entities.UserAssessment", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -993,6 +1043,9 @@ namespace GhaithAI.Migrations
                     b.Navigation("MoodLogs");
 
                     b.Navigation("UserActivities");
+
+                    b.Navigation("UserAssessment")
+                        .IsRequired();
 
                     b.Navigation("WeeklyInsightReports");
                 });

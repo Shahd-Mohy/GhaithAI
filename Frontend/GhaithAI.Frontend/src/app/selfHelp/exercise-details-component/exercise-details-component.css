@@ -1,0 +1,296 @@
+/* الحاوية الرئيسية */
+.exercise-page-container {
+  padding: 24px;
+  width: 100%;
+  max-width: 1000px;
+  /* مفرودة بشكل مريح جوه مساحة الداشبورد */
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+}
+
+/* الـ Header */
+.exercise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.main-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: #0f172a;
+}
+
+.sub-title {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.back-link {
+  text-decoration: none;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.back-link:hover {
+  color: #0f172a;
+}
+
+/* 🌟 الحاوية الطولية الجديدة بديلة الـ Grid */
+.exercise-vertical-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* مسافة ثابتة ومتناسقة بين كل كارت والتاني */
+}
+
+/* الكروت بكامل العرض */
+.sidebar-card,
+.center-card,
+.tips-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  /* تملأ كامل المساحة المتاحة طالما تحت بعض */
+  box-sizing: border-box;
+}
+
+.techniques-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.technique-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.technique-item.active {
+  border-color: #0d9488;
+  background-color: #f0fdfa;
+}
+
+.tech-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.tech-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* منطقة التمرين والعداد الدائري في المنتصف */
+.main-exercise-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.center-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 380px;
+}
+
+/* أنيميشن حلقات التنفس المتداخلة */
+.breathing-circle-wrapper {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.breathing-circle-core {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  box-shadow: 0 4px 20px rgba(45, 212, 191, 0.3);
+  transition: background 0.3s ease;
+}
+
+.breathing-ring-middle {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(94, 234, 212, 0.4);
+  z-index: 2;
+  animation: pulseRing 4s infinite ease-in-out;
+}
+
+.breathing-ring-outer {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(94, 234, 212, 0.15);
+  z-index: 1;
+}
+
+.timer-display {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* التحكم والأزرار */
+.control-section {
+  text-align: center;
+}
+
+.active-exercise-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.exercise-sub-meta {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 20px 0;
+}
+
+.buttons-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.buttons-group button {
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-start {
+  background: #0d9488;
+  color: white;
+}
+
+.btn-start:hover {
+  background: #0f766e;
+}
+
+.btn-pause {
+  background: #f59e0b;
+  color: white;
+}
+
+.btn-reset {
+  background: #ef4444;
+  color: white;
+}
+
+/* النصائح السفلية */
+.tips-section-container {
+  width: 100%;
+}
+
+.tips-heading {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.db-description {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 8px;
+  border-right: 4px solid #0d9488;
+  margin-bottom: 16px;
+}
+
+.static-tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.static-tips-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.static-tips-list li span {
+  width: 22px;
+  height: 22px;
+  background: #ccfbf1;
+  color: #0d9488;
+  font-weight: 600;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+/* أنيميشن نبض الحلقات النفسية */
+@keyframes pulseRing {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.5;
+  }
+}
+
+.loading-container {
+  text-align: center;
+  padding: 100px 0;
+  color: #64748b;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

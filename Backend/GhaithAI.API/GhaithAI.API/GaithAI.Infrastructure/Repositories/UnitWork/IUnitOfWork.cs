@@ -4,7 +4,7 @@ namespace GhaithAI.API.Repositories.UnitWork
 {
     public interface IUnitOfWork : IDisposable
     {
-        IChatRepository Chat { get; }
+        ISessionRepository Session { get; }
         IMessageRepository Message { get; }
         IRiskRepository Risk { get; }
         ISelfHelpRepository SelfHelp { get; }

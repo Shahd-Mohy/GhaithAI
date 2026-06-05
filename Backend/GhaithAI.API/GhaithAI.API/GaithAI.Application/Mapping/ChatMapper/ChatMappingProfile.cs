@@ -1,4 +1,5 @@
 using AutoMapper;
+using GhaithAI.API.DTOs.Chat;
 using GhaithAI.API.GaithAI.Application.DTOs.Chat;
 using GhaithAI.API.Models;
 
@@ -17,6 +18,19 @@ namespace GhaithAI.API.GaithAI.Application.Mapping.ChatMapper
                 .ForMember(dest => dest.AIActionTaken, opt => opt.MapFrom(src => src.SuggestedAction))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => "open"))
                 .ForMember(dest => dest.IsDeletable, opt => opt.MapFrom(_ => false));
+
+            // ChatSession → SessionDTO
+            CreateMap<ChatSession, SessionDTO>()
+                .ForMember(dest => dest.StartedAt,
+                    opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.MessageCount,
+                    opt => opt.MapFrom(src =>
+                        src.ChatMessages != null ? src.ChatMessages.Count : 0));
+
+            // ChatMessage → ChatMessageDTO
+            CreateMap<ChatMessage, ChatMessageDTO>()
+                .ForMember(dest => dest.SentAt,
+                    opt => opt.MapFrom(src => src.CreatedAt));
         }
     }
 }

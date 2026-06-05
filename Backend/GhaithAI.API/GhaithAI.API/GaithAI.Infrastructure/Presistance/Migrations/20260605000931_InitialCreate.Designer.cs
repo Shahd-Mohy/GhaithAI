@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace GhaithAI.API.Migrations
+namespace GhaithAI.GaithAI.Infrastructure.Presistance.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260603155004_AddUserAssessment")]
-    partial class AddUserAssessment
+    [Migration("20260605000931_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -383,14 +383,19 @@ namespace GhaithAI.API.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MoodAfter")
-                        .HasColumnType("int");
+                    b.Property<string>("MoodAfter")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("MoodBefore")
-                        .HasColumnType("int");
+                    b.Property<string>("MoodBefore")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PromptType")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Tags")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")

@@ -1,10 +1,13 @@
+using GhaithAI.API.Data;
+using GhaithAI.API.Repositories.Class;
+using GhaithAI.API.Repositories.Interfaces;
 
 namespace GhaithAI.API.Repositories.UnitWork
 {
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
-        private IChatRepository _chat;
+        private ISessionRepository _session;
         private IMessageRepository _message;
         private IRiskRepository _risk;
         private ISelfHelpRepository _selfHelp;
@@ -15,7 +18,7 @@ namespace GhaithAI.API.Repositories.UnitWork
                 "ApplicationDbContext cannot be null. Ensure DbContext is properly registered in DI container.");
         }
 
-        public IChatRepository Chat => _chat ??= new ChatRepository(_context);
+        public ISessionRepository Session => _session ??= new SessionRepository(_context);
 
         public IMessageRepository Message => _message ??= new MessageRepository(_context);
 

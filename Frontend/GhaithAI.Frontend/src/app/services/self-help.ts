@@ -23,5 +23,8 @@ export class SelfHelp {
   getAllExercises(): Observable<GhaithExercise[]> {
     return this.http.get<GhaithExercise[]>(this.apiUrl);
   }
+  getExerciseById(id: string): Observable<GhaithExercise> {
+    return this.http.get<GhaithExercise>(`${this.apiUrl}/${id}`);
+  }
 
 }

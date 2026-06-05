@@ -92,7 +92,7 @@
               "RelativeDocumentMoniker": "GhaithAI.API\\GaithAI.Infrastructure\\Extensions\\InfrastructureRegistration.cs",
               "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\GaithAI.Infrastructure\\Extensions\\InfrastructureRegistration.cs",
               "RelativeToolTip": "GhaithAI.API\\GaithAI.Infrastructure\\Extensions\\InfrastructureRegistration.cs",
-              "ViewState": "AgIAABMAAAAAZmZmZmYjwCUAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-05T12:28:29.735Z",
               "EditorCaption": ""
@@ -107,8 +107,7 @@
               "RelativeToolTip": "GhaithAI.API\\GaithAI.API\\Program.cs",
               "ViewState": "AgIAAAoAAAAAAAAAAAAAwBIAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-05T12:28:23.825Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-05T12:28:23.825Z"
             },
             {
               "$type": "Document",
@@ -118,7 +117,7 @@
               "RelativeDocumentMoniker": "GhaithAI.API\\appsettings.json",
               "ToolTip": "D:\\Full Stack .Net ITI\\GaithAI\\Backend\\GhaithAI.API\\GhaithAI.API\\appsettings.json",
               "RelativeToolTip": "GhaithAI.API\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAiAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-06-05T11:44:13.488Z",
               "EditorCaption": ""
@@ -133,8 +132,7 @@
               "RelativeToolTip": "GhaithAI.API\\Program.cs",
               "ViewState": "AgIAAGIAAAAAAAAAAAAcwGgAAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-03T16:14:06.809Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-03T16:14:06.809Z"
             },
             {
               "$type": "Document",
@@ -146,8 +144,7 @@
               "RelativeToolTip": "GhaithAI.API\\GaithAI.Domain\\Entities\\ApplicationUser.cs",
               "ViewState": "AgIAACIAAAAAAAAAAAAcwDgAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-30T09:39:10.952Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-30T09:39:10.952Z"
             },
             {
               "$type": "Document",
@@ -159,8 +156,7 @@
               "RelativeToolTip": "GhaithAI.API\\GaithAI.Application\\Services\\Class\\AuthService.cs",
               "ViewState": "AgIAAOYAAAAAAAAAAAAcwPsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-28T09:34:19.765Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-28T09:34:19.765Z"
             },
             {
               "$type": "Document",
@@ -172,8 +168,7 @@
               "RelativeToolTip": "GhaithAI.API\\GaithAI.Application\\DTOs\\Auth\\RegisterDTO.cs",
               "ViewState": "AgIAABcAAAAAAAAAAAAmwC4AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-28T09:29:30.405Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-28T09:29:30.405Z"
             },
             {
               "$type": "Document",
@@ -185,8 +180,7 @@
               "RelativeToolTip": "GhaithAI.API\\GaithAI.API\\Controllers\\AuthController.cs",
               "ViewState": "AgIAAB4AAAAAAAAAAAAAADwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-28T09:37:57.194Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-28T09:37:57.194Z"
             },
             {
               "$type": "Document",
