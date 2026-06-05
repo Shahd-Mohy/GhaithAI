@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angula
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SelfHelpComponent } from '../../../selfHelp/self-help';
+import { MoodTrackerComponent } from '../../../support/mood/mood';
 
 interface NavItem {
   label: string;
@@ -20,7 +21,7 @@ interface QuickAction {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, SelfHelpComponent],
+  imports: [CommonModule, RouterLink, SelfHelpComponent, MoodTrackerComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })

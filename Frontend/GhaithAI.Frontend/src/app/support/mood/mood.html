@@ -1,0 +1,279 @@
+<div class="mood-tracker-container">
+  <!-- PAGE HEADER -->
+  <header class="mood-header">
+    <div>
+      <h1 class="mood-title">Mood Tracker</h1>
+      <p class="mood-subtitle">Track your emotional patterns over time</p>
+    </div>
+    <button class="log-mood-btn" (click)="openLogModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-icon">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Log Mood
+    </button>
+  </header>
+
+  <!-- STATS ROW -->
+  <section class="stats-row">
+    <!-- Average Mood Card -->
+    <div class="stat-card">
+      <div class="stat-label">Average Mood</div>
+      <div class="stat-value">{{ avgMoodScore > 0 ? avgMoodScore + ' / 5' : 'N/A' }}</div>
+      <div class="stat-subtext" [ngClass]="moodTrendClass">
+        <span class="trend-indicator" *ngIf="moodTrendClass === 'trend-up'">▲</span>
+        <span class="trend-indicator" *ngIf="moodTrendClass === 'trend-down'">▼</span>
+        {{ moodTrendLabel }}
+      </div>
+    </div>
+
+    <!-- Days Logged Card -->
+    <div class="stat-card">
+      <div class="stat-label">Days Logged</div>
+      <div class="stat-value">{{ daysLoggedCount }}</div>
+      <div class="stat-subtext">This month</div>
+    </div>
+
+    <!-- Current Streak Card -->
+    <div class="stat-card">
+      <div class="stat-label">Current Streak</div>
+      <div class="stat-value">{{ currentStreak }} {{ currentStreak === 1 ? 'day' : 'days' }}</div>
+      <div class="stat-subtext text-teal" *ngIf="currentStreak > 0">Keep it up!</div>
+      <div class="stat-subtext" *ngIf="currentStreak === 0">Log today to start!</div>
+    </div>
+
+    <!-- Top Emotion Card -->
+    <div class="stat-card">
+      <div class="stat-label">Top Emotion</div>
+      <div class="stat-value">{{ topEmotion }}</div>
+      <div class="stat-subtext" *ngIf="topEmotion !== 'None'">{{ topEmotionCount }} {{ topEmotionCount === 1 ? 'occurrence' : 'occurrences' }}</div>
+      <div class="stat-subtext" *ngIf="topEmotion === 'None'">No logs yet</div>
+    </div>
+  </section>
+
+  <!-- MAIN GRID (CALENDAR & INSIGHTS) -->
+  <div class="mood-main-grid">
+    <!-- CALENDAR CARD -->
+    <div class="calendar-card">
+      <div class="calendar-header">
+        <div class="calendar-title-group">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="calendar-icon">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span class="calendar-month-name">{{ getMonthName() }}</span>
+        </div>
+        <div class="calendar-nav-buttons">
+          <button class="nav-arrow-btn" (click)="prevMonth()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <button class="nav-arrow-btn" (click)="nextMonth()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Weekdays Header -->
+      <div class="weekdays-grid">
+        <span>Sun</span>
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+      </div>
+
+      <!-- Days Grid -->
+      <div class="days-grid">
+        @for (day of daysGrid; track $index) {
+          @if (day.date === null) {
+            <div class="day-cell empty"></div>
+          } @else {
+            <div class="day-cell" 
+                 [ngClass]="[day.moodKey ? 'mood-' + day.moodKey : 'mood-empty', isSelected(day) ? 'selected' : '', day.isToday ? 'today' : '', day.isFuture ? 'future-day' : '']"
+                 (click)="selectDay(day)"
+                 [attr.title]="day.isFuture ? 'Cannot log future dates' : null">
+              <span class="day-number">{{ day.dayNumber }}</span>
+              <span class="day-emoji" *ngIf="day.moodKey">{{ getMoodEmoji(day.moodKey) }}</span>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Legend -->
+      <div class="calendar-legend">
+        <div class="legend-item">
+          <span class="legend-color color-very-low"></span>
+          <span class="legend-text">Very Low</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color color-low"></span>
+          <span class="legend-text">Low</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color color-okay"></span>
+          <span class="legend-text">Okay</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color color-good"></span>
+          <span class="legend-text">Good</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color color-great"></span>
+          <span class="legend-text">Great</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSIGHTS COLUMN -->
+    <div class="insights-column">
+      <div class="insights-card">
+        <h2 class="insights-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="insight-title-icon">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+            <polyline points="17 6 23 6 23 12"/>
+          </svg>
+          Insights
+        </h2>
+        <p class="insights-subtitle">Patterns from your mood data</p>
+
+        <div class="insights-list">
+          @for (insight of insightsList; track insight.type) {
+            <div class="insight-card" [ngClass]="insight.class">
+              <div class="insight-card-header">
+                <span class="insight-label">{{ insight.title }}</span>
+              </div>
+              <p class="insight-desc">{{ insight.desc }}</p>
+            </div>
+          }
+        </div>
+
+        <!-- Top Emotions Sub-section -->
+        <div class="top-emotions-section">
+          <h3 class="top-emotions-title">Top Emotions This Month</h3>
+          <div class="emotions-chips-row">
+            @for (em of topEmotionsList; track em.name) {
+              <span class="emotion-chip-badge">
+                {{ em.name }} <span class="chip-count">{{ em.count }}</span>
+              </span>
+            } @empty {
+              <p class="no-emotions-text">No emotions logged yet. Start logging your mood!</p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT HISTORY -->
+  <section class="recent-history-section" *ngIf="historyLogs.length > 0">
+    <h2 class="history-title">Recent History</h2>
+    <div class="history-list">
+      @for (log of historyLogs; track log.moodLogId) {
+        <div class="history-card">
+          <div class="history-icon mood-{{ getMoodEmoji(log.moodLabel?.toLowerCase() || 'okay') ? log.moodLabel?.toLowerCase() : 'okay' }}">
+            {{ getMoodEmoji(log.moodLabel?.toLowerCase() || 'okay') || '⛅' }}
+          </div>
+          <div class="history-details">
+            <div class="history-date">{{ log.date | date:'mediumDate' }}</div>
+            <div class="history-mood-label">{{ log.moodLabel || 'Okay' }}</div>
+          </div>
+          <div class="history-emotions">
+            @for (em of (log.emotionTags || []); track em) {
+              <span class="emotion-chip">{{ em }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- LOG MOOD DIALOG / MODAL -->
+  @if (showLogModal) {
+    <div class="modal-backdrop" (click)="closeLogModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <div class="modal-header">
+          <h3 class="modal-title-text">Log Your Mood</h3>
+          <button class="modal-close-btn" (click)="closeLogModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          <!-- Date Selection -->
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-input date-picker" [max]="maxDateStr" [value]="modalDateStr" (change)="modalDateStr = $any($event.target).value" />
+          </div>
+
+          <!-- Mood Rating -->
+          <div class="form-group">
+            <label class="form-label">How do you feel?</label>
+            <div class="mood-selection-row">
+              @for (opt of moodOptions; track opt.key) {
+                <button type="button" 
+                        class="mood-select-btn" 
+                        [class.active]="modalMood === opt.key"
+                        (click)="setModalMood(opt.key)">
+                  <span class="select-emoji">{{ opt.emoji }}</span>
+                  <span class="select-label">{{ opt.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Emotions Selector -->
+          <div class="form-group">
+            <label class="form-label">Select feelings / emotions (optional)</label>
+            <div class="emotions-grid-selection">
+              @for (em of emotionOptions; track em) {
+                <button type="button" 
+                        class="emotion-choice-btn"
+                        [class.selected]="modalEmotions.includes(em)"
+                        (click)="toggleModalEmotion(em)">
+                  {{ em }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Notes Text Area -->
+          <div class="form-group">
+            <label class="form-label">Notes (Optional)</label>
+            <textarea class="form-input textarea-notes" 
+                      placeholder="Write how your day went, what influenced your mood, etc..."
+                      [value]="modalNotes"
+                      (input)="modalNotes = $any($event.target).value"></textarea>
+            @if (isEditing) {
+              <div class="edit-notes-info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>You are updating an existing log. Previous notes are kept safe. If you type here, they will be replaced.</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeLogModal()">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="saveMoodLog()">Save Log</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

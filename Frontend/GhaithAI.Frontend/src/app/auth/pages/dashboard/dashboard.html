@@ -258,6 +258,11 @@
     @if (activePage === 'tools' || activePage === 'breathing') {
     <app-self-help-dashboard></app-self-help-dashboard>
     }
+    @if (activePage === 'mood') {
+    <div class="scroll-area">
+      <app-mood-tracker></app-mood-tracker>
+    </div>
+    }
     @if (activePage === 'chat') {
     <div class="scroll-area" style="padding: 24px; color: #0B8FAC;">
       <h2>Talk to AI Page Coming Soon...</h2>
