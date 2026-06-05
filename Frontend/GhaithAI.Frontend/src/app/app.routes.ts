@@ -1,62 +1,66 @@
 import { Routes } from '@angular/router';
 
 import { LoginComponent }
-from './auth/pages/login/login';
+  from './auth/pages/login/login';
 
 import { RegisterComponent }
-from './auth/pages/register/register';
+  from './auth/pages/register/register';
 
 import { ProfileComponent }
-from './auth/pages/profile/profile';
+  from './auth/pages/profile/profile';
 
 import { DashboardComponent }
-from './auth/pages/dashboard/dashboard';
+  from './auth/pages/dashboard/dashboard';
 
 import { authGuard }
-from './guards/auth-guard';
+  from './guards/auth-guard';
 
 import { LandingComponent }
-from '../app/landing/landing';
+  from '../app/landing/landing';
+import { ExerciseDetailsComponent } from './selfHelp/exercise-details-component/exercise-details-component';
 
 export const routes: Routes = [
 
   {
-    path:'',
+    path: '',
     component: LandingComponent
   },
 
   {
-    path:'login',
-    loadComponent:() =>
+    path: 'login',
+    loadComponent: () =>
       import('./auth/pages/login/login')
-      .then(m => m.LoginComponent)
+        .then(m => m.LoginComponent)
   },
 
   {
-    path:'register',
-    loadComponent:() =>
+    path: 'register',
+    loadComponent: () =>
       import('./auth/pages/register/register')
-      .then(m => m.RegisterComponent)
+        .then(m => m.RegisterComponent)
   },
 
   {
-    path:'profile',
-    canActivate:[authGuard],
-    loadComponent:() =>
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () =>
       import('./auth/pages/profile/profile')
-      .then(m => m.ProfileComponent)
+        .then(m => m.ProfileComponent)
   },
 
   {
-    path:'dashboard',
-    canActivate:[authGuard],
-    loadComponent:() =>
+    path: 'dashboard',
+    canActivate: [authGuard],
+    loadComponent: () =>
       import('./auth/pages/dashboard/dashboard')
-      .then(m => m.DashboardComponent)
+        .then(m => m.DashboardComponent)
   },
-
   {
-    path:'**',
-    redirectTo:''
+    path: 'dashboard/self-help/exercise/:id',
+    component: ExerciseDetailsComponent
+  },
+  {
+    path: '**',
+    redirectTo: ''
   }
 ];
