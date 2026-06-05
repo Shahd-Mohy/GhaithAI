@@ -1,6 +1,36 @@
-## Visual Studio Tooling
+# ==============================================================================
+# GhaithAI Consolidated Gitignore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Operating System Files
+# ------------------------------------------------------------------------------
+# Windows junk / thumbnail databases
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux files
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+
+# ------------------------------------------------------------------------------
+# 2. IDEs, Editors & Tooling
+# ------------------------------------------------------------------------------
+# Visual Studio Tooling / Cache
 .vs/
-*/.vs/
+**/ .vs/
 v17/
 *.suo
 *.user
@@ -8,31 +38,102 @@ v17/
 *.sln.docstates
 *.dtbcache*
 
-## Compile outputs
+# Rider / JetBrains IDEs (ReSharper, WebStorm, Rider, etc.)
+.idea/
+*.sln.iml
+.idea_modules/
+
+# Visual Studio Code
+# Ignore the entire .vscode folder contents by default, except specified settings
+**/.vscode/*
+!**/.vscode/settings.json
+!**/.vscode/tasks.json
+!**/.vscode/launch.json
+!**/.vscode/extensions.json
+!**/.vscode/mcp.json
+
+# Eclipse, NetBeans, Cloud9, Sublime, and other generic editors
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/
+.history/*
+
+
+# ------------------------------------------------------------------------------
+# 3. .NET Specific Rules (Backend)
+# ------------------------------------------------------------------------------
+# Built outputs & compilations
+[Dd]ebug/
+[Dd]ebug_AnyCPU/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
 bin/
 obj/
-*/bin/
-*/obj/
+bbin/
+**/bin/
+**/obj/
 
-## Secret / Configuration management
-appsettings.Development.json
-
-## Testing outputs
+# Testing outputs
 TestResults/
 
-## Rider / Resharper / VS Code
-.idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln.iml
 
-## Project Reference Document
+# ------------------------------------------------------------------------------
+# 4. Node.js & Angular Specific Rules (Frontend)
+# ------------------------------------------------------------------------------
+# Dependency directory
+node_modules/
+**/node_modules/
+
+# Angular / Webpack / Bazel build outputs
+/Frontend/GhaithAI.Frontend/dist/
+/Frontend/GhaithAI.Frontend/tmp/
+/Frontend/GhaithAI.Frontend/out-tsc/
+/Frontend/GhaithAI.Frontend/bazel-out/
+/Frontend/GhaithAI.Frontend/coverage/
+/Frontend/GhaithAI.Frontend/.angular/cache/
+
+# Sass and local lock/log files
+.sass-cache/
+connect.lock
+libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+__screenshots__/
+/Frontend/GhaithAI.Frontend/typings/
+
+
+# ------------------------------------------------------------------------------
+# 5. Secrets, Environments, & Config Management (CRITICAL)
+# ------------------------------------------------------------------------------
+# Environment config secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# .NET development / production environment appsettings overrides
+appsettings.Development.json
+appsettings.Production.json
+
+
+# ------------------------------------------------------------------------------
+# 6. Custom Project Ignored Files / Documentation
+# ------------------------------------------------------------------------------
+# Project Reference Documents
 Docs/backend-docs/GaithAI.Domain_Reference.md
 Docs/backend-docs/GaithAI.Infrastructure_Reference.md
 Docs/backend-docs/GaithAI.Application_Reference.md
 Docs/backend-docs/GaithAI.API_Reference.md
 Docs/GhaithAI_Frontend_And_Workflow_Reference.md
 
+# Ignore all other contents under Docs except explicitly tracked files
 Docs/*
