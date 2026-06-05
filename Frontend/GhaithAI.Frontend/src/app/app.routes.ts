@@ -59,6 +59,35 @@ export const routes: Routes = [
     path: 'dashboard/self-help/exercise/:id',
     component: ExerciseDetailsComponent
   },
+  // ── [CHAT TEAM] — Support shell + chat routes ─────────────────────────────
+  {
+    path: 'support',
+    loadComponent: () =>
+      import('./support/layout').then((m) => m.SupportLayout),
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'chat', pathMatch: 'full' },
+      {
+        path: 'chat',
+        loadComponent: () =>
+          import('./support/chat/page').then((m) => m.ChatPage),
+        title: 'Chat — GhaithAI',
+      },
+      {
+        path: 'chatsession',
+        loadComponent: () =>
+          import('./support/chatsession/page').then((m) => m.ChatSessionPage),
+        title: 'Sessions — GhaithAI',
+      },
+      {
+        path: 'crisis',
+        loadComponent: () =>
+          import('./support/emergency/page').then((m) => m.EmergencyPage),
+        title: 'Crisis Support — GhaithAI',
+      }
+    ],
+  },
+
   {
     path: '**',
     redirectTo: ''
