@@ -12,8 +12,8 @@ export class ExerciseDetailsComponent implements OnInit, OnDestroy {
   exercise: GhaithExercise | null = null;
   isLoading = true;
 
-  timeLeft: number = 0;              // الوقت المتبقي بالثواني
-  formattedTime: string = '00:00';    // الوقت بالشكل المنسق (MM:SS)
+  timeLeft: number = 0;           
+  formattedTime: string = '00:00';    
   timerInterval: any;
   isRunning: boolean = false;
 
@@ -45,7 +45,6 @@ export class ExerciseDetailsComponent implements OnInit, OnDestroy {
         this.exercise = data;
         this.isLoading = false;
 
-        // 🌟 بنجهز الوقت المبدئي فقط بناءً على الداتابيز بدون ما نشغله تلقائياً
         if (this.exercise && this.exercise.durationMinutes) {
           this.timeLeft = this.exercise.durationMinutes * 60;
           this.updateFormattedTime();
@@ -61,19 +60,18 @@ export class ExerciseDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // 🌟 1. زرار التشغيل (Start)
   startTimer() {
     if (this.isRunning) return;
 
     this.isRunning = true;
-    this.isCompleted = false; // لو بدأنا، نضمن إن حالة الاكتمال ملغية
+    this.isCompleted = false; 
 
     this.timerInterval = setInterval(() => {
       if (this.timeLeft > 0) {
         this.timeLeft--;
         this.updateFormattedTime();
       } else {
-        // 🌟 أول ما التايمر يصفر
+      
         this.completeExercise();
       }
       this.cdr.detectChanges();
@@ -81,13 +79,12 @@ export class ExerciseDetailsComponent implements OnInit, OnDestroy {
   }
   completeExercise() {
     this.isRunning = false;
-    this.isCompleted = true; // قلب الحالة لـ مكتمل فوراً
+    this.isCompleted = true; 
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
   }
 
-  // 🌟 2. زرار الإيقاف المؤقت (Pause)
   pauseTimer() {
     this.isRunning = false;
     if (this.timerInterval) {
@@ -96,10 +93,9 @@ export class ExerciseDetailsComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // 🌟 3. زرار إعادة التعيين (Reset)
   resetTimer() {
     this.pauseTimer();
-    this.isCompleted = false; // ريست لحالة الاكتمال
+    this.isCompleted = false; 
     if (this.exercise && this.exercise.durationMinutes) {
       this.timeLeft = this.exercise.durationMinutes * 60;
       this.updateFormattedTime();

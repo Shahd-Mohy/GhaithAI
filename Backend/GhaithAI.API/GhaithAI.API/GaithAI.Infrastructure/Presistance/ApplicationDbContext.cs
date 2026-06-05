@@ -1,4 +1,4 @@
-﻿using GhaithAI.API.Models;
+using GhaithAI.API.Models;
 using GhaithAI.GaithAI.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
@@ -39,12 +39,13 @@ namespace GhaithAI.API.Presistance
         public DbSet<CrisisResourceConfig> CrisisResourceConfigs { get; set; }
 
         public DbSet<UserAssessment> UserAssessments { get; set; }
+        public DbSet<ExerciseTip> ExerciseTips { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=GhaithAI_DB;Trusted_Connection=True;TrustServerCertificate=True;");
+                optionsBuilder.UseSqlServer("Server=.;Database=GhaithAI_DB;Trusted_Connection=True;TrustServerCertificate=True;");
             }
         }
         protected override void OnModelCreating(ModelBuilder builder)

@@ -10,6 +10,7 @@ export interface GhaithExercise {
   contentUrl: string;
   durationMinutes: number;
   difficultyLevel: string;
+  exerciseTips: string[];
 }
 @Injectable({
   providedIn: 'root',

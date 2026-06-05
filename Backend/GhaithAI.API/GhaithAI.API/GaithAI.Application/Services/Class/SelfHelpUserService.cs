@@ -1,3 +1,5 @@
+using GhaithAI.GaithAI.Application.DTOs.SelfHelp;
+
 namespace GhaithAI.API.GaithAI.Application.Services.Class
 {
     public class SelfHelpUserService : ISelfHelpUserService
@@ -40,18 +42,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                     var cleanDifficulty = difficulty.Trim();
                     query = query.Where(c => c.DifficultyLevel != null && c.DifficultyLevel.Equals(cleanDifficulty, StringComparison.OrdinalIgnoreCase));
                 }
-                //var result = query.Select(src => new UserSelfHelpResponseDto
-                //{
-                //    Id = src.Id,
-                //    Title = src.Title,
-                //    Type = src.Type,
-                //    Description = src.Description,
-                //    ContentUrl = src.ContentUrl,
-                //    DurationMinutes = src.DurationMinutes,
-                //    DifficultyLevel = src.DifficultyLevel
-                //}).ToList();
 
-                //return result;
 
                 return _mapper.Map<IEnumerable<UserSelfHelpResponseDto>>(query);
             }
@@ -64,7 +55,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
            
         }
 
-        public async Task<UserSelfHelpResponseDto> GetContentByIdAsync(Guid id)
+        public async Task<UserSelfHelpDetailsResponseDto> GetContentByIdAsync(Guid id)
         {
             if (id == Guid.Empty)
             {
@@ -78,21 +69,21 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                     _logger.LogError("SelfHelp repository is not available.");
                     return null!;
                 }
-                var content = await _unitOfWork.SelfHelp.GetByIdAsync(id);
+
+                var content = await _unitOfWork.SelfHelp.GetContentWithTipsAsync(id);
+
                 if (content == null || !content.IsActive || content.IsDeleted)
                 {
                     return null!;
                 }
 
-                return _mapper.Map<UserSelfHelpResponseDto>(content);
-
+                return _mapper.Map<UserSelfHelpDetailsResponseDto>(content);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while accessing the SelfHelp repository.");
                 throw new ApplicationException("An error occurred while accessing the self-help repository, please try again later.", ex);
             }
-        
         }
     }
 }
