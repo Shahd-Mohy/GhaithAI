@@ -1,13 +1,34 @@
-/* الحاوية الرئيسية للصفحة */
 .tools-container {
   padding: 24px;
   max-width: 1100px;
   margin: 0 auto;
   font-family: system-ui, -apple-system, sans-serif;
   color: #1e293b;
+
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 40px;
 }
 
-/* العناوين والـ Typography */
+.tools-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tools-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tools-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+
+}
+
+.tools-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 .header-section {
   margin-bottom: 32px;
 }
