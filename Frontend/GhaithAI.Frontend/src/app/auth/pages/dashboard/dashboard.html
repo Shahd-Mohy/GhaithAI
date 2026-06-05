@@ -76,7 +76,7 @@
       </a>
     </nav>
 
-    <button class="crisis-btn" type="button">
+    <button class="crisis-btn" type="button" (click)="navigate('crisis')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <path
           d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -132,7 +132,7 @@
         <p class="checkin-sub">Take a moment to check in with yourself</p>
         <div class="mood-row">
           <button *ngFor="let mood of moods" type="button" class="mood-btn" [class.selected]="selectedMood === mood.key"
-            (click)="selectMood(mood.key)">
+            (click)="selectMood(mood.key); navigate('mood')">
             <span class="mood-emoji">{{ mood.emoji }}</span>
             <span class="mood-label">{{ mood.label }}</span>
           </button>
@@ -200,7 +200,7 @@
               <span class="stat-value">6 / 7</span>
             </div>
           </div>
-          <button class="outline-btn" type="button">View Full History →</button>
+          <button class="outline-btn" type="button" (click)="navigate('mood')">View Full History →</button>
         </div>
 
         <!-- PERSONAL INSIGHTS -->
@@ -223,7 +223,7 @@
               <div class="insight-text">{{ insight }}</div>
             </div>
           </div>
-          <button class="outline-btn" type="button">See All Insights →</button>
+          <button class="outline-btn" type="button" (click)="navigate('learn')">See All Insights →</button>
         </div>
       </div>
 
@@ -263,9 +263,30 @@
       <app-mood-tracker></app-mood-tracker>
     </div>
     }
+    @if (activePage === 'journal') {
+    <div class="scroll-area">
+      <app-journal></app-journal>
+    </div>
+    }
     @if (activePage === 'chat') {
     <div class="scroll-area" style="padding: 24px; color: #0B8FAC;">
       <h2>Talk to AI Page Coming Soon...</h2>
+    </div>
+    }
+    @if (activePage === 'learn') {
+    <div class="scroll-area" style="padding: 24px; color: #0B8FAC;">
+      <h2>Psychoeducation & Learn Page Coming Soon...</h2>
+    </div>
+    }
+    @if (activePage === 'professionals') {
+    <div class="scroll-area" style="padding: 24px; color: #0B8FAC;">
+      <h2>Find a Professional Page Coming Soon...</h2>
+    </div>
+    }
+    @if (activePage === 'crisis') {
+    <div class="scroll-area" style="padding: 24px; color: #DC2626;">
+      <h2>Crisis Support Page Coming Soon...</h2>
+      <p>If you are in immediate danger, please call your local emergency services.</p>
     </div>
     }<!-- /scroll-area -->
   </main>
