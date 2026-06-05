@@ -23,7 +23,7 @@ namespace GhaithAI.API.Repositories.Class
         public async Task<MoodLog?> GetByIdAsync(Guid moodLogId)
         {
             return await _context.MoodLogs
-                .Where(m => m.MoodLogId == moodLogId && !m.IsDeleted)
+                .Where(m => m.Id == moodLogId && !m.IsDeleted)
                 .FirstOrDefaultAsync();
         }
 
@@ -80,7 +80,7 @@ namespace GhaithAI.API.Repositories.Class
         public async Task<bool> BelongsToUserAsync(Guid moodLogId, string userId)
         {
             return await _context.MoodLogs
-                .AnyAsync(m => m.MoodLogId == moodLogId && m.UserId == userId && !m.IsDeleted);
+                .AnyAsync(m => m.Id == moodLogId && m.UserId == userId && !m.IsDeleted);
         }
 
         public void Update(MoodLog moodLog)
