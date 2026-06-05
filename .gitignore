@@ -200,8 +200,9 @@ appsettings.Production.json
 # ------------------------------------------------------------------------------
 # 6. Custom Project Ignored Files / Documentation
 # ------------------------------------------------------------------------------
-# Project Reference Documents
+Project Reference Documents
 Docs/backend-docs/*
+Docs/Frontend
 Docs/AI_Master_Reference
 Docs/GhaithAI_Frontend_And_Workflow_Reference.md
 Docs/AI_Prompt_Template.md
