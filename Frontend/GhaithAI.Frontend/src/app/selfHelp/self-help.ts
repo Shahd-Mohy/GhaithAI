@@ -110,8 +110,9 @@ export class SelfHelpComponent implements OnInit {
       this.activeCategoryName = categoryName; // يفتح الفئة الجديدة
     }
   }
+
   goToExercise(exerciseId: string) {
-    if (!exerciseId) return;
+    if (!exerciseId || exerciseId.startsWith('00000000')) return;
     this.router.navigate(['dashboard/self-help/exercise', exerciseId]);
   }
 }
