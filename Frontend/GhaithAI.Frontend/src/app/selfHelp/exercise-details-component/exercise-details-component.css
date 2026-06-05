@@ -1,7 +1,9 @@
 /* الحاوية الرئيسية */
 .exercise-page-container {
   padding: 24px;
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1000px;
+  /* مفرودة بشكل مريح جوه مساحة الداشبورد */
   margin: 0 auto;
   font-family: system-ui, -apple-system, sans-serif;
   color: #1e293b;
@@ -41,16 +43,15 @@
   color: #0f172a;
 }
 
-/* الـ Grid الأساسي - تقسيم الصفحة عمودين */
-.exercise-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  /* عمود التكنيكات أصغر من منطقة التمرين */
-  gap: 24px;
-  margin-bottom: 24px;
+/* 🌟 الحاوية الطولية الجديدة بديلة الـ Grid */
+.exercise-vertical-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* مسافة ثابتة ومتناسقة بين كل كارت والتاني */
 }
 
-/* كروت التكنيكات على اليمين */
+/* الكروت بكامل العرض */
 .sidebar-card,
 .center-card,
 .tips-card {
@@ -59,21 +60,14 @@
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-
-.section-heading {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  width: 100%;
+  /* تملأ كامل المساحة المتاحة طالما تحت بعض */
+  box-sizing: border-box;
 }
 
 .techniques-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
 .technique-item {
@@ -82,10 +76,6 @@
   padding: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-.technique-item:hover {
-  background: #f8fafc;
 }
 
 .technique-item.active {
@@ -109,6 +99,7 @@
 .main-exercise-content {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .center-card {
@@ -116,10 +107,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  min-height: 380px;
 }
 
-/* أنيميشن حلقات التنفس المتداخلة (نفس روح الصورة) */
+/* أنيميشن حلقات التنفس المتداخلة */
 .breathing-circle-wrapper {
   position: relative;
   width: 200px;
@@ -134,12 +125,12 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: #5eead4;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3;
   box-shadow: 0 4px 20px rgba(45, 212, 191, 0.3);
+  transition: background 0.3s ease;
 }
 
 .breathing-ring-middle {
@@ -221,7 +212,7 @@
 
 /* النصائح السفلية */
 .tips-section-container {
-  margin-top: 12px;
+  width: 100%;
 }
 
 .tips-heading {

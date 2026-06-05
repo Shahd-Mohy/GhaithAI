@@ -1,4 +1,4 @@
-@if (isLoading) {
+<!-- @if (isLoading) {
 <div class="loading-container">
   <div class="spinner"></div>
   <p>جاري تحميل أداة المساعدة الذاتية...</p>
@@ -18,9 +18,6 @@
 
     <div class="techniques-sidebar">
       <div class="sidebar-card">
-        <h2 class="section-heading">
-          <span class="icon">✨</span> Choose a Technique
-        </h2>
 
         <div class="techniques-list">
           <div class="technique-item active">
@@ -101,6 +98,107 @@
         </ul>
       </div>
     </div>
+  </div>
+
+</div>
+} -->
+@if (isLoading) {
+<div class="loading-container">
+  <div class="spinner"></div>
+  <p>جاري تحميل أداة المساعدة الذاتية...</p>
+</div>
+} @else if (exercise) {
+<div class="exercise-page-container">
+
+  <div class="exercise-header">
+    <div class="header-titles">
+      <h1 class="main-title">{{ exercise.type }}</h1>
+      <p class="sub-title">Take a moment to calm your mind</p>
+    </div>
+    <a routerLink="/dashboard/self-help" class="back-link">Back to Tools</a>
+  </div>
+
+  <div class="exercise-vertical-stack">
+
+    <div class="techniques-sidebar">
+      <div class="sidebar-card">
+        <div class="techniques-list">
+          <div class="technique-item active">
+            <h3 class="tech-title">{{ exercise.title }}</h3>
+            <p class="tech-desc">Calming technique based on your wellbeing need</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-exercise-content">
+      <div class="center-card">
+
+        <div class="breathing-circle-wrapper">
+          <div class="breathing-ring-outer"></div>
+          <div class="breathing-ring-middle"></div>
+          <div class="breathing-circle-core" [style.background]="isCompleted ? '#10b981' : '#5eead4'">
+
+            @if (isCompleted) {
+            <span class="timer-display"
+              style="font-size: 20px; color: white; font-weight: 800; text-align: center; animation: fadeIn 0.5s ease-in-out;">
+              Great Job!
+            </span>
+            } @else {
+            <span class="timer-display">{{ formattedTime }}</span>
+            }
+
+          </div>
+        </div>
+
+        <div class="control-section">
+          <h2 class="active-exercise-title">{{ exercise.title }}</h2>
+          <p class="exercise-sub-meta">⏱ الوقت المتبقي · المستوى: {{ exercise.difficultyLevel }}</p>
+
+          <div class="buttons-group">
+
+            @if (isCompleted) {
+            <button (click)="resetTimer()" class="btn-start"
+              style="background: #10b981; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+              🔄 Repeat Exercise
+            </button>
+            }
+            @else {
+            @if (!isRunning) {
+            <button (click)="startTimer()" class="btn-start">
+              ▶️ Start exercise
+            </button>
+            } @else {
+            <button (click)="pauseTimer()" class="btn-pause">
+              ⏸️ Pause
+            </button>
+            <button (click)="resetTimer()" class="btn-reset">
+              🔄 Reset
+            </button>
+            }
+            }
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="tips-section-container">
+      <div class="tips-card">
+        <h3 class="tips-heading">Tips for Better Wellbeing:</h3>
+        <div class="tips-content" style="text-align: right; direction: rtl;">
+          <p class="db-description">{{ exercise.description }}</p>
+
+          <ul class="static-tips-list">
+            <li><span>1</span> اتخذ وضعية جلوس مريحة مع الحفاظ على استقامة ظهرك.</li>
+            <li><span>2</span> خذ نفساً عميقاً وبطيئاً من الأنف ثم اخرج الزفير بهدوء.</li>
+            <li><span>3</span> ركّز بكامل وعيك على حركة شهيقك وزفيرك الحالية.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </div>

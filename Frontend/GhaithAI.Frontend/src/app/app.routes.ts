@@ -57,7 +57,7 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard/self-help/exercise/:id',
-    component: ExerciseDetailsComponent // الـ Component الجديدة اللي هتعرض الفيديو والوصف
+    component: ExerciseDetailsComponent
   },
   {
     path: '**',
