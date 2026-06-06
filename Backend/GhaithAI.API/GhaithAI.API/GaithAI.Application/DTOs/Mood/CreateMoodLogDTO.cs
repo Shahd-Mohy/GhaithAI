@@ -1,4 +1,4 @@
-﻿namespace GhaithAI.API.DTOs.Mood
+namespace GhaithAI.API.DTOs.Mood
 {
     public class CreateMoodLogDTO
     {
@@ -13,5 +13,6 @@
         // Lisa Han4of 
         public string? Notes { get; set; }
         public string Source { get; set; } = "manual";
+        public DateTime? LoggedAt { get; set; }
     }
 }

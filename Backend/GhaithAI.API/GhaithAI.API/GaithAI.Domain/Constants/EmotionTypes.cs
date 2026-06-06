@@ -29,5 +29,12 @@
                        .Select(t => t.Trim())
                        .ToList();
         }
+
+        public static readonly string[] ValidEmotions = new[]
+        {
+           "Calm", "Anxious", "Grateful", "Tired",
+           "Happy", "Sad", "Energetic", "Stressed",
+           "Relaxed", "Frustrated", "Excited", "Lonely"
+        };
     }
 }

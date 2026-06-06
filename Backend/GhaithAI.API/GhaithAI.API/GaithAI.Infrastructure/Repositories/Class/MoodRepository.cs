@@ -56,8 +56,8 @@ namespace GhaithAI.API.Repositories.Class
 
         public async Task<List<MoodLog>> GetCalendarAsync(string userId, int year, int month)
         {
-            var startDate = new DateTime(year, month, 1);
-            var endDate = startDate.AddMonths(1).AddTicks(-1);
+            var startDate = DateTime.SpecifyKind(new DateTime(year, month, 1), DateTimeKind.Utc).AddDays(-1);
+            var endDate = DateTime.SpecifyKind(new DateTime(year, month, 1), DateTimeKind.Utc).AddMonths(1).AddDays(1).AddTicks(-1);
 
             var logs = await _context.MoodLogs
                 .Where(m => m.UserId == userId
@@ -67,10 +67,16 @@ namespace GhaithAI.API.Repositories.Class
                 .OrderBy(m => m.LoggedAt)
                 .ToListAsync();
 
+            var egyptTz = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
 
             var calendarEntries = logs
-                .GroupBy(m => m.LoggedAt.Date)       // Group all logs on the same day
-                .Select(g => g.OrderByDescending(m => m.LoggedAt).First()) // Take the last one
+                .Select(m => new {
+                    Log = m,
+                    LocalDate = TimeZoneInfo.ConvertTimeFromUtc(m.LoggedAt, egyptTz).Date
+                })
+                .Where(x => x.LocalDate.Year == year && x.LocalDate.Month == month) 
+                .GroupBy(x => x.LocalDate)
+                .Select(g => g.OrderByDescending(x => x.Log.LoggedAt).First().Log)
                 .OrderBy(m => m.LoggedAt.Date)
                 .ToList();
 

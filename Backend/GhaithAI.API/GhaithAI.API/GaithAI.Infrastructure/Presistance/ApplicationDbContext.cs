@@ -45,7 +45,7 @@ namespace GhaithAI.API.Presistance
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=.;Database=GhaithAI_DB;Trusted_Connection=True;TrustServerCertificate=True;");
+                optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=GhaithAI_DB;Trusted_Connection=True;TrustServerCertificate=True;");
             }
         }
         protected override void OnModelCreating(ModelBuilder builder)
