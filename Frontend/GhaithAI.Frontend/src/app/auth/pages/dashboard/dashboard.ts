@@ -1,17 +1,16 @@
 import {
-  Component, OnInit, AfterViewInit,
+  Component, OnInit, AfterViewInit, OnDestroy,
   ElementRef, ViewChild, inject, ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { SelfHelpComponent } from '../../../selfHelp/self-help';
 import { MoodTrackerComponent } from '../../../support/mood/mood';
 import { JournalComponent } from '../../../support/journal/journal';
-import {
-  InsightService,
-  DashboardViewModel,
-  DailyMoodDTO
-} from '../../../services/insight.service';
+import { InsightService, DashboardViewModel, DailyMoodDTO } from '../../../services/insight.service';
+import { DashboardRefreshService } from '../../../services/dashboard-refresh.service';
 
 interface QuickAction {
   name: string; desc: string; page: string; colorClass: string; icon: string;
@@ -24,14 +23,16 @@ interface QuickAction {
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
-export class DashboardComponent implements OnInit, AfterViewInit {
+export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('moodChart') moodChartRef!: ElementRef<HTMLCanvasElement>;
 
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly insightService = inject(InsightService);
+  private readonly refreshService = inject(DashboardRefreshService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly destroy$ = new Subject<void>();
 
   // ── state ────────────────────────────────────────────────────────
   activePage = 'home';
@@ -85,15 +86,37 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       if (params['page']) this.activePage = params['page'];
     });
 
+    // Initial load
+    this.loadDashboard();
+
+    // ✅ Listen for mood/journal saves — reload dashboard automatically
+    // even if the user stays on the mood page without navigating home
+    this.refreshService.refresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Small delay so the backend has committed the new record
+        setTimeout(() => this.loadDashboard(), 300);
+      });
+  }
+
+  ngAfterViewInit(): void { /* chart drawn inside loadDashboard */ }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ── data loading ─────────────────────────────────────────────────
+  loadDashboard(): void {
+    this.isLoading = true;
+    this.hasError = false;
+
     this.insightService.getDashboard().subscribe({
       next: data => {
         this.vm = data;
         this.isLoading = false;
-        this.hasError = false;
         this.cdr.detectChanges();
-        // Schedule chart draw with retry — waits for the canvas to be
-        // laid out by the browser (clientWidth > 0) before drawing
-        this.scheduleChartDraw(20);
+        setTimeout(() => this.drawMoodChart(), 50);
       },
       error: () => {
         this.isLoading = false;
@@ -102,26 +125,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void { /* chart drawn by scheduleChartDraw */ }
-
-  /**
-   * Retries drawing the chart every 50ms until the canvas has a real
-   * clientWidth (i.e. the browser has finished layout). Stops after
-   * maxRetries attempts to avoid an infinite loop.
-   */
-  private scheduleChartDraw(maxRetries: number): void {
-    if (maxRetries <= 0) return;
-    setTimeout(() => {
-      const canvas = this.moodChartRef?.nativeElement;
-      const w = canvas?.parentElement?.clientWidth || canvas?.parentElement?.offsetWidth || 0;
-      if (canvas && w > 0) {
-        this.drawMoodChart();
-      } else {
-        this.scheduleChartDraw(maxRetries - 1);
-      }
-    }, 50);
-  }
-
+  // ── navigation ───────────────────────────────────────────────────
   navigate(page: string): void {
     if (page === 'chat') {
       this.router.navigate(['/support/chat']); return;
@@ -129,14 +133,20 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     if (page === 'crisis') {
       this.router.navigate(['/support/crisis']); return;
     }
+
+    const previousPage = this.activePage;
     this.activePage = page;
+
+    // Also reload when user explicitly navigates back to home
+    if (page === 'home' && previousPage !== 'home') {
+      this.loadDashboard();
+    }
+
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { page },
       queryParamsHandling: 'merge'
     });
-    // Redraw chart when returning to the home tab
-    if (page === 'home') this.scheduleChartDraw(20);
   }
 
   selectMood(key: string): void { this.selectedMood = key; }
@@ -151,14 +161,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     if (!ctx) return;
 
     const moods: DailyMoodDTO[] = this.vm.weeklySummary.dailyMoods;
-    const days   = moods.map(m => m.dayLabel);
+    const days = moods.map(m => m.dayLabel);
     const scores = moods.map(m => m.moodScore ?? 0);
     const hasData = moods.map(m => m.moodScore !== null);
 
-    // Measure the rendered width (scheduleChartDraw already verified w > 0)
-    const W = canvas.parentElement?.clientWidth || canvas.parentElement?.offsetWidth || 400;
+    const W = canvas.parentElement?.clientWidth ?? 400;
     const H = 160;
-    canvas.width  = W;
+    canvas.width = W;
     canvas.height = H;
 
     const pad = { top: 16, right: 16, bottom: 32, left: 24 };
@@ -172,7 +181,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     ctx.clearRect(0, 0, W, H);
 
-    // Gradient fill
     const grad = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
     grad.addColorStop(0, 'rgba(11,143,172,.18)');
     grad.addColorStop(1, 'rgba(11,143,172,0)');
@@ -189,7 +197,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ctx.fillStyle = grad;
     ctx.fill();
 
-    // Curve line
     ctx.beginPath();
     ctx.moveTo(xOf(0), yOf(scores[0]));
     for (let i = 1; i < n; i++) {
@@ -200,7 +207,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
-    // Dots: filled = real data, hollow ring = no data that day
     scores.forEach((v, i) => {
       ctx.beginPath();
       ctx.arc(xOf(i), yOf(v), 4.5, 0, Math.PI * 2);
@@ -213,7 +219,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       }
     });
 
-    // Day labels
     ctx.fillStyle = '#64748B';
     ctx.font = '11px Sora, sans-serif';
     ctx.textAlign = 'center';
