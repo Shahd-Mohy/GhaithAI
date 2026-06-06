@@ -1,12 +1,6 @@
-﻿using AutoMapper;
-using GhaithAI.API.Constants;
+﻿using GhaithAI.API.Constants;
 using GhaithAI.API.DTOs.Chat;
-using GhaithAI.API.GaithAI.Application.DTOs.Chat;
 using GhaithAI.API.GaithAI.Domain.Exceptions;
-using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
-using GhaithAI.API.Models;
-using GhaithAI.API.Repositories.UnitWork;
-using GhaithAI.API.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -181,8 +175,11 @@ namespace GhaithAI.API.Services.Class
                 ?? throw new KeyNotFoundException("Session not found or access denied.");
 
             if (session.Status != SessionStatus.Active)
+            {
+                _logger.LogError("This session has ended. Please start a new session.??????");
                 throw new InvalidOperationException(
                     "This session has ended. Please start a new session.");
+            }
 
             _logger.LogInformation(
                 "Processing message for session {SessionId} by user {UserId}",
