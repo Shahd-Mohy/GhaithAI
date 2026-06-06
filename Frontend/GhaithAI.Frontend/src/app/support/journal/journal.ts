@@ -7,8 +7,12 @@ import {
   JournalService,
   JournalDTO,
   CreateJournalRequest,
-  UpdateJournalRequest
-} from '../../../services/journal.service'; // adjust to your actual service path
+  UpdateJournalRequest,
+  GetAllResponse,
+  SingleResponse,
+  CreateResponse,
+  ActionResponse
+} from '../../services/journal.service';
 
 // ─── View mode ───────────────────────────────────────────────────────────────
 
@@ -123,14 +127,14 @@ export class JournalComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
 
     this.journalService.getAll(this.searchQuery, this.currentPage, this.pageSize).subscribe({
-      next: (res) => {
+      next: (res: GetAllResponse) => {
         this.entries = res.data;
         this.totalCount = res.totalCount;
         this.totalPages = res.totalPages;
         this.isLoading = false;
         this.cdr.markForCheck();   // ← tell Angular the view is dirty
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.errorMessage = err.message || 'Failed to load journal entries.';
         this.isLoading = false;
         this.cdr.markForCheck();
@@ -171,14 +175,14 @@ export class JournalComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
 
     this.journalService.getById(entry.journalId).subscribe({
-      next: (res) => {
+      next: (res: SingleResponse) => {
         this.selectedEntry = res.data;
         this.viewMode = 'detail';
         this.isLoading = false;
         this.cdr.markForCheck();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.errorMessage = err.message;
         this.isLoading = false;
         this.cdr.markForCheck();
@@ -218,7 +222,7 @@ export class JournalComponent implements OnInit, OnDestroy {
     };
 
     this.journalService.create(payload).subscribe({
-      next: (_res) => {
+      next: (_res: CreateResponse) => {
         this.isSaving = false;
         this.viewMode = 'list';
         this.resetCreateForm();
@@ -226,7 +230,7 @@ export class JournalComponent implements OnInit, OnDestroy {
         this.showSuccess('Journal entry saved successfully.');
         this.loadEntries(); // loadEntries calls markForCheck internally
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.isSaving = false;
         this.errorMessage = err.message || 'Failed to save entry.';
         this.cdr.markForCheck();
@@ -286,12 +290,12 @@ export class JournalComponent implements OnInit, OnDestroy {
     const journalId = this.selectedEntry.journalId;
 
     this.journalService.update(journalId, payload).subscribe({
-      next: (_res) => {
+      next: (_res: ActionResponse) => {
         this.isSaving = false;
 
         // Re-fetch full detail to get updated content
         this.journalService.getById(journalId).subscribe({
-          next: (res) => {
+          next: (res: SingleResponse) => {
             this.selectedEntry = res.data;
             this.viewMode = 'detail';
             this.showSuccess('Entry updated successfully.');
@@ -305,7 +309,7 @@ export class JournalComponent implements OnInit, OnDestroy {
           }
         });
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.isSaving = false;
         this.errorMessage = err.message || 'Failed to update entry.';
         this.cdr.markForCheck();
@@ -341,7 +345,7 @@ export class JournalComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
 
     this.journalService.delete(this.entryToDelete.journalId).subscribe({
-      next: (_res) => {
+      next: (_res: ActionResponse) => {
         this.isDeleting = false;
         this.showDeleteConfirm = false;
         this.entryToDelete = null;
@@ -351,7 +355,7 @@ export class JournalComponent implements OnInit, OnDestroy {
         this.showSuccess('Entry deleted.');
         this.loadEntries(); // marks for check internally
       },
-      error: (err) => {
+      error: (err: Error) => {
         this.isDeleting = false;
         this.errorMessage = err.message || 'Failed to delete entry.';
         this.showDeleteConfirm = false;
