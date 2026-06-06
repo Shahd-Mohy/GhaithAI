@@ -91,19 +91,16 @@
 
       <!-- Days Grid -->
       <div class="days-grid">
-        @for (day of daysGrid; track $index) {
-          @if (day.date === null) {
-            <div class="day-cell empty"></div>
-          } @else {
-            <div class="day-cell" 
-                 [ngClass]="[day.moodKey ? 'mood-' + day.moodKey : 'mood-empty', isSelected(day) ? 'selected' : '', day.isToday ? 'today' : '', day.isFuture ? 'future-day' : '']"
-                 (click)="selectDay(day)"
-                 [attr.title]="day.isFuture ? 'Cannot log future dates' : null">
-              <span class="day-number">{{ day.dayNumber }}</span>
-              <span class="day-emoji" *ngIf="day.moodKey">{{ getMoodEmoji(day.moodKey) }}</span>
-            </div>
-          }
-        }
+        <ng-container *ngFor="let day of daysGrid">
+          <div class="day-cell empty" *ngIf="day.date === null"></div>
+          <div class="day-cell" *ngIf="day.date !== null"
+               [ngClass]="[day.moodKey ? 'mood-' + day.moodKey : 'mood-empty', isSelected(day) ? 'selected' : '', day.isToday ? 'today' : '', day.isFuture ? 'future-day' : '']"
+               (click)="selectDay(day)"
+               [attr.title]="day.isFuture ? 'Cannot log future dates' : null">
+            <span class="day-number">{{ day.dayNumber }}</span>
+            <span class="day-emoji" *ngIf="day.moodKey">{{ getMoodEmoji(day.moodKey) }}</span>
+          </div>
+        </ng-container>
       </div>
 
       <!-- Legend -->
@@ -144,27 +141,22 @@
         <p class="insights-subtitle">Patterns from your mood data</p>
 
         <div class="insights-list">
-          @for (insight of insightsList; track insight.type) {
-            <div class="insight-card" [ngClass]="insight.class">
-              <div class="insight-card-header">
-                <span class="insight-label">{{ insight.title }}</span>
-              </div>
-              <p class="insight-desc">{{ insight.desc }}</p>
+          <div class="insight-card" *ngFor="let insight of insightsList" [ngClass]="insight.class">
+            <div class="insight-card-header">
+              <span class="insight-label">{{ insight.title }}</span>
             </div>
-          }
+            <p class="insight-desc">{{ insight.desc }}</p>
+          </div>
         </div>
 
         <!-- Top Emotions Sub-section -->
         <div class="top-emotions-section">
           <h3 class="top-emotions-title">Top Emotions This Month</h3>
           <div class="emotions-chips-row">
-            @for (em of topEmotionsList; track em.name) {
-              <span class="emotion-chip-badge">
-                {{ em.name }} <span class="chip-count">{{ em.count }}</span>
-              </span>
-            } @empty {
-              <p class="no-emotions-text">No emotions logged yet. Start logging your mood!</p>
-            }
+            <span class="emotion-chip-badge" *ngFor="let em of topEmotionsList">
+              {{ em.name }} <span class="chip-count">{{ em.count }}</span>
+            </span>
+            <p class="no-emotions-text" *ngIf="topEmotionsList.length === 0">No emotions logged yet. Start logging your mood!</p>
           </div>
         </div>
       </div>
@@ -173,29 +165,73 @@
 
   <!-- RECENT HISTORY -->
   <section class="recent-history-section" *ngIf="historyLogs.length > 0">
-    <h2 class="history-title">Recent History</h2>
+    <div class="history-section-header">
+      <div class="history-title-group">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="history-section-icon">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <h2 class="history-title">Recent History</h2>
+      </div>
+      <span class="history-count-badge">{{ historyLogs.length }} entries</span>
+    </div>
+
     <div class="history-list">
-      @for (log of historyLogs; track log.moodLogId) {
-        <div class="history-card">
-          <div class="history-icon mood-{{ getMoodEmoji(log.moodLabel?.toLowerCase() || 'okay') ? log.moodLabel?.toLowerCase() : 'okay' }}">
-            {{ getMoodEmoji(log.moodLabel?.toLowerCase() || 'okay') || '⛅' }}
-          </div>
-          <div class="history-details">
-            <div class="history-date">{{ log.date | date:'mediumDate' }}</div>
-            <div class="history-mood-label">{{ log.moodLabel || 'Okay' }}</div>
-          </div>
-          <div class="history-emotions">
-            @for (em of (log.emotionTags || []); track em) {
-              <span class="emotion-chip">{{ em }}</span>
-            }
+      <div class="history-card"
+           *ngFor="let log of (showAllHistory ? historyLogs : historyLogs.slice(0, 5)); let i = index"
+           [style.animation-delay]="(i * 50) + 'ms'"
+           (click)="openLogModalFromHistory(log)"
+           title="Click to edit this log">
+
+        <!-- Mood color strip -->
+        <div class="history-mood-strip" [ngClass]="'strip-' + (log.moodLabel?.toLowerCase() || 'okay')"></div>
+
+        <!-- Emoji icon -->
+        <div class="history-icon" [ngClass]="'mood-' + (log.moodLabel?.toLowerCase() || 'okay')">
+          {{ getMoodEmoji(log.moodLabel?.toLowerCase() || 'okay') || '⛅' }}
+        </div>
+
+        <!-- Details -->
+        <div class="history-details">
+          <div class="history-date">{{ log.date | date:'MMM d, y' }}</div>
+          <div class="history-mood-label">{{ log.moodLabel || 'Okay' }}</div>
+          <div class="history-emotions" *ngIf="(log.emotionTags || []).length > 0">
+            <span class="emotion-chip" *ngFor="let em of (log.emotionTags || []).slice(0, 3)">{{ em }}</span>
+            <span class="emotion-chip more-chip" *ngIf="(log.emotionTags || []).length > 3">+{{ (log.emotionTags || []).length - 3 }}</span>
           </div>
         </div>
-      }
+
+        <!-- Edit hint arrow -->
+        <div class="history-edit-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Show more / less toggle -->
+    <div class="history-toggle-row" *ngIf="historyLogs.length > 5">
+      <button class="history-toggle-btn" (click)="showAllHistory = !showAllHistory">
+        <span *ngIf="!showAllHistory">
+          Show {{ historyLogs.length - 5 }} more
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="toggle-chevron">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </span>
+        <span *ngIf="showAllHistory">
+          Show less
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="toggle-chevron">
+            <polyline points="18 15 12 9 6 15"/>
+          </svg>
+        </span>
+      </button>
     </div>
   </section>
 
   <!-- LOG MOOD DIALOG / MODAL -->
-  @if (showLogModal) {
+  <ng-container *ngIf="showLogModal">
     <div class="modal-backdrop" (click)="closeLogModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <!-- Header -->
@@ -221,15 +257,13 @@
           <div class="form-group">
             <label class="form-label">How do you feel?</label>
             <div class="mood-selection-row">
-              @for (opt of moodOptions; track opt.key) {
-                <button type="button" 
-                        class="mood-select-btn" 
-                        [class.active]="modalMood === opt.key"
-                        (click)="setModalMood(opt.key)">
-                  <span class="select-emoji">{{ opt.emoji }}</span>
-                  <span class="select-label">{{ opt.label }}</span>
-                </button>
-              }
+              <button type="button" *ngFor="let opt of moodOptions"
+                      class="mood-select-btn" 
+                      [class.active]="modalMood === opt.key"
+                      (click)="setModalMood(opt.key)">
+                <span class="select-emoji">{{ opt.emoji }}</span>
+                <span class="select-label">{{ opt.label }}</span>
+              </button>
             </div>
           </div>
 
@@ -237,14 +271,12 @@
           <div class="form-group">
             <label class="form-label">Select feelings / emotions (optional)</label>
             <div class="emotions-grid-selection">
-              @for (em of emotionOptions; track em) {
-                <button type="button" 
-                        class="emotion-choice-btn"
-                        [class.selected]="modalEmotions.includes(em)"
-                        (click)="toggleModalEmotion(em)">
-                  {{ em }}
-                </button>
-              }
+              <button type="button" *ngFor="let em of emotionOptions"
+                      class="emotion-choice-btn"
+                      [class.selected]="modalEmotions.includes(em)"
+                      (click)="toggleModalEmotion(em)">
+                {{ em }}
+              </button>
             </div>
           </div>
 
@@ -255,8 +287,7 @@
                       placeholder="Write how your day went, what influenced your mood, etc..."
                       [value]="modalNotes"
                       (input)="modalNotes = $any($event.target).value"></textarea>
-            @if (isEditing) {
-              <div class="edit-notes-info">
+              <div class="edit-notes-info" *ngIf="isEditing">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="16" x2="12" y2="12"></line>
@@ -264,7 +295,6 @@
                 </svg>
                 <span>You are updating an existing log. Previous notes are kept safe. If you type here, they will be replaced.</span>
               </div>
-            }
           </div>
         </div>
 
@@ -275,5 +305,5 @@
         </div>
       </div>
     </div>
-  }
+  </ng-container>
 </div>
