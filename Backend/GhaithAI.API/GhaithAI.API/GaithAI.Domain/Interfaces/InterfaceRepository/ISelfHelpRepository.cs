@@ -5,5 +5,6 @@ namespace GhaithAI.API.Repositories.Interfaces
 {
     public interface ISelfHelpRepository : IGenericRepository<SelfHelpContent>
     {
+        Task<SelfHelpContent?> GetContentWithTipsAsync(Guid id);
     }
 }

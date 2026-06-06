@@ -1,4 +1,5 @@
 global using GhaithAI.API.GaithAI.Domain.Common;
+using GhaithAI.GaithAI.Domain.Entities;
 
 namespace GhaithAI.API.Models
 {
@@ -23,5 +24,6 @@ namespace GhaithAI.API.Models
         public bool IsActive { get; set; } = true;
 
         public ICollection<UserActivity> UserActivities { get; set; }
+        public ICollection<ExerciseTip> ExerciseTips { get; set; } = new List<ExerciseTip>();
     }
 }

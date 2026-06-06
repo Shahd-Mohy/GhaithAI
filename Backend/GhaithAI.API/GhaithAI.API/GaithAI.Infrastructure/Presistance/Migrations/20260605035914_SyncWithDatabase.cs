@@ -11,9 +11,9 @@ namespace GhaithAI.API.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "MoodLogId",
-                table: "MoodLogs");
+            //migrationBuilder.DropColumn(
+            //    name: "MoodLogId",
+            //    table: "MoodLogs");
         }
 
         /// <inheritdoc />
