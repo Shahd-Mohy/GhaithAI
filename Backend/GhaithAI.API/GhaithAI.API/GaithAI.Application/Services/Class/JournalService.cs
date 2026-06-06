@@ -28,8 +28,6 @@ namespace GhaithAI.API.Services.Class
                 MoodAfter = string.Empty,
                 Tags = NormaliseTags(dto.Tags),
                 WordCount = CountWords(dto.Content),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
                 IsDeleted = false
             };
 
@@ -69,9 +67,12 @@ namespace GhaithAI.API.Services.Class
             if (entry == null) return false;
 
             if (dto.Title != null) entry.Title = dto.Title.Trim();
-            if (dto.Content != null) { entry.Content = dto.Content.Trim(); entry.WordCount = CountWords(entry.Content); }
+            if (dto.Content != null)
+            {
+                entry.Content = dto.Content.Trim();
+                entry.WordCount = CountWords(entry.Content);
+            }
             if (dto.Tags != null) entry.Tags = NormaliseTags(dto.Tags);
-            entry.UpdatedAt = DateTime.UtcNow;
 
             _journalRepository.Update(entry);
             await _journalRepository.SaveChangesAsync();
