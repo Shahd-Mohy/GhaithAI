@@ -22,6 +22,21 @@ namespace GhaithAI.API.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// PUT /api/Chat/sessions/{sessionId}/title � Update session title.
+        /// </summary>
+        [HttpPut("sessions/{sessionId:guid}/title")]
+        public async Task<IActionResult> UpdateSessionTitle(Guid sessionId, [FromBody] GhaithAI.API.GaithAI.Application.DTOs.Chat.UpdateSessionTitleDTO dto)
+        {
+            if (dto is null || string.IsNullOrWhiteSpace(dto.Title))
+                return BadRequest(new { Message = "Title cannot be empty." });
+
+            _logger.LogInformation("User {UserId} requests title update for session {SessionId}", UserId, sessionId);
+
+            var updated = await _chatService.UpdateSessionTitleAsync(UserId, sessionId, dto.Title);
+            return Ok(updated);
+        }
+
         /// <summary>Gets the authenticated user's ID from the JWT claims.</summary>
         private string UserId =>
             User.FindFirstValue(ClaimTypes.NameIdentifier)

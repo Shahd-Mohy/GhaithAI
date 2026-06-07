@@ -41,5 +41,11 @@ namespace GhaithAI.API.Repositories.Interfaces
         /// Use before performing updates or deletes to prevent IDOR attacks.
         /// </summary>
         Task<bool> BelongsToUserAsync(Guid sessionId, string userId);
+
+        /// <summary>
+        /// Atomically updates the session title for the specified session owned by the given user.
+        /// Returns true if a row was updated, false otherwise (not found or not owned).
+        /// </summary>
+        Task<bool> UpdateTitleAsync(Guid sessionId, string userId, string newTitle);
     }
 }

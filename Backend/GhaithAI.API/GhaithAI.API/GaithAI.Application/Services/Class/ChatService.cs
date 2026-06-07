@@ -234,6 +234,31 @@ namespace GhaithAI.API.Services.Class
         }
 
         /// <inheritdoc/>
+        public async Task<SessionDTO> UpdateSessionTitleAsync(string userId, Guid sessionId, string newTitle)
+        {
+            if (string.IsNullOrWhiteSpace(newTitle))
+                throw new ArgumentException("Title cannot be empty.");
+
+            var normalized = newTitle.Trim();
+
+            var updated = await _unitOfWork.Session.UpdateTitleAsync(sessionId, userId, normalized);
+
+            if (!updated)
+                throw new KeyNotFoundException("Session not found or access denied.");
+
+            _logger.LogInformation(
+                "Session {SessionId} title updated by user {UserId}",
+                sessionId, userId);
+
+            var session = await _unitOfWork.Session
+                .GetAllQueryableNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId)
+                ?? throw new KeyNotFoundException("Session not found after update.");
+
+            return _mapper.Map<SessionDTO>(session);
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> DeleteSessionAsync(string userId, Guid sessionId)
         {
             // Ownership check first

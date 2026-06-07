@@ -20,7 +20,6 @@ namespace GhaithAI.API.GaithAI.API.Hubs
             _logger = logger;
         }
 
-
         private string UserId =>
             Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? throw new HubException("Unauthorized: User ID not found in token.");
@@ -145,5 +144,34 @@ namespace GhaithAI.API.GaithAI.API.Hubs
             }
         }
 
+        /// <summary>
+        /// Client calls this to update the session title via SignalR.
+        /// </summary>
+        public async Task UpdateSessionTitle(string sessionId, string title)
+        {
+            try
+            {
+                if (!Guid.TryParse(sessionId, out var parsedId))
+                    throw new HubException("Invalid session ID format.");
+
+                if (string.IsNullOrWhiteSpace(title))
+                    throw new HubException("Title cannot be empty.");
+
+                var updated = await _chatService.UpdateSessionTitleAsync(UserId, parsedId, title);
+
+                // Notify the caller that update succeeded and broadcast to all user's connections
+                await Clients.Caller.SendAsync("SessionTitleUpdated", updated);
+                await Clients.User(UserId).SendAsync("SessionTitleUpdated", updated);
+            }
+            catch (HubException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating session title for user {UserId}", UserId);
+                throw new HubException("An error occurred while updating the session title. Please try again later.");
+            }
+        }
     }
 }
