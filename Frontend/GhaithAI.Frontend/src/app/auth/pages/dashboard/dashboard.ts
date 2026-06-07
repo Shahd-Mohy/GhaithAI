@@ -74,7 +74,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   quickActions: QuickAction[] = [
     { name: 'Talk to AI', desc: 'Have a supportive conversation', page: 'chat', colorClass: 'teal', icon: 'chat' },
-    { name: 'Breathing Exercise', desc: 'Quick 4-7-8 technique', page: 'breathing', colorClass: 'green', icon: 'breath' },
+    { name: 'Breathing Exercise', desc: 'Practical self-help techniques', page: 'breathing', colorClass: 'green', icon: 'breath' },
     { name: 'Journal Entry', desc: 'Write your thoughts', page: 'journal', colorClass: 'amber', icon: 'journal' },
     { name: 'Learn Something', desc: 'Explore psychoeducation', page: 'learn', colorClass: 'purple', icon: 'learn' },
   ];
@@ -151,14 +151,14 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     if (!ctx) return;
 
     const moods: DailyMoodDTO[] = this.vm.weeklySummary.dailyMoods;
-    const days   = moods.map(m => m.dayLabel);
+    const days = moods.map(m => m.dayLabel);
     const scores = moods.map(m => m.moodScore ?? 0);
     const hasData = moods.map(m => m.moodScore !== null);
 
     // Measure the rendered width (scheduleChartDraw already verified w > 0)
     const W = canvas.parentElement?.clientWidth || canvas.parentElement?.offsetWidth || 400;
     const H = 160;
-    canvas.width  = W;
+    canvas.width = W;
     canvas.height = H;
 
     const pad = { top: 16, right: 16, bottom: 32, left: 24 };
