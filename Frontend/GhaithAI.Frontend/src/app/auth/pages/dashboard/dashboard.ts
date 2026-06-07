@@ -1,6 +1,6 @@
 import {
   Component, OnInit, AfterViewInit, OnDestroy,
-  ElementRef, ViewChild, inject, ChangeDetectorRef
+  ElementRef, ViewChild, inject, ChangeDetectorRef, NgZone
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
@@ -37,6 +37,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly insightService = inject(InsightService);
   private readonly refreshService = inject(DashboardRefreshService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   private readonly authService = inject(AuthService);
   private readonly destroy$ = new Subject<void>();
 
@@ -47,6 +48,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   hasError = false;
   vm: DashboardViewModel | null = null;
   showUserMenu = false;
+  /** Config passed to <app-mood-tracker> to auto-open the modal.
+   *  A new object reference on every call guarantees ngOnChanges fires. */
+  moodOpenConfig: { date: string; moodKey: string | null } | null = null;
+  /** Tooltip for chart hover */
+  chartTooltip: { x: number; y: number; label: string; emoji: string; moodLabel: string; moodColor: string } | null = null;
 
   // ── computed getters ─────────────────────────────────────────────
   get greeting(): string {
@@ -73,11 +79,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ── static UI config ─────────────────────────────────────────────
   moods = [
-    { key: 'very-low', emoji: '🌧️', label: 'Very Low' },
-    { key: 'low', emoji: '🌥️', label: 'Low' },
-    { key: 'okay', emoji: '⛅', label: 'Okay' },
-    { key: 'good', emoji: '🌤️', label: 'Good' },
-    { key: 'great', emoji: '✨', label: 'Great' },
+    { key: 'very-low', emoji: '😔', label: 'Very Low' },
+    { key: 'low', emoji: '😕', label: 'Low' },
+    { key: 'okay', emoji: '😐', label: 'Okay' },
+    { key: 'good', emoji: '🙂', label: 'Good' },
+    { key: 'great', emoji: '😄', label: 'Great' },
   ];
 
   quickActions: QuickAction[] = [
@@ -123,7 +129,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.vm = data;
         this.isLoading = false;
         this.cdr.detectChanges();
-        setTimeout(() => this.drawMoodChart(), 50);
+        setTimeout(() => this.activePage === 'home' && this.drawMoodChart(), 50);
       },
       error: () => {
         this.isLoading = false;
@@ -158,6 +164,33 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectMood(key: string): void { this.selectedMood = key; }
   isActive(page: string): boolean { return this.activePage === page; }
+
+  navigateToMoodLog(dateStr: string | null = null, moodKey: string | null = null): void {
+    // Remove chart listeners before navigating — prevents stale canvas exceptions
+    const canvas = this.moodChartRef?.nativeElement;
+    if (canvas) {
+      const c = canvas as any;
+      if (c.__hoverHandler) canvas.removeEventListener('mousemove', c.__hoverHandler);
+      if (c.__leaveHandler) canvas.removeEventListener('mouseleave', c.__leaveHandler);
+      if (c.__clickHandler) canvas.removeEventListener('click', c.__clickHandler);
+    }
+    this.moodOpenConfig = null;
+    this.navigate('mood');
+    setTimeout(() => {
+      setTimeout(() => {
+        this.moodOpenConfig = { date: dateStr ?? this.formatTodayStr(), moodKey };
+        this.cdr.detectChanges();
+      }, 0);
+    }, 0);
+  }
+
+  private formatTodayStr(): string {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
 
   // ── mood chart ───────────────────────────────────────────────────
   drawMoodChart(): void {
@@ -230,15 +263,101 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     ctx.font = '11px Sora, sans-serif';
     ctx.textAlign = 'center';
     days.forEach((d, i) => ctx.fillText(d, xOf(i), H - 8));
+
+    // ── Hover tooltip ──────────────────────────────────────────────
+    const moodEmojiMap: { [score: number]: { emoji: string; label: string; color: string } } = {
+      1: { emoji: '😔', label: 'Very Low', color: '#fca5a5' },
+      2: { emoji: '😕', label: 'Low', color: '#fdba74' },
+      3: { emoji: '😐', label: 'Okay', color: '#fde68a' },
+      4: { emoji: '🙂', label: 'Good', color: '#86efac' },
+      5: { emoji: '😄', label: 'Great', color: '#6ee7b7' },
+    };
+
+    // Remove any previous listener to avoid stacking
+    const oldHandler = (canvas as any).__hoverHandler;
+    if (oldHandler) canvas.removeEventListener('mousemove', oldHandler);
+    canvas.removeEventListener('mouseleave', (canvas as any).__leaveHandler);
+
+    const hoverHandler = (e: MouseEvent) => {
+      this.ngZone.run(() => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;   // canvas px per CSS px
+        const scaleY = canvas.height / rect.height;
+        const mx = (e.clientX - rect.left) * scaleX;  // now in canvas pixels
+        const my = (e.clientY - rect.top) * scaleY;
+
+        let found = false;
+        for (let i = 0; i < n; i++) {
+          const dx = mx - xOf(i);
+          const dy = my - yOf(scores[i]);
+          if (Math.sqrt(dx * dx + dy * dy) < 24) {
+            // Convert canvas-pixel point back to CSS pixels for overlay positioning
+            const cssx = xOf(i) / scaleX;
+            const cssy = yOf(hasData[i] ? scores[i] : maxV / 2) / scaleY;
+            const moodInfo = hasData[i] ? moodEmojiMap[scores[i]] : null;
+            this.chartTooltip = {
+              x: cssx,
+              y: cssy,
+              label: days[i],
+              emoji: moodInfo?.emoji ?? '—',
+              moodLabel: moodInfo?.label ?? '—',
+              moodColor: moodInfo?.color ?? '#64748B',
+            };
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          this.chartTooltip = null;
+        }
+        this.cdr.detectChanges();
+      });
+    };
+
+    const leaveHandler = () => {
+      this.ngZone.run(() => {
+        this.chartTooltip = null;
+        this.cdr.detectChanges();
+      });
+    };
+
+    (canvas as any).__hoverHandler = hoverHandler;
+    (canvas as any).__leaveHandler = leaveHandler;
+    canvas.addEventListener('mousemove', hoverHandler);
+    canvas.addEventListener('mouseleave', leaveHandler);
+
+    // ── Click on a chart day → open mood log for that date ─────────
+    const oldClickHandler = (canvas as any).__clickHandler;
+    if (oldClickHandler) canvas.removeEventListener('click', oldClickHandler);
+
+    const clickHandler = (e: MouseEvent) => {
+      this.ngZone.run(() => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const mx = (e.clientX - rect.left) * scaleX;
+        for (let i = 0; i < n; i++) {
+          if (Math.abs(mx - xOf(i)) < 24) {
+            const moodData = moods[i];
+            if (moodData.date) {
+              this.navigateToMoodLog(moodData.date);
+            }
+            break;
+          }
+        }
+      });
+    };
+    (canvas as any).__clickHandler = clickHandler;
+    canvas.addEventListener('click', clickHandler);
+    canvas.style.cursor = 'pointer';
   }
 
-toggleUserMenu(): void {
-  this.showUserMenu = !this.showUserMenu;
-}
+  toggleUserMenu(): void {
+    this.showUserMenu = !this.showUserMenu;
+  }
 
-logout(): void {
-  this.authService.logout();
-  this.router.navigate(['/login']);
-}
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 
 }

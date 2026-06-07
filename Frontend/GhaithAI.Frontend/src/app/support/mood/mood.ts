@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MoodService } from '../../services/mood.service';
@@ -28,10 +28,14 @@ interface CalendarDay {
   templateUrl: './mood.html',
   styleUrl: './mood.css'
 })
-export class MoodTrackerComponent implements OnInit {
+export class MoodTrackerComponent implements OnInit, OnChanges {
+
+  // ─── Input: config object from dashboard to auto-open the modal ─────────────
+  // A new object reference every call → ngOnChanges always fires reliably.
+  @Input() openConfig: { date: string; moodKey: string | null } | null = null;
 
   // ─── Calendar ────────────────────────────────────────────────────────────────
-  currentDate  = new Date();
+  currentDate = new Date();
   selectedDate = new Date();
   daysGrid: CalendarDay[] = [];
   isCalendarLoading = false;
@@ -41,27 +45,27 @@ export class MoodTrackerComponent implements OnInit {
   logs: { [dateStr: string]: MoodLog } = {};
 
   // ─── Statistics ──────────────────────────────────────────────────────────────
-  avgMoodScore    = 0;
+  avgMoodScore = 0;
   daysLoggedCount = 0;
-  currentStreak   = 0;
-  topEmotion      = 'None';
+  currentStreak = 0;
+  topEmotion = 'None';
   topEmotionCount = 0;
-  moodTrendLabel  = 'Same as last week';
-  moodTrendClass  = 'trend-neutral';
+  moodTrendLabel = 'Same as last week';
+  moodTrendClass = 'trend-neutral';
 
   // ─── Insights & Top Emotions ─────────────────────────────────────────────────
-  insightsList:    { type: string; title: string; desc: string; class: string }[] = [];
+  insightsList: { type: string; title: string; desc: string; class: string }[] = [];
   topEmotionsList: { name: string; count: number }[] = [];
 
   // ─── Modal ───────────────────────────────────────────────────────────────────
-  showLogModal   = false;
-  modalDateStr   = '';
-  modalMood      = 'okay';
+  showLogModal = false;
+  modalDateStr = '';
+  modalMood = 'okay';
   modalEmotions: string[] = [];
-  modalNotes     = '';
-  isEditing      = false;
-  isSaving       = false;
-  saveError      = '';
+  modalNotes = '';
+  isEditing = false;
+  isSaving = false;
+  saveError = '';
 
   // ─── History (used in template recent-history-section) ───────────────────────
   historyLogs: any[] = [];
@@ -74,11 +78,11 @@ export class MoodTrackerComponent implements OnInit {
 
   // ─── Config ──────────────────────────────────────────────────────────────────
   moodOptions = [
-    { key: 'very-low', label: 'Very Low', emoji: '🌧️', score: 1, color: '#fca5a5' },
-    { key: 'low',      label: 'Low',      emoji: '🌥️', score: 2, color: '#fdba74' },
-    { key: 'okay',     label: 'Okay',     emoji: '⛅',  score: 3, color: '#fde68a' },
-    { key: 'good',     label: 'Good',     emoji: '🌤️', score: 4, color: '#86efac' },
-    { key: 'great',    label: 'Great',    emoji: '✨',  score: 5, color: '#6ee7b7' }
+    { key: 'very-low', label: 'Very Low', emoji: '😔', score: 1, color: '#fca5a5' },
+    { key: 'low', label: 'Low', emoji: '😕', score: 2, color: '#fdba74' },
+    { key: 'okay', label: 'Okay', emoji: '😐', score: 3, color: '#fde68a' },
+    { key: 'good', label: 'Good', emoji: '🙂', score: 4, color: '#86efac' },
+    { key: 'great', label: 'Great', emoji: '😄', score: 5, color: '#6ee7b7' }
   ];
 
   emotionOptions = [
@@ -88,22 +92,59 @@ export class MoodTrackerComponent implements OnInit {
   ];
 
   constructor(
-    private moodService: MoodService, 
+    private moodService: MoodService,
     private cdr: ChangeDetectorRef,
     private refreshService: DashboardRefreshService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.maxDateStr = this.formatDateStr(new Date());
-    this.loadMonthData(false);
+
+    if (this.openConfig?.date) {
+      const [y, m, d] = this.openConfig.date.split('-').map(Number);
+      this.currentDate = new Date(y, m - 1, 1);
+      this.selectedDate = new Date(y, m - 1, d);
+    }
+
+    this.loadMonthData(false, this.openConfig?.date ?? null, this.openConfig?.moodKey ?? null);
     this.loadStatistics();
     this.loadHistory();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.maxDateStr) return;
+
+    const configChange = changes['openConfig'];
+    if (configChange && configChange.currentValue && !configChange.isFirstChange()) {
+      const cfg = configChange.currentValue as { date: string; moodKey: string | null };
+      const [y, m, d] = cfg.date.split('-').map(Number);
+      const targetMonth = new Date(y, m - 1, 1);
+
+      // If the calendar already shows the correct month and isn't still fetching,
+      // open the modal directly — no second API call, no double-modal bug.
+      const sameMonth =
+        this.currentDate.getFullYear() === targetMonth.getFullYear() &&
+        this.currentDate.getMonth() === targetMonth.getMonth();
+
+      this.currentDate = targetMonth;
+      this.selectedDate = new Date(y, m - 1, d);
+
+      if (sameMonth && !this.isCalendarLoading) {
+        setTimeout(() => {
+          this.openLogModalForDate(new Date(y, m - 1, d), cfg.moodKey);
+          this.cdr.detectChanges();
+        }, 0);
+      } else {
+        this.loadMonthData(false, cfg.date, cfg.moodKey);
+        this.loadStatistics();
+      }
+    }
+  }
+
   // ─── Core: load data for the CURRENTLY VIEWED month ──────────────────────────
   // refreshStats: pass true after a save/update so stats cards update too
-  private loadMonthData(refreshStats: boolean) {
-    const year  = this.currentDate.getFullYear();
+  private loadMonthData(refreshStats: boolean, autoOpenDate: string | null = null, autoOpenMoodKey: string | null = null) {
+    const year = this.currentDate.getFullYear();
     const month = this.currentDate.getMonth() + 1;
 
     // Step 1: clear previous month's logs and show skeleton immediately
@@ -117,12 +158,12 @@ export class MoodTrackerComponent implements OnInit {
         // Unwrap every possible response shape the backend might return:
         // { data: [...] }  { Data: [...] }  { result: [...] }  or the array directly
         let dataArr: any[] = [];
-        if (Array.isArray(res))               dataArr = res;
-        else if (Array.isArray(res?.data))    dataArr = res.data;
-        else if (Array.isArray(res?.Data))    dataArr = res.Data;
-        else if (Array.isArray(res?.result))  dataArr = res.result;
-        else if (Array.isArray(res?.Result))  dataArr = res.Result;
-        else if (Array.isArray(res?.items))   dataArr = res.items;
+        if (Array.isArray(res)) dataArr = res;
+        else if (Array.isArray(res?.data)) dataArr = res.data;
+        else if (Array.isArray(res?.Data)) dataArr = res.Data;
+        else if (Array.isArray(res?.result)) dataArr = res.result;
+        else if (Array.isArray(res?.Result)) dataArr = res.Result;
+        else if (Array.isArray(res?.items)) dataArr = res.items;
         // Nothing matched — log the actual shape so we can debug
         if (dataArr.length === 0 && res != null) {
           console.warn('[MoodTracker] calendar response keys:', Object.keys(res));
@@ -159,9 +200,9 @@ export class MoodTrackerComponent implements OnInit {
           // Without this every day click went to CREATE path instead of UPDATE
           freshLogs[dateStr] = {
             moodLogId: item.moodLogId || item.MoodLogId || undefined,
-            mood:      moodOpt ? moodOpt.key : 'okay',
-            emotions:  ems,
-            notes:     item.notes || item.Notes || ''
+            mood: moodOpt ? moodOpt.key : 'okay',
+            emotions: ems,
+            notes: item.notes || item.Notes || ''
           };
         });
 
@@ -172,6 +213,17 @@ export class MoodTrackerComponent implements OnInit {
         this.calculateLocalTopEmotions();
         this.generateDynamicInsights();
         this.cdr.detectChanges(); // force Angular to re-render after async HTTP
+
+        // Auto-open modal for a specific date (e.g. clicked from dashboard chart/check-in)
+        // setTimeout defers past the current change-detection cycle → no NG0100
+        if (autoOpenDate) {
+          const [ay, am, ad] = autoOpenDate.split('-').map(Number);
+          const dateObj = new Date(ay, am - 1, ad);
+          setTimeout(() => {
+            this.openLogModalForDate(dateObj, autoOpenMoodKey);
+            this.cdr.detectChanges();
+          }, 0);
+        }
 
         if (refreshStats) {
           this.loadStatistics();
@@ -197,12 +249,12 @@ export class MoodTrackerComponent implements OnInit {
         // Angular HttpClient does NOT auto-camelCase — we must handle both casings
         // Unwrap history response — check every possible key
         let raw: any = null;
-        if (Array.isArray(res))            raw = res;
+        if (Array.isArray(res)) raw = res;
         else if (Array.isArray(res?.data)) raw = res.data;
         else if (Array.isArray(res?.Data)) raw = res.Data;
         else if (Array.isArray(res?.result)) raw = res.result;
         else if (Array.isArray(res?.Result)) raw = res.Result;
-        else if (Array.isArray(res?.items))  raw = res.items;
+        else if (Array.isArray(res?.items)) raw = res.items;
         else {
           console.warn('[MoodTracker] history response keys:', res ? Object.keys(res) : 'null');
           raw = [];
@@ -211,17 +263,17 @@ export class MoodTrackerComponent implements OnInit {
         this.historyLogs = arr
           .filter((item: any) => item.moodLogId || item.MoodLogId)
           .map((item: any) => ({
-            moodLogId:  item.moodLogId  || item.MoodLogId,
-            moodScore:  item.moodScore  ?? item.MoodScore,
-            moodLabel:  item.moodLabel  || item.MoodLabel  || '',
-            moodBadge:  item.moodBadge  || item.MoodBadge  || '',
-            date:       item.date       || item.Date        || '',
-            loggedAt:   item.loggedAt   || item.LoggedAt    || '',
+            moodLogId: item.moodLogId || item.MoodLogId,
+            moodScore: item.moodScore ?? item.MoodScore,
+            moodLabel: item.moodLabel || item.MoodLabel || '',
+            moodBadge: item.moodBadge || item.MoodBadge || '',
+            date: item.date || item.Date || '',
+            loggedAt: item.loggedAt || item.LoggedAt || '',
             emotionTags: Array.isArray(item.emotionTags) ? item.emotionTags
-                       : Array.isArray(item.EmotionTags) ? item.EmotionTags
-                       : typeof item.emotionTags === 'string' ? item.emotionTags.split(',').map((e: string) => e.trim()).filter((e: string) => e)
-                       : typeof item.EmotionTags === 'string' ? item.EmotionTags.split(',').map((e: string) => e.trim()).filter((e: string) => e)
-                       : [],
+              : Array.isArray(item.EmotionTags) ? item.EmotionTags
+                : typeof item.emotionTags === 'string' ? item.emotionTags.split(',').map((e: string) => e.trim()).filter((e: string) => e)
+                  : typeof item.EmotionTags === 'string' ? item.EmotionTags.split(',').map((e: string) => e.trim()).filter((e: string) => e)
+                    : [],
             notes: item.notes || item.Notes || ''
           }));
         this.cdr.detectChanges(); // inside next — fires after data arrives
@@ -237,8 +289,8 @@ export class MoodTrackerComponent implements OnInit {
         // but depending on config it may be .Data — handle both
         // Unwrap statistics the same way — check every possible key
         let data: any = null;
-        if (res?.data   && typeof res.data   === 'object' && !Array.isArray(res.data))   data = res.data;
-        else if (res?.Data   && typeof res.Data   === 'object' && !Array.isArray(res.Data))   data = res.Data;
+        if (res?.data && typeof res.data === 'object' && !Array.isArray(res.data)) data = res.data;
+        else if (res?.Data && typeof res.Data === 'object' && !Array.isArray(res.Data)) data = res.Data;
         else if (res?.result && typeof res.result === 'object' && !Array.isArray(res.result)) data = res.result;
         else if (res?.Result && typeof res.Result === 'object' && !Array.isArray(res.Result)) data = res.Result;
         else if (res && typeof res === 'object' && res.avgMoodScore !== undefined) data = res;
@@ -248,10 +300,10 @@ export class MoodTrackerComponent implements OnInit {
           return;
         }
 
-        this.avgMoodScore    = data.avgMoodScore    ?? data.AvgMoodScore    ?? 0;
-        this.daysLoggedCount = data.totalLogs       ?? data.TotalLogs       ?? 0;
-        this.currentStreak   = data.streakDays      ?? data.StreakDays      ?? 0;
-        this.topEmotion      = data.topEmotion      || data.TopEmotion      || 'None';
+        this.avgMoodScore = data.avgMoodScore ?? data.AvgMoodScore ?? 0;
+        this.daysLoggedCount = data.totalLogs ?? data.TotalLogs ?? 0;
+        this.currentStreak = data.streakDays ?? data.StreakDays ?? 0;
+        this.topEmotion = data.topEmotion || data.TopEmotion || 'None';
         this.topEmotionCount = data.topEmotionCount ?? data.TopEmotionCount ?? 0;
 
         const diff: number = data.changeFromLastWeek ?? data.ChangeFromLastWeek ?? 0;
@@ -274,46 +326,50 @@ export class MoodTrackerComponent implements OnInit {
   // ─── Calendar grid builder ───────────────────────────────────────────────────
 
   buildCalendarGrid() {
-    const year  = this.currentDate.getFullYear();
+    const year = this.currentDate.getFullYear();
     const month = this.currentDate.getMonth();      // 0-indexed for Date()
 
-    const firstDayIndex    = new Date(year, month, 1).getDay();
+    const firstDayIndex = new Date(year, month, 1).getDay();
     const daysInMonthCount = new Date(year, month + 1, 0).getDate();
 
-    const now      = new Date();
+    const now = new Date();
     const todayStr = this.formatDateStr(now);
 
     const grid: CalendarDay[] = [];
 
     // Leading empty cells (days before the 1st)
     for (let i = 0; i < firstDayIndex; i++) {
-      grid.push({ date: null, dayNumber: null, isCurrentMonth: false,
-                  isToday: false, isFuture: false, isLoading: false, moodKey: null });
+      grid.push({
+        date: null, dayNumber: null, isCurrentMonth: false,
+        isToday: false, isFuture: false, isLoading: false, moodKey: null
+      });
     }
 
     // Actual days of the month
     for (let d = 1; d <= daysInMonthCount; d++) {
-      const date    = new Date(year, month, d);
+      const date = new Date(year, month, d);
       const dateStr = this.formatDateStr(date);
-      const log     = this.logs[dateStr];
+      const log = this.logs[dateStr];
       const isFuture = dateStr > todayStr;
 
       grid.push({
         date,
-        dayNumber:      d,
+        dayNumber: d,
         isCurrentMonth: true,
-        isToday:        dateStr === todayStr,
+        isToday: dateStr === todayStr,
         isFuture,
-        isLoading:      this.isCalendarLoading,
-        moodKey:        log ? log.mood : null
+        isLoading: this.isCalendarLoading,
+        moodKey: log ? log.mood : null
       });
     }
 
     // Trailing empty cells to fill the last row
     const totalCells = Math.ceil(grid.length / 7) * 7;
     while (grid.length < totalCells) {
-      grid.push({ date: null, dayNumber: null, isCurrentMonth: false,
-                  isToday: false, isFuture: false, isLoading: false, moodKey: null });
+      grid.push({
+        date: null, dayNumber: null, isCurrentMonth: false,
+        isToday: false, isFuture: false, isLoading: false, moodKey: null
+      });
     }
 
     this.daysGrid = grid;
@@ -322,7 +378,7 @@ export class MoodTrackerComponent implements OnInit {
   // ─── Top emotions (computed from visible month's loaded data) ─────────────────
 
   calculateLocalTopEmotions() {
-    const year  = this.currentDate.getFullYear();
+    const year = this.currentDate.getFullYear();
     const month = this.currentDate.getMonth() + 1;
     const counts: { [em: string]: number } = {};
 
@@ -359,13 +415,13 @@ export class MoodTrackerComponent implements OnInit {
       dayScores[day].count += 1;
     });
 
-    const dayNames = ['Sundays','Mondays','Tuesdays','Wednesdays','Thursdays','Fridays','Saturdays'];
+    const dayNames = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
     let bestDay = -1, bestAvg = 0, worstDay = -1, worstAvg = 6;
 
     for (let i = 0; i < 7; i++) {
       if (dayScores[i].count > 0) {
         const avg = dayScores[i].total / dayScores[i].count;
-        if (avg > bestAvg)  { bestAvg  = avg; bestDay  = i; }
+        if (avg > bestAvg) { bestAvg = avg; bestDay = i; }
         if (avg < worstAvg) { worstAvg = avg; worstDay = i; }
       }
     }
@@ -373,16 +429,22 @@ export class MoodTrackerComponent implements OnInit {
     const insights = [];
 
     if (bestDay !== -1 && dayScores[bestDay].count >= 2) {
-      insights.push({ type: 'best-day', title: 'Best Day',
-        desc: `Your mood is typically highest on ${dayNames[bestDay]}.`, class: 'insight-green' });
+      insights.push({
+        type: 'best-day', title: 'Best Day',
+        desc: `Your mood is typically highest on ${dayNames[bestDay]}.`, class: 'insight-green'
+      });
     }
     if (worstDay !== -1 && worstDay !== bestDay && dayScores[worstDay].count >= 2) {
-      insights.push({ type: 'watch-out', title: 'Watch Out',
-        desc: `${dayNames[worstDay]} tend to show lower mood scores.`, class: 'insight-peach' });
+      insights.push({
+        type: 'watch-out', title: 'Watch Out',
+        desc: `${dayNames[worstDay]} tend to show lower mood scores.`, class: 'insight-peach'
+      });
     }
     if (insights.length === 0) {
-      insights.push({ type: 'info', title: 'Keep Logging',
-        desc: 'Log your mood for a few more days to unlock personalized patterns.', class: 'insight-green' });
+      insights.push({
+        type: 'info', title: 'Keep Logging',
+        desc: 'Log your mood for a few more days to unlock personalized patterns.', class: 'insight-green'
+      });
     }
 
     this.insightsList = insights;
@@ -413,7 +475,7 @@ export class MoodTrackerComponent implements OnInit {
   isNextMonthBlocked(): boolean {
     const now = new Date();
     return this.currentDate.getFullYear() === now.getFullYear() &&
-           this.currentDate.getMonth()    === now.getMonth();
+      this.currentDate.getMonth() === now.getMonth();
   }
 
   // ─── Day click ───────────────────────────────────────────────────────────────
@@ -435,21 +497,23 @@ export class MoodTrackerComponent implements OnInit {
     this.openLogModalForDate(this.selectedDate);
   }
 
-  openLogModalForDate(date: Date) {
+  openLogModalForDate(date: Date, preselectedMoodKey: string | null = null) {
     this.modalDateStr = this.formatDateStr(date);
-    this.saveError    = '';
+    this.saveError = '';
 
     const existing = this.logs[this.modalDateStr];
     if (existing) {
-      this.isEditing     = true;
-      this.modalMood     = existing.mood;
+      // Editing an existing log — always use the saved data, ignore preselectedMoodKey
+      this.isEditing = true;
+      this.modalMood = existing.mood;
       this.modalEmotions = [...existing.emotions];
-      this.modalNotes    = existing.notes || '';
+      this.modalNotes = existing.notes || '';
     } else {
-      this.isEditing     = false;
-      this.modalMood     = 'okay';
+      // New entry — pre-select the mood the user tapped on the dashboard (if any)
+      this.isEditing = false;
+      this.modalMood = preselectedMoodKey ?? 'okay';
       this.modalEmotions = [];
-      this.modalNotes    = '';
+      this.modalNotes = '';
     }
 
     this.showLogModal = true;
@@ -457,8 +521,8 @@ export class MoodTrackerComponent implements OnInit {
 
   closeLogModal() {
     this.showLogModal = false;
-    this.isSaving     = false;
-    this.saveError    = '';
+    this.isSaving = false;
+    this.saveError = '';
   }
 
   /** Opens the edit modal pre-filled from a history card click */
@@ -469,23 +533,23 @@ export class MoodTrackerComponent implements OnInit {
 
     // Determine the mood key from label
     const moodLabel = (log.moodLabel || 'okay').toLowerCase();
-    const moodOpt   = this.moodOptions.find(o => o.label.toLowerCase() === moodLabel) ||
-                      this.moodOptions.find(o => o.key === moodLabel);
+    const moodOpt = this.moodOptions.find(o => o.label.toLowerCase() === moodLabel) ||
+      this.moodOptions.find(o => o.key === moodLabel);
 
-    this.modalDateStr  = dateStr;
-    this.modalMood     = moodOpt ? moodOpt.key : 'okay';
+    this.modalDateStr = dateStr;
+    this.modalMood = moodOpt ? moodOpt.key : 'okay';
     this.modalEmotions = Array.isArray(log.emotionTags) ? [...log.emotionTags] : [];
-    this.modalNotes    = log.notes || '';
-    this.isEditing     = true;
-    this.saveError     = '';
+    this.modalNotes = log.notes || '';
+    this.isEditing = true;
+    this.saveError = '';
 
     // Also store the moodLogId so saveMoodLog() takes the UPDATE path
     if (log.moodLogId && !this.logs[dateStr]) {
       this.logs[dateStr] = {
         moodLogId: log.moodLogId,
-        mood:      this.modalMood,
-        emotions:  this.modalEmotions,
-        notes:     this.modalNotes
+        mood: this.modalMood,
+        emotions: this.modalEmotions,
+        notes: this.modalNotes
       };
     }
 
@@ -499,22 +563,22 @@ export class MoodTrackerComponent implements OnInit {
   toggleModalEmotion(em: string) {
     const i = this.modalEmotions.indexOf(em);
     if (i > -1) this.modalEmotions.splice(i, 1);
-    else         this.modalEmotions.push(em);
+    else this.modalEmotions.push(em);
   }
 
   saveMoodLog() {
     if (!this.modalDateStr || this.isSaving) return;
-    this.isSaving  = true;
+    this.isSaving = true;
     this.saveError = '';
 
-    const opt   = this.moodOptions.find(o => o.key === this.modalMood);
+    const opt = this.moodOptions.find(o => o.key === this.modalMood);
     const score = opt ? opt.score : 3;
 
     const reqData: any = {
-      moodScore:    score,
+      moodScore: score,
       // ISSUE 4 FIX: send null instead of empty string when no emotions selected
-      emotionTags:  this.modalEmotions.length > 0 ? this.modalEmotions.join(', ') : '',
-      stressLevel:  3,    // neutral default — UI slider to be added later
+      emotionTags: this.modalEmotions.length > 0 ? this.modalEmotions.join(', ') : '',
+      stressLevel: 3,    // neutral default — UI slider to be added later
       sleepQuality: 3,
     };
 
@@ -536,7 +600,7 @@ export class MoodTrackerComponent implements OnInit {
         error: (err) => {
           console.error('Update error:', err);
           this.saveError = 'Failed to update. Please try again.';
-          this.isSaving  = false;
+          this.isSaving = false;
         }
       });
     } else {
@@ -544,8 +608,8 @@ export class MoodTrackerComponent implements OnInit {
       // Build loggedAt: parse date parts manually + add current local time
       // This avoids any browser timezone shift and sends correct UTC to backend
       const [y, m, d] = this.modalDateStr.split('-').map(Number);
-      const now        = new Date();
-      const localDate  = new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds());
+      const now = new Date();
+      const localDate = new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds());
       reqData.loggedAt = localDate.toISOString();
 
       this.moodService.logMood(reqData).subscribe({
@@ -558,7 +622,7 @@ export class MoodTrackerComponent implements OnInit {
         error: (err) => {
           console.error('Save error:', err);
           this.saveError = 'Failed to save. Please try again.';
-          this.isSaving  = false;
+          this.isSaving = false;
         }
       });
     }

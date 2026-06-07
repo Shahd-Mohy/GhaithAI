@@ -362,10 +362,9 @@
   gap: 6px;
 }
 
-.legend-color {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
+.legend-emoji {
+  font-size: 16px;
+  line-height: 1;
 }
 
 .color-very-low {
@@ -699,7 +698,9 @@
 }
 
 .select-emoji {
-  font-size: 24px;
+  font-size: 32px;
+  line-height: 1;
+  display: block;
 }
 
 .select-label {
@@ -878,8 +879,15 @@
 }
 
 @keyframes historyCardIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0);   }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .history-card:hover {
@@ -904,12 +912,30 @@
   border-radius: 14px 0 0 14px;
 }
 
-.strip-very\ low, .strip-very-low { background: #FCA5A5; }
-.strip-low                        { background: #FDBA74; }
-.strip-okay                       { background: #FDE68A; }
-.strip-good                       { background: #86EFAC; }
-.strip-great                      { background: #6EE7B7; }
-.strip-unknown                    { background: #CBD5E1; }
+.strip-very\ low,
+.strip-very-low {
+  background: #FCA5A5;
+}
+
+.strip-low {
+  background: #FDBA74;
+}
+
+.strip-okay {
+  background: #FDE68A;
+}
+
+.strip-good {
+  background: #86EFAC;
+}
+
+.strip-great {
+  background: #6EE7B7;
+}
+
+.strip-unknown {
+  background: #CBD5E1;
+}
 
 /* Emoji circle */
 .history-icon {
@@ -926,13 +952,52 @@
   border: 1px solid #E2ECF0;
 }
 
-.history-icon.mood-very-low { background: #FEE2E2; border-color: #FCA5A5; }
-.history-icon.mood-very\ low { background: #FEE2E2; border-color: #FCA5A5; }
-.history-icon.mood-low      { background: #FEF3C7; border-color: #FCD34D; }
-.history-icon.mood-okay     { background: #F8FAFC; border-color: #E2E8F0; }
-.history-icon.mood-good     { background: #D1FAE5; border-color: #6EE7B7; }
-.history-icon.mood-great    { background: #E0F2FE; border-color: #7DD3FC; }
-.history-icon.mood-unknown  { background: #F1F5F9; border-color: #CBD5E1; }
+.history-icon.mood-very-low {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+}
+
+.history-icon.mood-very\ low {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+}
+
+.history-icon.mood-low {
+  background: #FEF3C7;
+  border-color: #FCD34D;
+}
+
+.history-icon.mood-okay {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+.history-icon.mood-good {
+  background: #D1FAE5;
+  border-color: #6EE7B7;
+}
+
+.history-icon.mood-great {
+  background: #E0F2FE;
+  border-color: #7DD3FC;
+}
+
+.history-icon.mood-unknown {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.history-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* Calendar day emoji */
+.day-emoji {
+  font-size: 16px;
+  line-height: 1;
+  display: block;
+}
 
 /* Details column */
 .history-details {
