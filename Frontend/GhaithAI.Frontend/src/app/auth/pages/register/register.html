@@ -112,11 +112,11 @@
 </div>
 
           <div class="form-group">
-            <label>Phone Number</label>
-            <input type="tel" [(ngModel)]="phone" placeholder="+1 (555) 000-0000"
-                   [class.is-error]="errors['phone']">
-            <div class="error-msg" *ngIf="errors['phone']">Phone number is required</div>
-          </div>
+  <label>Phone Number</label>
+  <input type="tel" [(ngModel)]="phone" placeholder="01xxxxxxxxx"
+         [class.is-error]="errors['phone']">
+  <div class="error-msg" *ngIf="errors['phone']">{{ errorMessages['phone'] }}</div>
+</div>
 
           <div class="form-group">
             <label>Password</label>
@@ -154,79 +154,108 @@
         </ng-container>
 
         <!-- ── STEP 2: Emergency Contacts ── -->
-        <ng-container *ngIf="currentStep === 2">
-          <div class="step-header">
-            <h1>Create Account</h1>
-            <p>Set up your emergency contacts</p>
-          </div>
+<ng-container *ngIf="currentStep === 2">
+  <div class="step-header">
+    <h1>Create Account</h1>
+    <p>Set up your emergency contacts</p>
+  </div>
 
-          <button class="back-btn" type="button" (click)="goToStep(1)">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-            Back
-          </button>
+  <button class="back-btn" type="button" (click)="goToStep(1)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+    Back
+  </button>
 
-          <div class="warning-box">
-            <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-            <div class="warning-box-text">
-              <strong>Why emergency contacts?</strong>
-              If our AI detects signs of crisis or risk, we may reach out to your emergency contacts to ensure your safety. This is an important safety feature.
-            </div>
-          </div>
+  <div class="warning-box">
+    <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+    <div class="warning-box-text">
+      <strong>Why emergency contacts?</strong>
+      If our AI detects signs of crisis or risk, we may reach out to your emergency contacts to ensure your safety.
+    </div>
+  </div>
 
-          <!-- Contact 1 -->
-          <div class="contact-card">
-            <div class="contact-card-header">
-              <span class="contact-card-title">Emergency Contact 1</span>
-              <span class="contact-badge">Primary</span>
-            </div>
-            <div class="form-group">
-              <label>Full Name</label>
-              <input type="text" [(ngModel)]="ec1name" placeholder="Contact name">
-            </div>
-            <div class="form-group">
-              <label>Phone Number</label>
-              <input type="tel" [(ngModel)]="ec1phone" placeholder="+1 (555) 000-0000">
-            </div>
-            <div class="form-group no-margin-bottom">
-              <label>Relationship</label>
-              <select [(ngModel)]="ec1rel">
-                <option value="">Select relationship</option>
-                <option *ngFor="let r of relationships" [value]="r">{{ r }}</option>
-              </select>
-            </div>
-          </div>
+  <!-- ✅ Contact 1 - إجباري -->
+  <div class="contact-card">
+    <div class="contact-card-header">
+      <span class="contact-card-title">Emergency Contact 1</span>
+      <span class="contact-badge">Required</span>
+    </div>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" [(ngModel)]="ec1name" placeholder="Contact name"
+             [class.is-error]="ecError && !ec1name.trim()">
+    </div>
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="tel" [(ngModel)]="ec1phone" placeholder="+20 1xx xxx xxxx"
+             [class.is-error]="ecError && !ec1phone.trim()">
+    </div>
+    <div class="form-group no-margin-bottom">
+      <label>Relationship</label>
+      <select [(ngModel)]="ec1rel">
+        <option value="">Select relationship</option>
+        <option *ngFor="let r of relationships" [value]="r">{{ r }}</option>
+      </select>
+    </div>
+  </div>
 
-          <!-- Contact 2 -->
-          <div class="contact-card">
-            <div class="contact-card-header">
-              <span class="contact-card-title">Emergency Contact 2</span>
-              <span class="contact-optional">Optional</span>
-            </div>
-            <div class="form-group">
-              <label>Full Name</label>
-              <input type="text" [(ngModel)]="ec2name" placeholder="Contact name">
-            </div>
-            <div class="form-group">
-              <label>Phone Number</label>
-              <input type="tel" [(ngModel)]="ec2phone" placeholder="+1 (555) 000-0000">
-            </div>
-            <div class="form-group no-margin-bottom">
-              <label>Relationship</label>
-              <select [(ngModel)]="ec2rel">
-                <option value="">Select relationship</option>
-                <option *ngFor="let r of relationships" [value]="r">{{ r }}</option>
-              </select>
-            </div>
-          </div>
+  <!-- ✅ زرار إضافة Contact 2 -->
+  <button
+    *ngIf="!showSecondContact"
+    class="btn-add-contact"
+    type="button"
+    (click)="toggleSecondContact()">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="16"/>
+      <line x1="8" y1="12" x2="16" y2="12"/>
+    </svg>
+    Add second emergency contact (optional)
+  </button>
 
-          <div class="error-msg" *ngIf="ecError" style="margin-bottom:10px">
-            Please fill in the primary emergency contact name and phone number
-          </div>
+  <!-- ✅ Contact 2 - اختياري يظهر لو ضغط الزرار -->
+  <div class="contact-card" *ngIf="showSecondContact">
+    <div class="contact-card-header">
+      <span class="contact-card-title">Emergency Contact 2</span>
+      <button class="btn-remove-contact" type="button" (click)="toggleSecondContact()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Remove
+      </button>
+    </div>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" [(ngModel)]="ec2name" placeholder="Contact name"
+             [class.is-error]="ecError && showSecondContact && !ec2name.trim()">
+    </div>
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="tel" [(ngModel)]="ec2phone" placeholder="+20 1xx xxx xxxx"
+             [class.is-error]="ecError && showSecondContact && !ec2phone.trim()">
+    </div>
+    <div class="form-group no-margin-bottom">
+      <label>Relationship</label>
+      <select [(ngModel)]="ec2rel">
+        <option value="">Select relationship</option>
+        <option *ngFor="let r of relationships" [value]="r">{{ r }}</option>
+      </select>
+    </div>
+  </div>
 
-          <button class="btn-submit" type="button" (click)="step2Next()">Continue</button>
-        </ng-container>
+  <div class="error-msg" *ngIf="ecError" style="margin-bottom:10px">
+    <ng-container *ngIf="!ec1name.trim() || !ec1phone.trim()">
+      Please fill in the primary emergency contact name and phone number
+    </ng-container>
+    <ng-container *ngIf="showSecondContact && ec1name.trim() && ec1phone.trim() && (!ec2name.trim() || !ec2phone.trim())">
+      Please fill in the second contact details or remove it
+    </ng-container>
+  </div>
+
+  <button class="btn-submit" type="button" (click)="step2Next()">Continue</button>
+</ng-container>
 
         <!-- ── STEP 3: Personal Info ── -->
         <!-- ── STEP 3: Personal Info ── -->

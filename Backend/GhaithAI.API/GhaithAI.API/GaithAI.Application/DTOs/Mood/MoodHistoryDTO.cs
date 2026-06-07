@@ -14,5 +14,6 @@
         public string Date { get; set; } = string.Empty;
 
         public DateTime LoggedAt { get; set; }
+        public string? Notes { get; set; }
     }
 }

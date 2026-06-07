@@ -2,8 +2,9 @@
 {
     public class UpdateMoodLogDTO
     {
-        // For later
         public int? MoodScore { get; set; }
         public string? EmotionTags { get; set; }
+
+        public string? Notes { get; set; }
     }
 }

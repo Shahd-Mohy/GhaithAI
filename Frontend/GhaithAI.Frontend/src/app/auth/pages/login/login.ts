@@ -1,33 +1,13 @@
 import { Component } from '@angular/core';
-
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
-
-import {
-  Router,
-  RouterLink
-} from '@angular/router';
-
-import {
-  SocialAuthService,
-  GoogleLoginProvider,
-  SocialUser
-} from '@abacritt/angularx-social-login';
-
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth';
-import { TokenService } from '../../../services/token';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    RouterLink
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
@@ -35,109 +15,82 @@ export class LoginComponent {
 
   loginForm: FormGroup;
 
+  submitting = false;
+  apiError = '';
+  showPassword = false;
+
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
-    private token: TokenService,
-    // private socialAuth: SocialAuthService,
     private router: Router
   ) {
-
     this.loginForm = this.fb.group({
-
-      email: [
-        '',
-        [
-          Validators.required,
-          Validators.email
-        ]
-      ],
-
-      password: [
-        '',
-        Validators.required
-      ]
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
+  }
+
+  // ─── Getters للـ validation ───────────────────────────
+  get emailCtrl() { return this.loginForm.get('email')!; }
+  get passwordCtrl() { return this.loginForm.get('password')!; }
+
+  get emailError(): string {
+    const c = this.emailCtrl;
+    if (!c.touched) return '';
+    if (c.hasError('required')) return 'Email is required';
+    if (c.hasError('email')) return 'Enter a valid email address';
+    return '';
+  }
+
+  get passwordError(): string {
+    const c = this.passwordCtrl;
+    if (!c.touched) return '';
+    if (c.hasError('required')) return 'Password is required';
+    if (c.hasError('minlength')) return 'Password must be at least 6 characters';
+    return '';
+  }
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
   }
 
   login(): void {
 
-    if (this.loginForm.invalid)
-      return;
+    // ✅ mark all touched عشان تظهر الـ errors
+    this.loginForm.markAllAsTouched();
 
-    this.auth
-      .login(this.loginForm.value)
-      .subscribe({
+    if (this.loginForm.invalid) return;
 
-        next: (res: any) => {
+    this.submitting = true;
+    this.apiError = '';
 
-          this.token.saveToken(
-            res.token
-          );
+    this.auth.login(this.loginForm.value).subscribe({
 
-          this.router.navigate([
-            '/dashboard'
-          ]);
-        },
+      next: (res) => {
+        this.auth.saveSession(res);
+        this.submitting = false;
+        this.router.navigate(['/dashboard']);
+      },
 
-        error: (err) => {
+      error: (err) => {
+        console.error(err);
+        this.submitting = false;
 
-          console.error(err);
+        const message = err.error?.message || '';
 
-          alert('Login Failed');
+        if (err.status === 400 && message.toLowerCase().includes('google')) {
+          this.apiError = 'This account uses Google Sign-In. Please login with Google.';
         }
-      });
+        else if (err.status === 400) {
+          this.apiError = message || 'Invalid email or password.';
+        }
+        else if (err.status === 500) {
+          this.apiError = 'Something went wrong. Please try again later.';
+        }
+        else {
+          this.apiError = 'Login failed. Please try again.';
+        }
+      }
+    });
   }
-
-  // googleLogin(): void {
-
-  //   this.socialAuth
-  //     .signIn(
-  //       GoogleLoginProvider.PROVIDER_ID
-  //     )
-  //     .then((user: SocialUser) => {
-
-  //       console.log(
-  //         'Google User:',
-  //         user
-  //       );
-
-  //       this.auth
-  //         .googleLogin({
-
-  //           idToken:
-  //             user.idToken
-
-  //         })
-  //         .subscribe({
-
-  //           next: (res: any) => {
-
-  //             this.token.saveToken(
-  //               res.token
-  //             );
-
-  //             this.router.navigate([
-  //               '/profile'
-  //             ]);
-  //           },
-
-  //           error: (err) => {
-
-  //             console.error(err);
-
-  //             alert(
-  //               'Google Login Failed'
-  //             );
-  //           }
-  //         });
-  //     })
-  //     .catch(error => {
-
-  //       console.error(
-  //         'Google Sign In Error',
-  //         error
-  //       );
-  //     });
-  // }
 }

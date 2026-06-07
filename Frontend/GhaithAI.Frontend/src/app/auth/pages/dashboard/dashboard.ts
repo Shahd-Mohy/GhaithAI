@@ -1,22 +1,21 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, inject } from '@angular/core';
+import {
+  Component, OnInit, AfterViewInit,
+  ElementRef, ViewChild, inject, ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { SelfHelpComponent } from '../../../selfHelp/self-help';
 import { MoodTrackerComponent } from '../../../support/mood/mood';
 import { JournalComponent } from '../../../support/journal/journal';
-
-interface NavItem {
-  label: string;
-  page: string;
-  icon: string;
-}
+import { AuthService } from '../../../services/auth';
+import {
+  InsightService,
+  DashboardViewModel,
+  DailyMoodDTO
+} from '../../../services/insight.service';
 
 interface QuickAction {
-  name: string;
-  desc: string;
-  page: string;
-  colorClass: string;
-  icon: string;
+  name: string; desc: string; page: string; colorClass: string; icon: string;
 }
 
 @Component({
@@ -32,29 +31,42 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly insightService = inject(InsightService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly authService = inject(AuthService);
 
+  // ── state ────────────────────────────────────────────────────────
   activePage = 'home';
   selectedMood: string | null = null;
-  today = new Date();
+  isLoading = true;
+  hasError = false;
+  vm: DashboardViewModel | null = null;
+  showUserMenu = false;
 
-  get todayLabel(): string {
-    return this.today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  // ── computed getters ─────────────────────────────────────────────
+  get greeting(): string {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
   }
 
-  navItemsMain: NavItem[] = [
-    { label: 'Home', page: 'home', icon: 'home' },
-    { label: 'Talk to AI', page: 'chat', icon: 'chat' },
-    { label: 'Mood Tracker', page: 'mood', icon: 'mood' },
-    { label: 'Journal', page: 'journal', icon: 'journal' },
-    { label: 'Self-Help Tools', page: 'tools', icon: 'tools' },
-    { label: 'Learn', page: 'learn', icon: 'learn' },
-  ];
+  get pageTitle(): string {
+    if (!this.vm) return 'Welcome Back';
+    return `${this.greeting}, ${this.vm.displayName.split(' ')[0]}`;
+  }
 
-  navItemsHelp: NavItem[] = [
-    { label: 'Find a Professional', page: 'professionals', icon: 'professionals' },
-    { label: 'Crisis Support', page: 'crisis', icon: 'crisis' },
-  ];
+  get todayLabel(): string {
+    return this.vm?.todayLabel ?? new Date().toLocaleDateString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric'
+    });
+  }
 
+  get insights(): string[] {
+    return this.vm?.personalInsights.map(i => i.text) ?? [];
+  }
+
+  // ── static UI config ─────────────────────────────────────────────
   moods = [
     { key: 'very-low', emoji: '🌧️', label: 'Very Low' },
     { key: 'low', emoji: '🌥️', label: 'Low' },
@@ -70,116 +82,153 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     { name: 'Learn Something', desc: 'Explore psychoeducation', page: 'learn', colorClass: 'purple', icon: 'learn' },
   ];
 
-  insights = [
-    'Your mood tends to improve on days you exercise',
-    "You've logged 5 days in a row — great consistency!",
-    'Writing in your journal helps reduce anxiety levels',
-  ];
-
-  // Chart data
-  moodData = [3, 4, 2, 5, 3, 4, 4];
-  moodDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-  ngOnInit() {
+  // ── lifecycle ─────────────────────────────────────────────────────
+  ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      const page = params['page'];
-      if (page) {
-        this.activePage = page;
+      if (params['page']) this.activePage = params['page'];
+    });
+
+    this.insightService.getDashboard().subscribe({
+      next: data => {
+        this.vm = data;
+        this.isLoading = false;
+        this.hasError = false;
+        this.cdr.detectChanges();
+        // Schedule chart draw with retry — waits for the canvas to be
+        // laid out by the browser (clientWidth > 0) before drawing
+        this.scheduleChartDraw(20);
+      },
+      error: () => {
+        this.isLoading = false;
+        this.hasError = true;
       }
     });
   }
 
-  ngAfterViewInit() {
-    this.drawMoodChart();
+  ngAfterViewInit(): void { /* chart drawn by scheduleChartDraw */ }
+
+  /**
+   * Retries drawing the chart every 50ms until the canvas has a real
+   * clientWidth (i.e. the browser has finished layout). Stops after
+   * maxRetries attempts to avoid an infinite loop.
+   */
+  private scheduleChartDraw(maxRetries: number): void {
+    if (maxRetries <= 0) return;
+    setTimeout(() => {
+      const canvas = this.moodChartRef?.nativeElement;
+      const w = canvas?.parentElement?.clientWidth || canvas?.parentElement?.offsetWidth || 0;
+      if (canvas && w > 0) {
+        this.drawMoodChart();
+      } else {
+        this.scheduleChartDraw(maxRetries - 1);
+      }
+    }, 50);
   }
 
-  navigate(page: string) {
+  navigate(page: string): void {
     if (page === 'chat') {
-      this.router.navigate(['/support/chat']);
-      return;
+      this.router.navigate(['/support/chat']); return;
     }
     if (page === 'crisis') {
-      this.router.navigate(['/support/crisis']);
-      return;
+      this.router.navigate(['/support/crisis']); return;
     }
     this.activePage = page;
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { page: page },
+      queryParams: { page },
       queryParamsHandling: 'merge'
     });
+    // Redraw chart when returning to the home tab
+    if (page === 'home') this.scheduleChartDraw(20);
   }
 
-  selectMood(key: string) {
-    this.selectedMood = key;
-  }
+  selectMood(key: string): void { this.selectedMood = key; }
+  isActive(page: string): boolean { return this.activePage === page; }
 
-  isActive(page: string) { return this.activePage === page; }
-
-  drawMoodChart() {
+  // ── mood chart ───────────────────────────────────────────────────
+  drawMoodChart(): void {
     const canvas = this.moodChartRef?.nativeElement;
-    if (!canvas) return;
+    if (!canvas || !this.vm) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const W = canvas.offsetWidth || 400;
+    const moods: DailyMoodDTO[] = this.vm.weeklySummary.dailyMoods;
+    const days   = moods.map(m => m.dayLabel);
+    const scores = moods.map(m => m.moodScore ?? 0);
+    const hasData = moods.map(m => m.moodScore !== null);
+
+    // Measure the rendered width (scheduleChartDraw already verified w > 0)
+    const W = canvas.parentElement?.clientWidth || canvas.parentElement?.offsetWidth || 400;
     const H = 160;
-    canvas.width = W;
+    canvas.width  = W;
     canvas.height = H;
 
     const pad = { top: 16, right: 16, bottom: 32, left: 24 };
-    const data = this.moodData;
-    const days = this.moodDays;
     const maxV = 5;
-    const cW = (W - pad.left - pad.right) / (data.length - 1);
+    const n = scores.length;
+    const cW = n > 1 ? (W - pad.left - pad.right) / (n - 1) : W - pad.left - pad.right;
     const cH = H - pad.top - pad.bottom;
 
     const xOf = (i: number) => pad.left + i * cW;
     const yOf = (v: number) => pad.top + cH - (v / maxV) * cH;
 
-    // gradient fill
+    ctx.clearRect(0, 0, W, H);
+
+    // Gradient fill
     const grad = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
     grad.addColorStop(0, 'rgba(11,143,172,.18)');
     grad.addColorStop(1, 'rgba(11,143,172,0)');
 
     ctx.beginPath();
-    ctx.moveTo(xOf(0), yOf(data[0]));
-    for (let i = 1; i < data.length; i++) {
+    ctx.moveTo(xOf(0), yOf(scores[0]));
+    for (let i = 1; i < n; i++) {
       const cpx = (xOf(i - 1) + xOf(i)) / 2;
-      ctx.bezierCurveTo(cpx, yOf(data[i - 1]), cpx, yOf(data[i]), xOf(i), yOf(data[i]));
+      ctx.bezierCurveTo(cpx, yOf(scores[i - 1]), cpx, yOf(scores[i]), xOf(i), yOf(scores[i]));
     }
-    ctx.lineTo(xOf(data.length - 1), H - pad.bottom);
+    ctx.lineTo(xOf(n - 1), H - pad.bottom);
     ctx.lineTo(xOf(0), H - pad.bottom);
     ctx.closePath();
     ctx.fillStyle = grad;
     ctx.fill();
 
-    // line
+    // Curve line
     ctx.beginPath();
-    ctx.moveTo(xOf(0), yOf(data[0]));
-    for (let i = 1; i < data.length; i++) {
+    ctx.moveTo(xOf(0), yOf(scores[0]));
+    for (let i = 1; i < n; i++) {
       const cpx = (xOf(i - 1) + xOf(i)) / 2;
-      ctx.bezierCurveTo(cpx, yOf(data[i - 1]), cpx, yOf(data[i]), xOf(i), yOf(data[i]));
+      ctx.bezierCurveTo(cpx, yOf(scores[i - 1]), cpx, yOf(scores[i]), xOf(i), yOf(scores[i]));
     }
     ctx.strokeStyle = '#0B8FAC';
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
-    // dots
-    data.forEach((v, i) => {
+    // Dots: filled = real data, hollow ring = no data that day
+    scores.forEach((v, i) => {
       ctx.beginPath();
-      ctx.arc(xOf(i), yOf(v), 4, 0, Math.PI * 2);
-      ctx.fillStyle = '#0B8FAC';
-      ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      ctx.arc(xOf(i), yOf(v), 4.5, 0, Math.PI * 2);
+      if (hasData[i]) {
+        ctx.fillStyle = '#0B8FAC'; ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+      } else {
+        ctx.fillStyle = '#fff'; ctx.fill();
+        ctx.strokeStyle = '#CBD5E0'; ctx.lineWidth = 1.5; ctx.stroke();
+      }
     });
 
-    // day labels
+    // Day labels
     ctx.fillStyle = '#64748B';
     ctx.font = '11px Sora, sans-serif';
     ctx.textAlign = 'center';
     days.forEach((d, i) => ctx.fillText(d, xOf(i), H - 8));
   }
+
+toggleUserMenu(): void {
+  this.showUserMenu = !this.showUserMenu;
+}
+
+logout(): void {
+  this.authService.logout();
+  this.router.navigate(['/login']);
+}
 }

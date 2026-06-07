@@ -1,6 +1,7 @@
 ﻿using GhaithAI.API.Data;
 using GhaithAI.API.GaithAI.Infrastructure.Repositories.Class;
 using GhaithAI.API.Models;
+using GhaithAI.API.Presistance;
 using GhaithAI.API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,7 @@ namespace GhaithAI.API.Repositories.Class
             string userId, string? search, int page, int pageSize)
         {
             var query = _context.JournalEntries
-                .Where(j => j.UserId == userId && !j.IsDeleted);
+                .Where(j => j.UserId == userId);
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -38,22 +39,23 @@ namespace GhaithAI.API.Repositories.Class
 
         public async Task<List<JournalEntry>> GetAllByUserIdAsync(string userId)
             => await _context.JournalEntries
-                .Where(j => j.UserId == userId && !j.IsDeleted)
+                .Where(j => j.UserId == userId)
                 .OrderByDescending(j => j.CreatedAt)
                 .ToListAsync();
 
         public async Task<bool> BelongsToUserAsync(Guid id, string userId)
             => await _context.JournalEntries
-                .AnyAsync(j => j.Id == id && j.UserId == userId && !j.IsDeleted);
+                .AsNoTracking()
+                .AnyAsync(j => j.Id == id && j.UserId == userId);
 
         public async Task SoftDeleteAsync(Guid id)
         {
-            var entry = await _context.JournalEntries.FindAsync(id);
+            var entry = await _context.JournalEntries
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(j => j.Id == id);
+
             if (entry != null)
-            {
-                entry.IsDeleted = true;
-                _context.JournalEntries.Update(entry);
-            }
+                _context.JournalEntries.Remove(entry);
         }
 
         public async Task<int> SaveChangesAsync()

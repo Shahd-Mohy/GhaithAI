@@ -85,9 +85,11 @@
     </button>
 
     <div class="sidebar-user">
-      <div class="user-avatar">W</div>
+      <div class="user-avatar">
+        {{ vm ? vm.displayName.charAt(0).toUpperCase() : 'W' }}
+      </div>
       <div class="user-info">
-        <div class="user-name">Welcome</div>
+        <div class="user-name">{{ vm ? vm.displayName.split(' ')[0] : 'Welcome' }}</div>
         <div class="user-plan">Free Plan</div>
       </div>
       <svg class="user-chevron" viewBox="0 0 24 24">
@@ -102,8 +104,14 @@
     <!-- TOP BAR -->
     <header class="topbar">
       <div>
-        <h1 class="page-title">Welcome Back</h1>
+        <!-- Skeleton for title while loading -->
+        @if (isLoading) {
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-sub"></div>
+        } @else {
+        <h1 class="page-title">{{ pageTitle }}</h1>
         <p class="page-sub">How are you feeling today?</p>
+        }
       </div>
       <div class="topbar-right">
         <div class="date-badge">
@@ -116,9 +124,21 @@
       </div>
     </header>
 
+    <!-- ── HOME PAGE ── -->
     @if (activePage === 'home') {
-    <!-- SCROLL AREA -->
     <div class="scroll-area">
+
+      <!-- ERROR STATE -->
+      @if (hasError) {
+      <div class="error-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        Unable to load your dashboard data. Please refresh the page.
+      </div>
+      }
 
       <!-- MOOD CHECK-IN -->
       <section class="mood-checkin card">
@@ -131,11 +151,13 @@
         <h2 class="checkin-title">How are you feeling right now?</h2>
         <p class="checkin-sub">Take a moment to check in with yourself</p>
         <div class="mood-row">
-          <button *ngFor="let mood of moods" type="button" class="mood-btn" [class.selected]="selectedMood === mood.key"
+          @for (mood of moods; track mood.key) {
+          <button type="button" class="mood-btn" [class.selected]="selectedMood === mood.key"
             (click)="selectMood(mood.key); navigate('mood')">
             <span class="mood-emoji">{{ mood.emoji }}</span>
             <span class="mood-label">{{ mood.label }}</span>
           </button>
+          }
         </div>
       </section>
 
@@ -143,30 +165,36 @@
       <section class="quick-section">
         <h3 class="section-title">What would you like to do?</h3>
         <div class="quick-grid">
-          <div *ngFor="let action of quickActions" class="quick-card" (click)="navigate(action.page)">
+          @for (action of quickActions; track action.name) {
+          <div class="quick-card" (click)="navigate(action.page)">
             <div class="quick-icon" [ngClass]="action.colorClass">
-              <!-- Chat -->
-              <svg *ngIf="action.icon === 'chat'" viewBox="0 0 24 24">
+              @if (action.icon === 'chat') {
+              <svg viewBox="0 0 24 24">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
               </svg>
-              <!-- Breathing -->
-              <svg *ngIf="action.icon === 'breath'" viewBox="0 0 24 24">
+              }
+              @if (action.icon === 'breath') {
+              <svg viewBox="0 0 24 24">
                 <path
                   d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
               </svg>
-              <!-- Journal -->
-              <svg *ngIf="action.icon === 'journal'" viewBox="0 0 24 24">
+              }
+              @if (action.icon === 'journal') {
+              <svg viewBox="0 0 24 24">
                 <path
                   d="M18 2h-3a5 5 0 0 0-10 0H2v20h20V2h-4zm-5 0a3 3 0 0 1 3 3H8a3 3 0 0 1 3-3h2zm7 18H4V4h3v3h10V4h3v16z" />
               </svg>
-              <!-- Learn -->
-              <svg *ngIf="action.icon === 'learn'" viewBox="0 0 24 24">
+              }
+              @if (action.icon === 'learn') {
+              <svg viewBox="0 0 24 24">
                 <path d="M12 3L1 9l4 2.18V17h2v-4.82l2 1.09V17c0 2.76 2.24 5 5 5s5-2.24 5-5v-3.73l2-1.09L23 9l-11-6z" />
               </svg>
+              }
             </div>
             <div class="quick-name">{{ action.name }}</div>
             <div class="quick-desc">{{ action.desc }}</div>
           </div>
+          }
         </div>
       </section>
 
@@ -187,17 +215,32 @@
               </div>
             </div>
           </div>
+
+          <!-- Chart skeleton while loading -->
+          @if (isLoading) {
+          <div class="skeleton skeleton-chart"></div>
+          } @else {
           <div class="chart-area">
             <canvas #moodChart width="400" height="160"></canvas>
           </div>
+          }
+
           <div class="week-stats">
             <div class="week-stat-row">
-              <span class="stat-label">Average mood</span>
-              <span class="stat-value">3.5 / 5</span>
+              <span class="stat-label">Avg mood (this week)</span>
+              @if (isLoading) {
+              <span class="skeleton skeleton-stat"></span>
+              } @else {
+              <span class="stat-value">{{ vm?.weeklySummary?.avgMoodLabel ?? '—' }}</span>
+              }
             </div>
             <div class="week-stat-row">
-              <span class="stat-label">Days logged</span>
-              <span class="stat-value">6 / 7</span>
+              <span class="stat-label">Days logged (this week)</span>
+              @if (isLoading) {
+              <span class="skeleton skeleton-stat"></span>
+              } @else {
+              <span class="stat-value">{{ vm?.weeklySummary?.daysLoggedLabel ?? '—' }}</span>
+              }
             </div>
           </div>
           <button class="outline-btn" type="button" (click)="navigate('mood')">View Full History →</button>
@@ -217,17 +260,46 @@
               </div>
             </div>
           </div>
+
+          <!-- Skeleton insights -->
+          @if (isLoading) {
           <div class="insights-list">
-            <div *ngFor="let insight of insights" class="insight-item">
+            @for (i of [1,2,3]; track i) {
+            <div class="insight-item skeleton-insight">
+              <div class="skeleton skeleton-insight-text"></div>
+            </div>
+            }
+          </div>
+          } @else if (insights.length === 0) {
+          <div class="insights-empty">
+            <p>Keep logging your mood to unlock personal insights!</p>
+          </div>
+          } @else {
+          <div class="insights-list">
+            @for (insight of insights; track insight) {
+            <div class="insight-item">
               <div class="insight-icon">💛</div>
               <div class="insight-text">{{ insight }}</div>
             </div>
+            }
           </div>
+          }
+
           <button class="outline-btn" type="button" (click)="navigate('learn')">See All Insights →</button>
         </div>
       </div>
 
-      <!-- SUGGESTION -->
+      <!-- TODAY'S SUGGESTION -->
+      @if (isLoading) {
+      <div class="card suggestion-card skeleton-suggestion-card">
+        <div class="skeleton skeleton-suggestion-icon"></div>
+        <div class="suggestion-body">
+          <div class="skeleton skeleton-label"></div>
+          <div class="skeleton skeleton-suggestion-text"></div>
+          <div class="skeleton skeleton-btn"></div>
+        </div>
+      </div>
+      } @else if (vm?.todaysSuggestion; as s) {
       <div class="card suggestion-card">
         <div class="suggestion-icon">
           <svg viewBox="0 0 24 24">
@@ -236,16 +308,16 @@
           </svg>
         </div>
         <div class="suggestion-body">
-          <div class="suggestion-label">Today's Suggestion</div>
-          <div class="suggestion-text">
-            Try a 5-minute breathing exercise to start your day with calm.
-            Research shows it can reduce anxiety by up to 37%.
-          </div>
-          <button class="teal-btn" type="button" (click)="navigate('tools')">
-            Start Breathing Exercise →
+          <div class="suggestion-label">{{ s.title }}</div>
+          <div class="suggestion-text">{{ s.text }}</div>
+          @if (s.actionLabel && s.actionRoute) {
+          <button class="teal-btn" type="button" (click)="navigate(s.actionRoute!)">
+            {{ s.actionLabel }} →
           </button>
+          }
         </div>
       </div>
+      }
 
       <!-- FOOTER -->
       <p class="footer-note">
@@ -254,19 +326,17 @@
         or call your local emergency services.
       </p>
 
-    </div> }
+    </div>
+    }
+
     @if (activePage === 'tools' || activePage === 'breathing') {
     <app-self-help-dashboard></app-self-help-dashboard>
     }
     @if (activePage === 'mood') {
-    <div class="scroll-area">
-      <app-mood-tracker></app-mood-tracker>
-    </div>
+    <div class="scroll-area"><app-mood-tracker></app-mood-tracker></div>
     }
     @if (activePage === 'journal') {
-    <div class="scroll-area">
-      <app-journal></app-journal>
-    </div>
+    <div class="scroll-area"><app-journal></app-journal></div>
     }
     @if (activePage === 'chat') {
     <div class="scroll-area" style="padding: 24px; color: #0B8FAC;">
@@ -288,6 +358,7 @@
       <h2>Crisis Support Page Coming Soon...</h2>
       <p>If you are in immediate danger, please call your local emergency services.</p>
     </div>
-    }<!-- /scroll-area -->
+    }
+
   </main>
 </div>
