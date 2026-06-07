@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, zip, timer } from 'rxjs';
-import { takeUntil, take, filter } from 'rxjs/operators';
+import { takeUntil, take, filter, finalize } from 'rxjs/operators';
 
 import { ChatStore } from '../../../store/chat.store';
 import { SignalRService } from '../../../hooks/useSignalR';
@@ -332,7 +332,7 @@ import { CrisisOverlay } from '../../../components/chat/CrisisOverlay';
       <!-- Input Footer — Anchored to bottom -->
       <div class="input-wrapper">
         <app-chat-input
-          [disabled]="chatStore.isSendingMessage() || chatStore.connectionStatus() !== 'connected'"
+          [disabled]="chatStore.isSendingMessage() || chatStore.isAiTyping() || chatStore.connectionStatus() !== 'connected'"
           (messageSent)="onMessageSent($event)"
         />
       </div>
@@ -411,9 +411,23 @@ export class ChatPage implements OnInit, OnDestroy {
   // ── Message Handling ─────────────────────────────────────────────────────────
 
   async onMessageSent(content: string): Promise<void> {
+    if (this.chatStore.isSendingMessage() || this.chatStore.isAiTyping() || this.chatStore.connectionStatus() !== 'connected') return;
     if (!content || !content.trim()) return;
 
-    this.chatStore.isSendingMessage.set(true);
+    this.chatStore.setSendingMessage(true);
+
+    // Add optimistic message to UI immediately
+    const tempId = crypto.randomUUID();
+    const optimisticMsg: ChatMessageModel = {
+      id: tempId,
+      senderType: 'User',
+      content: content.trim(),
+      sentAt: new Date().toISOString(),
+      isOptimistic: true,
+      status: 'sending'
+    };
+    this.chatStore.addMessage(optimisticMsg);
+    this.chatStore.typingBufferActive.set(true);
 
     try {
       let session = this.chatStore.activeSession();
@@ -422,32 +436,26 @@ export class ChatPage implements OnInit, OnDestroy {
       if (!session) {
         session = await this.createNewSession();
         if (!session) {
-          this.chatStore.isSendingMessage.set(false);
+          this.chatStore.removeMessage(tempId);
+          this.chatStore.typingBufferActive.set(false);
+          this.chatStore.setSendingMessage(false);
           return;
         }
       }
-
-      // Add optimistic message to UI immediately
-      const tempId = crypto.randomUUID();
-      const optimisticMsg: ChatMessageModel = {
-        id: tempId,
-        senderType: 'User',
-        content: content.trim(),
-        sentAt: new Date().toISOString(),
-        isOptimistic: true,
-        status: 'sending'
-      };
-      this.chatStore.addMessage(optimisticMsg);
-      this.chatStore.typingBufferActive.set(true);
 
       const responseSubject = new Subject<ChatMessageModel>();
       
       const responseSubscription = zip(
         responseSubject.pipe(take(1)),
         timer(1200)
+      ).pipe(
+        finalize(() => {
+          this.chatStore.setSendingMessage(false);
+          this.chatStore.isAiTyping.set(false);
+          this.chatStore.typingBufferActive.set(false);
+        })
       ).subscribe({
         next: ([aiMsg]) => {
-          this.chatStore.typingBufferActive.set(false);
           this.chatStore.commitAiMessage(aiMsg);
         }
       });
@@ -469,6 +477,11 @@ export class ChatPage implements OnInit, OnDestroy {
           isOptimistic: false,
           status: 'sent'
         });
+
+        // Transition synchronously: send is complete -> typing starts
+        this.chatStore.isAiTyping.set(true);
+        this.chatStore.setSendingMessage(false);
+
       } catch (err) {
         console.error('[ChatPage] SendMessage failed:', err);
         apiSub.unsubscribe();
@@ -485,12 +498,18 @@ export class ChatPage implements OnInit, OnDestroy {
           status: 'error'
         });
       }
-    } finally {
-      this.chatStore.isSendingMessage.set(false);
+    } catch (err) {
+      console.error('[ChatPage] Unexpected error:', err);
+      this.chatStore.removeMessage(tempId);
+      this.chatStore.typingBufferActive.set(false);
+      this.chatStore.isAiTyping.set(false);
+      this.chatStore.setSendingMessage(false);
     }
   }
 
   onRetryMessage(msg: ChatMessageModel): void {
+    if (this.chatStore.isSendingMessage() || this.chatStore.isAiTyping() || this.chatStore.connectionStatus() !== 'connected') return;
+
     if (msg.senderType === 'AI' && msg.status === 'error') {
       this.chatStore.removeMessage(msg.id);
       const messages = this.chatStore.messages();

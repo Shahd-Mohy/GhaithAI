@@ -52,7 +52,8 @@ import { ChatMessageModel } from '../../types/chat.types';
       white-space: pre-wrap;
       word-break: break-word;
       transition: opacity 0.2s ease;
-      max-width: 85%;
+      width: fit-content;
+      max-width: 100%;
       box-shadow: var(--shadow-sm);
     }
 
@@ -74,6 +75,7 @@ import { ChatMessageModel } from '../../types/chat.types';
       border: 1px solid transparent;
       /* Subtle inner glow for depth */
       box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), var(--shadow-sm);
+      align-self: flex-end;
     }
 
     /* ── Copy button ──────────────────────────────────── */
@@ -266,19 +268,43 @@ export class ChatMessage implements OnInit, OnDestroy {
   readonly isCopied = signal<boolean>(false);
   readonly displayedContent = signal<string>('');
   
+  isRiskDetectedInBubble: boolean = false;
+
   private streamSub?: Subscription;
 
   ngOnInit() {
+    const cleanContent = this.extractCleanContent(this.message.content);
+
     if (this.message.senderType === 'AI') {
       const age = Date.now() - new Date(this.message.sentAt).getTime();
       if (age < 10000) {
-        this.streamText(this.message.content);
+        this.streamText(cleanContent);
       } else {
-        this.displayedContent.set(this.message.content);
+        this.displayedContent.set(cleanContent);
       }
     } else {
-      this.displayedContent.set(this.message.content);
+      this.displayedContent.set(cleanContent);
     }
+  }
+
+  private extractCleanContent(rawContent: string): string {
+    if (!rawContent) return '';
+    
+    const trimmed = rawContent.trim();
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed && typeof parsed === 'object') {
+          const aiResponse = parsed.AiResponse ?? parsed.aiResponse;
+          if (aiResponse !== undefined) {
+            this.isRiskDetectedInBubble = !!(parsed.IsRiskDetected ?? parsed.isRiskDetected);
+            return aiResponse;
+          }
+        }
+      } catch (e) {
+      }
+    }
+    return rawContent;
   }
 
   streamText(fullText: string) {

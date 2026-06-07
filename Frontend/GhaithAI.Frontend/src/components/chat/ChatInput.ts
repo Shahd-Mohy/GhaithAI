@@ -178,7 +178,11 @@ const WARN_THRESHOLD = 1800;
             [disabled]="!canSend()"
             (click)="sendMessage()"
             aria-label="Send message">
-            <i class="bi bi-send-fill"></i>
+            @if (disabled) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else {
+              <i class="bi bi-send-fill"></i>
+            }
           </button>
         </div>
       </div>
@@ -208,12 +212,14 @@ export class ChatInput {
   );
 
   onInput(event: Event): void {
+    if(this.disabled) return;
     const el = event.target as HTMLTextAreaElement;
     this.inputText.set(el.value);
     this.autoResize(el);
   }
 
   onEnterKey(event: Event): void {
+    if (this.disabled) return;
     const ke = event as KeyboardEvent;
     if (ke.shiftKey) return;
     ke.preventDefault();
@@ -233,10 +239,12 @@ export class ChatInput {
       const el = this.textareaRef.nativeElement;
       el.value = '';
       el.style.height = 'auto';
+      el.style.height = '44px';
     }
   }
 
   private autoResize(el: HTMLTextAreaElement): void {
+    el.style.height = '44px';
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
   }

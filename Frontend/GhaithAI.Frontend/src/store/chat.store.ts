@@ -118,6 +118,11 @@ export class ChatStore {
     this.riskDetails.set(null);
   }
 
+  /** Set sending message state. */
+  setSendingMessage(val: boolean): void {
+    this.isSendingMessage.set(val);
+  }
+
   /** Full reset — called on logout or session cleanup. */
   reset(): void {
     this.activeSession.set(null);
