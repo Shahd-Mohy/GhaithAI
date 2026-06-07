@@ -1,12 +1,10 @@
 <div class="tools-container">
 
-  <!-- الـ Header الرئيسي -->
   <div class="header-section">
     <h1 class="page-title">Self-Help Tools</h1>
     <p class="page-sub">Evidence-based techniques for your wellbeing</p>
   </div>
 
-  <!-- قسم الـ Quick Relief -->
   <div class="mb-10">
     <h2 class="section-title">Quick Relief</h2>
 
@@ -18,11 +16,7 @@
     <div class="quick-grid">
       @for (tool of quickTools; track tool.title) {
       <div class="quick-card" (click)="goToExercise(tool.id)" style="cursor: pointer;">
-        <!-- <div class="icon-wrapper">
-          {{ tool.icon }}
-        </div> -->
         <div class="icon-wrapper" [innerHTML]="getSafeIcon(tool.icon)"></div>
-
         <h3 class="card-title" style="font-size: 13px; line-height: 1.4;">{{ tool.title }}</h3>
         <p class="card-desc">{{ tool.description }}</p>
         <span class="card-duration">⏱ {{ tool.duration }}</span>
@@ -32,7 +26,6 @@
     }
   </div>
 
-  <!-- قسم الـ Browse by Category -->
   <div>
     <h2 class="section-title">Browse by Category</h2>
 
@@ -44,7 +37,7 @@
     } @else {
     <div class="category-list">
 
-      @if (categoriesList && categoriesList.length > 0) {
+      @if (categoriesList && categoriesList.length >0) {
       @for (cat of categoriesList; track cat.name) {
       <div
         style="border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px;">
@@ -52,8 +45,7 @@
         <div class="category-row" (click)="toggleCategory(cat.name)"
           style="border: none; border-radius: 0; box-shadow: none; margin-bottom: 0;">
           <div class="category-left">
-            <div class="category-icon" [ngClass]="cat.bgClass" [innerHTML]="getSafeIcon(cat.icon)">
-            </div>
+            <div class="category-icon" [ngClass]="cat.bgClass" [innerHTML]="getSafeIcon(cat.icon)"></div>
             <div>
               <h3 class="cat-title">
                 {{ cat.name }}
@@ -70,9 +62,11 @@
 
         @if (activeCategoryName === cat.name) {
         <div class="sub-exercises-container">
+
           <div class="sub-exercises-grid">
-            @for (subEx of cat.subExercises; track subEx.id) {
-            <div class="sub-exercise-card" (click)="goToExercise(subEx.id)">
+            @for (subEx of cat.subExercises; track subEx.id; let i = $index) {
+            @if (i >= (cat.currentPage - 1) * cat.pageSize && i < cat.currentPage * cat.pageSize) { <div
+              class="sub-exercise-card" (click)="goToExercise(subEx.id)">
               <div class="sub-ex-header">
                 <h4 class="sub-ex-title">{{ subEx.title }}</h4>
                 <div class="sub-ex-play-icon">
@@ -87,55 +81,74 @@
                 <span>⏱ {{ subEx.durationMinutes }} min</span>
                 <span>⭐ {{ subEx.difficultyLevel }}</span>
               </div>
-            </div>
-            }
           </div>
+          }
+          }
+        </div> @if (cat.subExercises.length > cat.pageSize) {
+        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; padding: 16px 0 8px 0;">
+          <button (click)="changePage(cat, -1)" [disabled]="cat.currentPage === 1"
+            style="background-color: #ffffff; border: 1px solid #e2e8f0; color: #64748b; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+            [style.opacity]="cat.currentPage === 1 ? '0.4' : '1'"
+            [style.cursor]="cat.currentPage === 1 ? 'not-allowed' : 'pointer'">
+            ←
+          </button>
+
+          <span style="font-size: 12px; color: #64748b; font-weight: 500;">
+            Page {{ cat.currentPage }} of {{ Math.ceil(cat.subExercises.length / cat.pageSize) }}
+          </span>
+
+          <button (click)="changePage(cat, 1)"
+            [disabled]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize)"
+            style="background-color: #ffffff; border: 1px solid #e2e8f0; color: #64748b; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+            [style.opacity]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize) ? '0.4' : '1'"
+            [style.cursor]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize) ? 'not-allowed' : 'pointer'">
+            →
+          </button>
         </div>
         }
 
-      </div>
-      }
-      } @else {
-      <!-- الـ Demo Mode في حال مفيش داتا رجعت خالص -->
-      <div class="category-row">
-        <div class="category-left">
-          <div class="category-icon breathing-bg">💨</div>
-          <div>
-            <h3 class="cat-title">Breathing Exercises <span
-                style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo Mode)</span></h3>
-            <p class="cat-desc">Calm your mind with guided breathing techniques</p>
-          </div>
-        </div>
-        <div class="arrow-icon">➔</div>
-      </div>
+      </div> }
 
-      <div class="category-row">
-        <div class="category-left">
-          <div class="category-icon mindfulness-bg">🧠</div>
-          <div>
-            <h3 class="cat-title">Mindfulness <span style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo
-                Mode)</span></h3>
-            <p class="cat-desc">Practice being present in the moment</p>
-          </div>
+    </div> }
+    } @else {
+    <div class="category-row">
+      <div class="category-left">
+        <div class="category-icon breathing-bg">💨</div>
+        <div>
+          <h3 class="cat-title">Breathing Exercises <span
+              style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo Mode)</span></h3>
+          <p class="cat-desc">Calm your mind with guided breathing techniques</p>
         </div>
-        <div class="arrow-icon">➔</div>
       </div>
+      <div class="arrow-icon">➔</div>
+    </div>
 
-      <div class="category-row">
-        <div class="category-left">
-          <div class="category-icon relaxation-bg">🌙</div>
-          <div>
-            <h3 class="cat-title">Relaxation <span style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo
-                Mode)</span></h3>
-            <p class="cat-desc">Techniques to help you unwind and de-stress</p>
-          </div>
+    <div class="category-row">
+      <div class="category-left">
+        <div class="category-icon mindfulness-bg">🧠</div>
+        <div>
+          <h3 class="cat-title">Mindfulness <span style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo
+              Mode)</span></h3>
+          <p class="cat-desc">Practice being present in the moment</p>
         </div>
-        <div class="arrow-icon">➔</div>
       </div>
-      }
+      <div class="arrow-icon">➔</div>
+    </div>
 
+    <div class="category-row">
+      <div class="category-left">
+        <div class="category-icon relaxation-bg">🌙</div>
+        <div>
+          <h3 class="cat-title">Relaxation <span style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo
+              Mode)</span></h3>
+          <p class="cat-desc">Techniques to help you unwind and de-stress</p>
+        </div>
+      </div>
+      <div class="arrow-icon">➔</div>
     </div>
     }
 
-  </div>
+  </div> }
+
+</div>
 </div>
