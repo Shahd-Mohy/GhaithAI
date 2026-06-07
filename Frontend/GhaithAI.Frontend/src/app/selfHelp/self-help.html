@@ -1,27 +1,23 @@
 <div class="tools-container">
 
-  <!-- الـ Header الرئيسي -->
   <div class="header-section">
     <h1 class="page-title">Self-Help Tools</h1>
     <p class="page-sub">Evidence-based techniques for your wellbeing</p>
   </div>
 
-  <!-- قسم الـ Quick Relief -->
-  <div class="mb-10">
+  <div class="quick-relief-section">
     <h2 class="section-title">Quick Relief</h2>
 
     @if (isLoading) {
-    <div style="font-size: 12px; color: #94a3b8; text-align: center; padding: 20px;">
+    <div class="loading-quick-text">
       Loading quick tools...
     </div>
     } @else {
     <div class="quick-grid">
       @for (tool of quickTools; track tool.title) {
-      <div class="quick-card" (click)="goToExercise(tool.id)" style="cursor: pointer;">
-        <div class="icon-wrapper">
-          {{ tool.icon }}
-        </div>
-        <h3 class="card-title" style="font-size: 13px; line-height: 1.4;">{{ tool.title }}</h3>
+      <div class="quick-card" (click)="goToExercise(tool.id)">
+        <div class="icon-wrapper" [innerHTML]="getSafeIcon(tool.icon)"></div>
+        <h3 class="card-title">{{ tool.title }}</h3>
         <p class="card-desc">{{ tool.description }}</p>
         <span class="card-duration">⏱ {{ tool.duration }}</span>
       </div>
@@ -30,35 +26,28 @@
     }
   </div>
 
-  <!-- قسم الـ Browse by Category -->
-  <div>
+  <div class="browse-categories-section">
     <h2 class="section-title">Browse by Category</h2>
 
     @if (isLoading) {
     <div class="spinner-container">
       <div class="spinner"></div>
-      <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">Connecting to database...</p>
+      <p class="spinner-text">Connecting to database...</p>
     </div>
     } @else {
     <div class="category-list">
 
       @if (categoriesList && categoriesList.length > 0) {
       @for (cat of categoriesList; track cat.name) {
-      <div
-        style="border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px;">
+      <div class="category-card-wrapper">
 
-        <div class="category-row" (click)="toggleCategory(cat.name)"
-          style="border: none; border-radius: 0; box-shadow: none; margin-bottom: 0;">
+        <div class="category-row" (click)="toggleCategory(cat.name)">
           <div class="category-left">
-            <div class="category-icon" [ngClass]="cat.bgClass">
-              {{ cat.icon }}
-            </div>
+            <div class="category-icon" [ngClass]="cat.bgClass" [innerHTML]="getSafeIcon(cat.icon)"></div>
             <div>
               <h3 class="cat-title">
                 {{ cat.name }}
-                <span style="font-size: 11px; color: #94a3b8; font-weight: normal; margin-left: 6px;">
-                  ({{ cat.count }} items)
-                </span>
+                <span class="cat-items-count">({{ cat.count }} items)</span>
               </h3>
               <p class="cat-desc">{{ cat.description }}</p>
             </div>
@@ -68,68 +57,98 @@
         </div>
 
         @if (activeCategoryName === cat.name) {
-        <div style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 8px 16px;">
-          @for (subEx of cat.subExercises; track subEx.id) {
-          <div (click)="goToExercise(subEx.id)"
-            style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; border-radius: 8px; transition: background 0.2s;"
-            onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='transparent'">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-size: 14px;">🎯</span>
-              <div>
-                <h4 style="font-size: 13px; font-weight: 600; color: #334155; margin: 0;">{{ subEx.title }}</h4>
-                <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">{{ subEx.difficultyLevel }} · ⏱ {{
-                  subEx.durationMinutes }} mins</p>
+        <div class="sub-exercises-container">
+
+          <div class="sub-exercises-grid">
+            @for (subEx of cat.subExercises; track subEx.id; let i = $index) {
+            @if (i >= (cat.currentPage - 1) * cat.pageSize && i < cat.currentPage * cat.pageSize) { <div
+              class="sub-exercise-card" (click)="goToExercise(subEx.id)">
+              <div class="sub-ex-header">
+                <h4 class="sub-ex-title">{{ subEx.title }}</h4>
+                <div class="sub-ex-play-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="6 3 20 12 6 21 6 3" />
+                  </svg>
+                </div>
               </div>
-            </div>
-            <span style="color: #059669; font-size: 12px; font-weight: 500;">ابدأ الآن ➔</span>
+              <p class="sub-ex-desc">{{ subEx.description }}</p>
+              <div class="sub-ex-meta">
+                <span>⏱ {{ subEx.durationMinutes }} min</span>
+                <span>⭐ {{ subEx.difficultyLevel }}</span>
+              </div>
           </div>
           }
+          } @empty {
+          <div class="empty-category-message">
+            ✨ No exercises available in this category yet.
+          </div>
+          }
+        </div>
+
+        @if (cat.subExercises.length > cat.pageSize) {
+        <div class="pagination-container">
+          <button class="pagination-btn" (click)="changePage(cat, -1)" [disabled]="cat.currentPage === 1"
+            [style.opacity]="cat.currentPage === 1 ? '0.4' : '1'"
+            [style.cursor]="cat.currentPage === 1 ? 'not-allowed' : 'pointer'">
+            ←
+          </button>
+
+          <span class="pagination-indicator">
+            Page {{ cat.currentPage }} of {{ Math.ceil(cat.subExercises.length / cat.pageSize) }}
+          </span>
+
+          <button class="pagination-btn" (click)="changePage(cat, 1)"
+            [disabled]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize)"
+            [style.opacity]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize) ? '0.4' : '1'"
+            [style.cursor]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize) ? 'not-allowed' : 'pointer'">
+            →
+          </button>
         </div>
         }
 
       </div>
       }
-      } @else {
-      <!-- الـ Demo Mode في حال مفيش داتا رجعت خالص -->
-      <div class="category-row">
-        <div class="category-left">
-          <div class="category-icon breathing-bg">💨</div>
-          <div>
-            <h3 class="cat-title">Breathing Exercises <span
-                style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo Mode)</span></h3>
-            <p class="cat-desc">Calm your mind with guided breathing techniques</p>
-          </div>
-        </div>
-        <div class="arrow-icon">➔</div>
-      </div>
 
-      <div class="category-row">
-        <div class="category-left">
-          <div class="category-icon mindfulness-bg">🧠</div>
-          <div>
-            <h3 class="cat-title">Mindfulness <span style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo
-                Mode)</span></h3>
-            <p class="cat-desc">Practice being present in the moment</p>
-          </div>
+    </div>
+    }
+    } @else {
+    <div class="category-row">
+      <div class="category-left">
+        <div class="category-icon breathing-bg">💨</div>
+        <div>
+          <h3 class="cat-title">Breathing Exercises <span class="demo-tag">(Demo Mode)</span></h3>
+          <p class="cat-desc">Calm your mind with guided breathing techniques</p>
         </div>
-        <div class="arrow-icon">➔</div>
       </div>
+      <div class="arrow-icon">➔</div>
+    </div>
 
-      <div class="category-row">
-        <div class="category-left">
-          <div class="category-icon relaxation-bg">🌙</div>
-          <div>
-            <h3 class="cat-title">Relaxation <span style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo
-                Mode)</span></h3>
-            <p class="cat-desc">Techniques to help you unwind and de-stress</p>
-          </div>
+    <div class="category-row">
+      <div class="category-left">
+        <div class="category-icon mindfulness-bg">🧠</div>
+        <div>
+          <h3 class="cat-title">Mindfulness <span class="demo-tag">(Demo Mode)</span></h3>
+          <p class="cat-desc">Practice being present in the moment</p>
         </div>
-        <div class="arrow-icon">➔</div>
       </div>
-      }
+      <div class="arrow-icon">➔</div>
+    </div>
 
+    <div class="category-row">
+      <div class="category-left">
+        <div class="category-icon relaxation-bg">🌙</div>
+        <div>
+          <h3 class="cat-title">Relaxation <span class="demo-tag">(Demo Mode)</span></h3>
+          <p class="cat-desc">Techniques to help you unwind and de-stress</p>
+        </div>
+      </div>
+      <div class="arrow-icon">➔</div>
     </div>
     }
 
   </div>
+  }
+</div>
+
 </div>

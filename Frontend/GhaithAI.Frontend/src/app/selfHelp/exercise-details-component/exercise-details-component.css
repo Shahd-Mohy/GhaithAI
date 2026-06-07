@@ -1,22 +1,34 @@
-/* الحاوية الرئيسية */
 .exercise-page-container {
   padding: 24px;
   width: 100%;
   max-width: 1000px;
-  /* مفرودة بشكل مريح جوه مساحة الداشبورد */
   margin: 0 auto;
   font-family: system-ui, -apple-system, sans-serif;
   color: #1e293b;
+  background-color: #fff;
 }
 
-/* الـ Header */
+/* Header - back link فوق التايتل على الشمال */
 .exercise-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 16px;
   margin-bottom: 24px;
+  gap: 8px;
+}
+
+.back-link {
+  text-decoration: none;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: #0d9488;
 }
 
 .main-title {
@@ -27,42 +39,48 @@
 }
 
 .sub-title {
-  font-size: 14px;
+  font-size: 16px;
   color: #64748b;
   margin: 0;
 }
 
-.back-link {
-  text-decoration: none;
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.back-link:hover {
-  color: #0f172a;
-}
-
-/* 🌟 الحاوية الطولية الجديدة بديلة الـ Grid */
 .exercise-vertical-stack {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  /* مسافة ثابتة ومتناسقة بين كل كارت والتاني */
 }
 
-/* الكروت بكامل العرض */
+/* الكروت العامة */
 .sidebar-card,
-.center-card,
 .tips-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+}
+
+/* التايمر في بوردر لوحده */
+.center-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 40px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+}
+
+/* الأزرار في بوردر لوحدها */
+.control-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-  width: 100%;
-  /* تملأ كامل المساحة المتاحة طالما تحت بعض */
-  box-sizing: border-box;
 }
 
 .techniques-list {
@@ -84,33 +102,18 @@
 }
 
 .tech-title {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 600;
   margin: 0 0 4px 0;
 }
 
 .tech-desc {
-  font-size: 12px;
+  font-size: 16px;
   color: #64748b;
   margin: 0;
 }
 
-/* منطقة التمرين والعداد الدائري في المنتصف */
-.main-exercise-content {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.center-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 380px;
-}
-
-/* أنيميشن حلقات التنفس المتداخلة */
+/* التايمر الدائري */
 .breathing-circle-wrapper {
   position: relative;
   width: 200px;
@@ -118,7 +121,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 32px;
 }
 
 .breathing-circle-core {
@@ -158,7 +160,7 @@
   color: #111827;
 }
 
-/* التحكم والأزرار */
+/* قسم الكونترول */
 .control-section {
   text-align: center;
 }
@@ -183,7 +185,7 @@
 
 .buttons-group button {
   border: none;
-  padding: 10px 24px;
+  padding: 10px 28px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
@@ -191,45 +193,62 @@
   transition: all 0.2s ease;
 }
 
+/* Start - أخضر فاتح زي البروجكت */
 .btn-start {
   background: #0d9488;
   color: white;
+  border: 2px solid transparent;
 }
 
 .btn-start:hover {
   background: #0f766e;
 }
 
+/* Pause - أبيض مع بوردر أسود */
 .btn-pause {
-  background: #f59e0b;
-  color: white;
+  background: #ffffff;
+  color: #1e293b;
+  border: 2px solid #0d9488;
 }
 
+.btn-pause:hover {
+  background: #f1f5f9;
+}
+
+/* Reset - نفس لون Start */
 .btn-reset {
-  background: #ef4444;
+  background: #0d9488;
   color: white;
+  border: 2px solid transparent;
 }
 
-/* النصائح السفلية */
+.btn-reset:hover {
+  background: #0f766e;
+}
+
+/* النصائح - من الشمال */
 .tips-section-container {
   width: 100%;
 }
 
 .tips-heading {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   margin: 0 0 16px 0;
+  text-align: left;
 }
 
 .db-description {
-  font-size: 14px;
+  font-size: 16px;
   color: #475569;
   line-height: 1.6;
   background: #f8fafc;
   padding: 14px;
   border-radius: 8px;
-  border-right: 4px solid #0d9488;
+  border-left: 4px solid #0d9488;
   margin-bottom: 16px;
+  text-align: left;
+  direction: ltr;
 }
 
 .static-tips-list {
@@ -245,13 +264,16 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 13px;
+  font-size: 16px;
   color: #475569;
+  text-align: left;
+  direction: ltr;
 }
 
 .static-tips-list li span {
   width: 22px;
   height: 22px;
+  min-width: 22px;
   background: #ccfbf1;
   color: #0d9488;
   font-weight: 600;
@@ -262,7 +284,7 @@
   font-size: 11px;
 }
 
-/* أنيميشن نبض الحلقات النفسية */
+/* أنيميشن */
 @keyframes pulseRing {
 
   0%,
@@ -277,12 +299,6 @@
   }
 }
 
-.loading-container {
-  text-align: center;
-  padding: 100px 0;
-  color: #64748b;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -293,4 +309,10 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.loading-container {
+  text-align: center;
+  padding: 100px 0;
+  color: #64748b;
 }

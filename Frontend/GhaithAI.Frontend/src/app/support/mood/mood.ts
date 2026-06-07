@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MoodService } from '../../services/mood.service';
+import { DashboardRefreshService } from '../../services/dashboard-refresh.service';
 
 interface MoodLog {
   moodLogId?: string;
@@ -86,7 +87,11 @@ export class MoodTrackerComponent implements OnInit {
     'Relaxed', 'Frustrated', 'Excited', 'Lonely'
   ];
 
-  constructor(private moodService: MoodService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private moodService: MoodService, 
+    private cdr: ChangeDetectorRef,
+    private refreshService: DashboardRefreshService
+  ) {}
 
   ngOnInit() {
     this.maxDateStr = this.formatDateStr(new Date());
@@ -526,6 +531,7 @@ export class MoodTrackerComponent implements OnInit {
           this.loadMonthData(true);   // true = also refresh stats
           this.loadHistory();
           this.closeLogModal();
+          this.refreshService.moodLogged();
         },
         error: (err) => {
           console.error('Update error:', err);
@@ -547,6 +553,7 @@ export class MoodTrackerComponent implements OnInit {
           this.loadMonthData(true);   // true = also refresh stats
           this.loadHistory();
           this.closeLogModal();
+          this.refreshService.moodLogged();
         },
         error: (err) => {
           console.error('Save error:', err);

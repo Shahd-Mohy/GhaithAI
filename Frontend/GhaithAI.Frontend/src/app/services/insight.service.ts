@@ -14,9 +14,9 @@ export interface DailyMoodDTO {
 export interface WeeklySummaryDTO {
   dailyMoods: DailyMoodDTO[];
   avgMoodScore: number;
-  avgMoodLabel: string;    // "3.0 / 5"
+  avgMoodLabel: string;
   daysLogged: number;
-  daysLoggedLabel: string;    // "6 / 7"
+  daysLoggedLabel: string;
 }
 
 export interface PersonalInsightDTO {
@@ -56,14 +56,39 @@ function buildFallback(displayName: string): DashboardViewModel {
       avgMoodScore: 0, avgMoodLabel: '— / 5',
       daysLogged: 0, daysLoggedLabel: '0 / 7'
     },
-    personalInsights: [{ text: 'Start logging your mood to unlock personalised insights.' }],
+    personalInsights: [{ text: "Welcome! Start by logging your first mood — it only takes 10 seconds. 🌱" }],
     todaysSuggestion: {
-      title: "Today's Suggestion",
-      text: "Take a moment to check in with yourself. Logging your mood takes less than 30 seconds.",
-      actionLabel: null,
-      actionRoute: null
+      title: "Get Started",
+      text: "Log your first mood check-in to start tracking your wellbeing and unlock personalised insights.",
+      actionLabel: "Log My Mood",
+      actionRoute: "mood"
     }
   };
+}
+
+/** Read the user's first name from localStorage or JWT token claims */
+function resolveDisplayName(): string {
+  try {
+    for (const key of ['user', 'currentUser', 'authUser', 'profile']) {
+      const raw = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (raw) {
+        const p = JSON.parse(raw);
+        const name = p?.fullName || p?.name || p?.firstName || p?.displayName || p?.email;
+        if (name) return name.split(' ')[0];
+      }
+    }
+    for (const key of ['token', 'access_token', 'authToken', 'jwt']) {
+      const token = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (token && token.includes('.')) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const name = payload?.given_name || payload?.name || payload?.unique_name || payload?.email ||
+          payload?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] ||
+          payload?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
+        if (name) return name.split(' ')[0];
+      }
+    }
+  } catch { /* ignore */ }
+  return 'there';
 }
 
 // ── Service ───────────────────────────────────────────────────────────────────
@@ -72,7 +97,6 @@ function buildFallback(displayName: string): DashboardViewModel {
 export class InsightService {
 
   private readonly http = inject(HttpClient);
-  // CORRECT endpoint — matches GET /api/Insight/dashboard in Swagger
   private readonly baseUrl = 'https://localhost:53898/api';
 
   getDashboard(): Observable<DashboardViewModel> {
@@ -82,15 +106,7 @@ export class InsightService {
         map(res => this.mapResponse(res)),
         catchError(err => {
           console.error('[InsightService] getDashboard failed:', err);
-          let name = 'User';
-          try {
-            const stored = localStorage.getItem('user');
-            if (stored) {
-              const p = JSON.parse(stored);
-              name = p.fullName || p.name || p.email || 'User';
-            }
-          } catch { /* ignore */ }
-          return of(buildFallback(name));
+          return of(buildFallback(resolveDisplayName()));
         })
       );
   }
@@ -98,22 +114,18 @@ export class InsightService {
   // ── Mapping ───────────────────────────────────────────────────────────────
 
   private mapResponse(res: any): DashboardViewModel {
-    // Unwrap envelope: { data: {...}, success: true, ... }
     const raw = res?.data ?? res?.Data ?? res?.result ?? res?.Result ?? res;
 
-    const displayName: string =
-      raw?.displayName || raw?.DisplayName || 'User';
+    const displayName: string = raw?.displayName || raw?.DisplayName || resolveDisplayName();
 
     const todayLabel: string =
       raw?.todayLabel || raw?.TodayLabel ||
       new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-    // ── Weekly summary ──
     const ws = raw?.weeklySummary || raw?.WeeklySummary || {};
     const dailyMoods = this.mapDailyMoods(ws?.dailyMoods || ws?.DailyMoods);
     const daysLogged = dailyMoods.filter(d => d.moodScore !== null).length;
 
-    // Use API's avgMoodScore if present; otherwise compute it from dailyMoods
     let avgScore: number = ws?.avgMoodScore ?? ws?.AvgMoodScore ?? 0;
     if (avgScore === 0 && daysLogged > 0) {
       const sum = dailyMoods.reduce((acc, d) => acc + (d.moodScore ?? 0), 0);
@@ -128,13 +140,11 @@ export class InsightService {
       daysLoggedLabel: ws?.daysLoggedLabel || ws?.DaysLoggedLabel || `${daysLogged} / 7`
     };
 
-    // ── Personal insights ──
     const rawInsights: any[] = raw?.personalInsights || raw?.PersonalInsights || [];
     const personalInsights: PersonalInsightDTO[] = Array.isArray(rawInsights) && rawInsights.length > 0
       ? rawInsights.map(i => ({ text: i?.text || i?.Text || '' })).filter(i => i.text)
       : [{ text: 'Keep logging your mood to unlock personalised insights.' }];
 
-    // ── Today's suggestion ──
     const rawSug = raw?.todaysSuggestion || raw?.TodaysSuggestion || null;
     const todaysSuggestion: TodaysSuggestionDTO | null = rawSug ? {
       title: rawSug.title || rawSug.Title || "Today's Suggestion",
