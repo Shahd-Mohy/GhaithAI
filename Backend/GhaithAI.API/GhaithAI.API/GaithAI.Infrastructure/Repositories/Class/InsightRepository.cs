@@ -12,11 +12,10 @@ namespace GhaithAI.API.Repositories.Class
         }
 
         public async Task<List<MoodLog>> GetMoodLogsInRangeAsync(
-            string userId, DateTime from, DateTime to)
+     string userId, DateTime from, DateTime to)
         {
             return await _context.MoodLogs
                 .Where(m => m.UserId == userId
-                         && !m.IsDeleted
                          && m.LoggedAt >= from
                          && m.LoggedAt <= to)
                 .OrderBy(m => m.LoggedAt)
