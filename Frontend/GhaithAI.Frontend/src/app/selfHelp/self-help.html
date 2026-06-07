@@ -5,19 +5,19 @@
     <p class="page-sub">Evidence-based techniques for your wellbeing</p>
   </div>
 
-  <div class="mb-10">
+  <div class="quick-relief-section">
     <h2 class="section-title">Quick Relief</h2>
 
     @if (isLoading) {
-    <div style="font-size: 12px; color: #94a3b8; text-align: center; padding: 20px;">
+    <div class="loading-quick-text">
       Loading quick tools...
     </div>
     } @else {
     <div class="quick-grid">
       @for (tool of quickTools; track tool.title) {
-      <div class="quick-card" (click)="goToExercise(tool.id)" style="cursor: pointer;">
+      <div class="quick-card" (click)="goToExercise(tool.id)">
         <div class="icon-wrapper" [innerHTML]="getSafeIcon(tool.icon)"></div>
-        <h3 class="card-title" style="font-size: 13px; line-height: 1.4;">{{ tool.title }}</h3>
+        <h3 class="card-title">{{ tool.title }}</h3>
         <p class="card-desc">{{ tool.description }}</p>
         <span class="card-duration">⏱ {{ tool.duration }}</span>
       </div>
@@ -26,32 +26,28 @@
     }
   </div>
 
-  <div>
+  <div class="browse-categories-section">
     <h2 class="section-title">Browse by Category</h2>
 
     @if (isLoading) {
     <div class="spinner-container">
       <div class="spinner"></div>
-      <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">Connecting to database...</p>
+      <p class="spinner-text">Connecting to database...</p>
     </div>
     } @else {
     <div class="category-list">
 
-      @if (categoriesList && categoriesList.length >0) {
+      @if (categoriesList && categoriesList.length > 0) {
       @for (cat of categoriesList; track cat.name) {
-      <div
-        style="border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px;">
+      <div class="category-card-wrapper">
 
-        <div class="category-row" (click)="toggleCategory(cat.name)"
-          style="border: none; border-radius: 0; box-shadow: none; margin-bottom: 0;">
+        <div class="category-row" (click)="toggleCategory(cat.name)">
           <div class="category-left">
             <div class="category-icon" [ngClass]="cat.bgClass" [innerHTML]="getSafeIcon(cat.icon)"></div>
             <div>
               <h3 class="cat-title">
                 {{ cat.name }}
-                <span style="font-size: 11px; color: #94a3b8; font-weight: normal; margin-left: 6px;">
-                  ({{ cat.count }} items)
-                </span>
+                <span class="cat-items-count">({{ cat.count }} items)</span>
               </h3>
               <p class="cat-desc">{{ cat.description }}</p>
             </div>
@@ -83,23 +79,27 @@
               </div>
           </div>
           }
+          } @empty {
+          <div class="empty-category-message">
+            ✨ No exercises available in this category yet.
+          </div>
           }
-        </div> @if (cat.subExercises.length > cat.pageSize) {
-        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; padding: 16px 0 8px 0;">
-          <button (click)="changePage(cat, -1)" [disabled]="cat.currentPage === 1"
-            style="background-color: #ffffff; border: 1px solid #e2e8f0; color: #64748b; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+        </div>
+
+        @if (cat.subExercises.length > cat.pageSize) {
+        <div class="pagination-container">
+          <button class="pagination-btn" (click)="changePage(cat, -1)" [disabled]="cat.currentPage === 1"
             [style.opacity]="cat.currentPage === 1 ? '0.4' : '1'"
             [style.cursor]="cat.currentPage === 1 ? 'not-allowed' : 'pointer'">
             ←
           </button>
 
-          <span style="font-size: 12px; color: #64748b; font-weight: 500;">
+          <span class="pagination-indicator">
             Page {{ cat.currentPage }} of {{ Math.ceil(cat.subExercises.length / cat.pageSize) }}
           </span>
 
-          <button (click)="changePage(cat, 1)"
+          <button class="pagination-btn" (click)="changePage(cat, 1)"
             [disabled]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize)"
-            style="background-color: #ffffff; border: 1px solid #e2e8f0; color: #64748b; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
             [style.opacity]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize) ? '0.4' : '1'"
             [style.cursor]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize) ? 'not-allowed' : 'pointer'">
             →
@@ -107,16 +107,17 @@
         </div>
         }
 
-      </div> }
+      </div>
+      }
 
-    </div> }
+    </div>
+    }
     } @else {
     <div class="category-row">
       <div class="category-left">
         <div class="category-icon breathing-bg">💨</div>
         <div>
-          <h3 class="cat-title">Breathing Exercises <span
-              style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo Mode)</span></h3>
+          <h3 class="cat-title">Breathing Exercises <span class="demo-tag">(Demo Mode)</span></h3>
           <p class="cat-desc">Calm your mind with guided breathing techniques</p>
         </div>
       </div>
@@ -127,8 +128,7 @@
       <div class="category-left">
         <div class="category-icon mindfulness-bg">🧠</div>
         <div>
-          <h3 class="cat-title">Mindfulness <span style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo
-              Mode)</span></h3>
+          <h3 class="cat-title">Mindfulness <span class="demo-tag">(Demo Mode)</span></h3>
           <p class="cat-desc">Practice being present in the moment</p>
         </div>
       </div>
@@ -139,8 +139,7 @@
       <div class="category-left">
         <div class="category-icon relaxation-bg">🌙</div>
         <div>
-          <h3 class="cat-title">Relaxation <span style="font-size: 11px; color: #f59e0b; margin-left:6px;">(Demo
-              Mode)</span></h3>
+          <h3 class="cat-title">Relaxation <span class="demo-tag">(Demo Mode)</span></h3>
           <p class="cat-desc">Techniques to help you unwind and de-stress</p>
         </div>
       </div>
@@ -148,7 +147,8 @@
     </div>
     }
 
-  </div> }
-
+  </div>
+  }
 </div>
+
 </div>
