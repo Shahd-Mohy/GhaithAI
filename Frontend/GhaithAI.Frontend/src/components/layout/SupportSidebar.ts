@@ -3,12 +3,17 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   ChangeDetectionStrategy,
   inject,
   signal,
   computed,
+  ViewChild,
+  ElementRef,
+  NgZone,
 } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ChatStore } from '../../store/chat.store';
 import { ChatHttpService } from '../../services/chat.service';
 import { SessionModel } from '../../types/chat.types';
@@ -39,7 +44,7 @@ const GET_HELP_ITEMS: NavItem[] = [
 @Component({
   selector: 'app-support-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     /* ══════════════════════════════════════════════════════════
@@ -314,7 +319,7 @@ const GET_HELP_ITEMS: NavItem[] = [
       font-style: italic;
     }
 
-    /* Skeleton shimmer */
+    /* Skeleton shimmer — initial load only */
     .skeleton {
       height: 36px;
       border-radius: 9px;
@@ -326,6 +331,35 @@ const GET_HELP_ITEMS: NavItem[] = [
     @keyframes shimmer {
       0%   { background-position: -200% 0; }
       100% { background-position:  200% 0; }
+    }
+
+    /* Load-more pulsing dots — infinite scroll */
+    .load-more-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 0 10px;
+    }
+    .load-dot {
+      width: 6px;
+      height: 6px;
+      background: #0B8FAC;
+      border-radius: 50%;
+      animation: ldot 1.2s ease-in-out infinite;
+      opacity: .25;
+    }
+    .load-dot:nth-child(2) { animation-delay: .2s; }
+    .load-dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes ldot {
+      0%, 100% { transform: scale(1);   opacity: .25; }
+      50%       { transform: scale(1.6); opacity: 1;   }
+    }
+    .load-more-text {
+      font-size: 11px;
+      color: #64748B;
+      font-weight: 500;
+      font-family: 'Sora', sans-serif;
     }
 
     /* ── New conversation CTA ──────────────────────────────────── */
@@ -454,6 +488,109 @@ const GET_HELP_ITEMS: NavItem[] = [
 
     /* ── Spacer util ──────────────────────────────────────────── */
     .fill { flex: 1; }
+
+    /* ── Collapsible Nav Toggle ─────────────────────────────── */
+    .nav-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: #64748B;
+      background: transparent;
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+      transition: background .15s, color .15s;
+      text-align: left;
+    }
+    .nav-toggle-btn:hover { background: #F4F9FB; color: #0D1B3E; }
+
+    .nav-toggle-chevron {
+      margin-left: auto;
+      font-size: 10px;
+      transition: transform .25s ease;
+      color: #94A3B8;
+    }
+    .nav-toggle-chevron.open { transform: rotate(90deg); }
+
+    /* ── Collapsible content panel ──────────────────────────── */
+    .nav-collapsible {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height .3s ease;
+    }
+    .nav-collapsible.open {
+      max-height: 600px;
+    }
+
+    /* ── Rename input ────────────────────────────────────────── */
+    .rename-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 9px;
+      background: rgba(11, 143, 172, .06);
+      margin-bottom: 2px;
+    }
+    .rename-input {
+      flex: 1;
+      min-width: 0;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: 'Sora', sans-serif;
+      color: #0D1B3E;
+      border: 1px solid #0B8FAC;
+      border-radius: 6px;
+      padding: 4px 7px;
+      outline: none;
+      background: #fff;
+    }
+    .rename-input:focus { box-shadow: 0 0 0 2px rgba(11,143,172,.18); }
+
+    .rename-confirm-btn,
+    .rename-cancel-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 3px 5px;
+      border-radius: 5px;
+      font-size: 12px;
+      line-height: 1;
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .rename-confirm-btn { color: #0B8FAC; }
+    .rename-confirm-btn:hover { background: rgba(11,143,172,.12); }
+    .rename-cancel-btn  { color: #94A3B8; }
+    .rename-cancel-btn:hover { background: #F4F9FB; }
+
+    /* ── Rename icon button (hover reveal, alongside delete) ─── */
+    .conv-item-wrap .rename-btn {
+      position: absolute;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0;
+      transition: opacity .15s;
+      background: transparent;
+      border: none;
+      color: #94A3B8;
+      padding: 2px 4px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      line-height: 1;
+    }
+    .conv-item-wrap:hover .rename-btn { opacity: 1; }
+    .conv-item-wrap .rename-btn:hover { color: #0B8FAC; }
   `],
   template: `
     <!-- ══════════════════════════════════════════════════════
@@ -485,37 +622,53 @@ const GET_HELP_ITEMS: NavItem[] = [
          NAVIGATION — Your Space
     ══════════════════════════════════════════════════════ -->
     <nav class="sidebar-nav">
-      <div class="nav-section-label first">Your Space</div>
-
-      @for (item of yourSpaceItems; track item.label) {
-        <a class="nav-item"
-           [routerLink]="item.path"
-           [queryParams]="item.queryParams ?? null"
-           routerLinkActive="active-nav"
-           [routerLinkActiveOptions]="{ exact: item.exact ?? true }">
-          <i class="bi {{ item.icon }}"></i>
-          {{ item.label }}
-        </a>
-      }
-
-      <!-- ── Get Help ───────────────────────────────────── -->
-      <div class="nav-section-label" style="margin-top: 24px;">Get Help</div>
-
-      @for (item of getHelpItems; track item.label) {
-        <a class="nav-item"
-           [routerLink]="item.path"
-           [queryParams]="item.queryParams ?? null"
-           routerLinkActive="active-nav"
-           [routerLinkActiveOptions]="{ exact: item.exact ?? true }">
-          <i class="bi {{ item.icon }}"></i>
-          {{ item.label }}
-        </a>
-      }
 
       <!-- ══════════════════════════════════════════════════════
-           RECENT CONVERSATIONS — Dynamic injection
+           COLLAPSIBLE PAGES TOGGLE
       ══════════════════════════════════════════════════════ -->
-      <div class="nav-section-label" style="margin-top: 24px;">Recent Conversations</div>
+      <button type="button" class="nav-toggle-btn" (click)="toggleNav()">
+        <i class="bi bi-grid-3x3-gap-fill" style="font-size:13px;opacity:.7;"></i>
+        Pages
+        <i class="bi bi-chevron-right nav-toggle-chevron"
+           [class.open]="isNavOpen()"></i>
+      </button>
+
+      <div class="nav-collapsible" [class.open]="isNavOpen()">
+
+        <!-- ── Your Space ─────────────────────────────────── -->
+        <div class="nav-section-label first">Your Space</div>
+
+        @for (item of yourSpaceItems; track item.label) {
+          <a class="nav-item"
+             [routerLink]="item.path"
+             [queryParams]="item.queryParams ?? null"
+             routerLinkActive="active-nav"
+             [routerLinkActiveOptions]="{ exact: item.exact ?? true }">
+            <i class="bi {{ item.icon }}"></i>
+            {{ item.label }}
+          </a>
+        }
+
+        <!-- ── Get Help ────────────────────────────────────── -->
+        <div class="nav-section-label" style="margin-top: 16px;">Get Help</div>
+
+        @for (item of getHelpItems; track item.label) {
+          <a class="nav-item"
+             [routerLink]="item.path"
+             [queryParams]="item.queryParams ?? null"
+             routerLinkActive="active-nav"
+             [routerLinkActiveOptions]="{ exact: item.exact ?? true }">
+            <i class="bi {{ item.icon }}"></i>
+            {{ item.label }}
+          </a>
+        }
+
+      </div><!-- /.nav-collapsible -->
+
+      <!-- ══════════════════════════════════════════════════════
+           RECENT CONVERSATIONS
+      ══════════════════════════════════════════════════════ -->
+      <div class="nav-section-label" style="margin-top: 20px;">Recent Conversations</div>
 
       <!-- Loading skeletons -->
       @if (chatStore.isLoadingSessions()) {
@@ -532,42 +685,95 @@ const GET_HELP_ITEMS: NavItem[] = [
       <!-- Session list -->
       @if (!chatStore.isLoadingSessions()) {
         @for (session of chatStore.sessions(); track session.id) {
-          <div class="conv-item-wrap">
-            <button
-              type="button"
-              class="conv-item"
-              [class.active]="chatStore.activeSession()?.id === session.id"
-              (click)="selectSession(session)">
-              <i class="bi bi-chat-left-text"></i>
-              <span class="conv-title">{{ session.title || 'New Consultation' }}</span>
 
-              @if (session.riskLevel === 'high') {
-                <span class="risk-high">High</span>
-              }
-              @if (session.riskLevel === 'medium') {
-                <span class="risk-medium">Med</span>
-              }
-            </button>
-
-            <!-- Delete trigger -->
-            <button type="button"
-                    class="delete-btn"
-                    title="Delete"
-                    (click)="onDeleteClick(session.id, $event)">
-              <i class="bi bi-trash3"></i>
-            </button>
-          </div>
-
-          <!-- Inline delete confirm -->
-          @if (confirmDeleteId() === session.id) {
-            <div class="delete-confirm">
-              <span>Delete session?</span>
-              <button type="button" class="btn-yes" (click)="confirmDelete(session.id)">Yes</button>
-              <button type="button" class="btn-no" (click)="cancelDelete()">No</button>
+          <!-- ── Inline rename mode ──────────────────────── -->
+          @if (editingSessionId() === session.id) {
+            <div class="rename-wrap">
+              <input
+                class="rename-input"
+                type="text"
+                [(ngModel)]="editingTitleValue"
+                (keydown)="onRenameKeydown($event, session.id)"
+                (blur)="cancelRename()"
+                autofocus />
+              <button type="button"
+                      class="rename-confirm-btn"
+                      title="Save"
+                      (mousedown)="$event.preventDefault(); confirmRename(session.id)">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <button type="button"
+                      class="rename-cancel-btn"
+                      title="Cancel"
+                      (mousedown)="$event.preventDefault(); cancelRename()">
+                <i class="bi bi-x-lg"></i>
+              </button>
             </div>
           }
+
+          <!-- ── Normal / active mode ───────────────────── -->
+          @if (editingSessionId() !== session.id) {
+            <div class="conv-item-wrap">
+              <button
+                type="button"
+                class="conv-item"
+                [class.active]="chatStore.activeSession()?.id === session.id"
+                (click)="selectSession(session)">
+                <i class="bi bi-chat-left-text"></i>
+                <span class="conv-title">{{ session.title || 'New Consultation' }}</span>
+
+                @if (session.riskLevel === 'high') {
+                  <span class="risk-high">High</span>
+                }
+                @if (session.riskLevel === 'medium') {
+                  <span class="risk-medium">Med</span>
+                }
+              </button>
+
+              <!-- Rename trigger (pencil) -->
+              <button type="button"
+                      class="rename-btn"
+                      title="Rename"
+                      (click)="startRename(session, $event)">
+                <i class="bi bi-pencil"></i>
+              </button>
+
+              <!-- Delete trigger (trash) -->
+              <button type="button"
+                      class="delete-btn"
+                      title="Delete"
+                      (click)="onDeleteClick(session.id, $event)">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+
+            <!-- Inline delete confirm -->
+            @if (confirmDeleteId() === session.id) {
+              <div class="delete-confirm">
+                <span>Delete session?</span>
+                <button type="button" class="btn-yes" (click)="confirmDelete(session.id)">Yes</button>
+                <button type="button" class="btn-no"  (click)="cancelDelete()">No</button>
+              </div>
+            }
         }
       }
+
+      <!-- Infinite Scroll Sentinel -->
+      @if (chatStore.sessionsHasNext()) {
+        <div #infiniteScrollSentinel class="infinite-scroll-sentinel" style="height: 1px; width: 100%;"></div>
+      }
+
+      <!-- Loading more sessions indicator -->
+      @if (chatStore.isLoadingMoreSessions()) {
+        <div class="load-more-wrap" role="status" aria-label="Loading more conversations">
+          <div class="load-dot"></div>
+          <div class="load-dot"></div>
+          <div class="load-dot"></div>
+          <span class="load-more-text">Loading older conversations...</span>
+        </div>
+      }
+    }
+
     </nav>
 
     <!-- ══════════════════════════════════════════════════════
@@ -611,13 +817,36 @@ const GET_HELP_ITEMS: NavItem[] = [
     </div>
   `,
 })
-export class SupportSidebar implements OnInit {
+export class SupportSidebar implements OnInit, OnDestroy {
   readonly chatStore        = inject(ChatStore);
   private readonly chatHttp = inject(ChatHttpService);
   private readonly router   = inject(Router);
   private readonly auth     = inject(AuthService);
+  private readonly ngZone   = inject(NgZone);
 
+  private observer: IntersectionObserver | null = null;
+
+  @ViewChild('infiniteScrollSentinel', { static: false }) set sentinel(element: ElementRef<HTMLDivElement> | undefined) {
+    if (element) {
+      this.setupIntersectionObserver(element.nativeElement);
+    } else {
+      this.disconnectObserver();
+    }
+  }
+
+  // ── Delete state ──────────────────────────────────────────────────────────
   readonly confirmDeleteId = signal<string | null>(null);
+
+  // ── Collapsible nav state ─────────────────────────────────────────────────
+  readonly isNavOpen = signal<boolean>(false);
+
+  // ── Inline rename state ───────────────────────────────────────────────────
+  readonly editingSessionId = signal<string | null>(null);
+  readonly editingTitle     = signal<string>('');
+
+  /** ngModel bridge — signals cannot be directly two-way bound */
+  get editingTitleValue(): string { return this.editingTitle(); }
+  set editingTitleValue(v: string) { this.editingTitle.set(v); }
 
   readonly yourSpaceItems = YOUR_SPACE_ITEMS;
   readonly getHelpItems   = GET_HELP_ITEMS;
@@ -649,9 +878,12 @@ export class SupportSidebar implements OnInit {
 
   loadSessions(): void {
     this.chatStore.isLoadingSessions.set(true);
-    this.chatHttp.getSessions(1, 30).subscribe({
+    this.chatHttp.getSessions(1, 20).subscribe({
       next: (result) => {
         this.chatStore.setSessions(result.items);
+        this.chatStore.sessionsPage.set(1);
+        this.chatStore.sessionsTotalCount.set(result.totalCount);
+        this.chatStore.sessionsHasNext.set(result.hasNextPage);
       },
       error: (err) => {
         console.error('[SupportSidebar] Failed to load sessions:', err);
@@ -661,6 +893,68 @@ export class SupportSidebar implements OnInit {
       },
     });
   }
+
+  loadMoreSessions(): void {
+    if (
+      this.chatStore.isLoadingMoreSessions() ||
+      this.chatStore.isLoadingSessions() ||
+      !this.chatStore.sessionsHasNext()
+    ) {
+      return;
+    }
+
+    const nextPage = this.chatStore.sessionsPage() + 1;
+    this.chatStore.isLoadingMoreSessions.set(true);
+
+    this.chatHttp.getSessions(nextPage, 20).subscribe({
+      next: (result) => {
+        this.chatStore.appendSessions(result.items);
+        this.chatStore.sessionsPage.set(nextPage);
+        this.chatStore.sessionsTotalCount.set(result.totalCount);
+        this.chatStore.sessionsHasNext.set(result.hasNextPage);
+      },
+      error: (err) => {
+        console.error('[SupportSidebar] Failed to load more sessions:', err);
+      },
+      complete: () => {
+        this.chatStore.isLoadingMoreSessions.set(false);
+      },
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.disconnectObserver();
+  }
+
+  private setupIntersectionObserver(element: HTMLElement): void {
+    this.disconnectObserver();
+
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          this.ngZone.run(() => this.loadMoreSessions());
+        }
+      },
+      { root: null, rootMargin: '100px', threshold: 0 }
+    );
+
+    this.observer.observe(element);
+  }
+
+  private disconnectObserver(): void {
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+  }
+
+  // ── Collapsible nav ───────────────────────────────────────────────────────
+
+  toggleNav(): void {
+    this.isNavOpen.update(v => !v);
+  }
+
+  // ── Session selection ─────────────────────────────────────────────────────
 
   selectSession(session: SessionModel): void {
     this.router.navigate(['/support/chat'], {
@@ -672,8 +966,11 @@ export class SupportSidebar implements OnInit {
     this.router.navigate(['/support/chat']);
   }
 
+  // ── Delete ────────────────────────────────────────────────────────────────
+
   onDeleteClick(sessionId: string, event: MouseEvent): void {
     event.stopPropagation();
+    this.editingSessionId.set(null); // close rename mode if open
     this.confirmDeleteId.set(sessionId);
   }
 
@@ -693,6 +990,43 @@ export class SupportSidebar implements OnInit {
   cancelDelete(): void {
     this.confirmDeleteId.set(null);
   }
+
+  // ── Inline Rename ─────────────────────────────────────────────────────────
+
+  startRename(session: SessionModel, event: MouseEvent): void {
+    event.stopPropagation();
+    this.confirmDeleteId.set(null); // close any open delete confirm first
+    this.editingSessionId.set(session.id);
+    this.editingTitle.set(session.title ?? 'New Consultation');
+  }
+
+  confirmRename(sessionId: string): void {
+    const title = this.editingTitle().trim();
+    if (!title) { this.cancelRename(); return; }
+
+    this.chatHttp.updateSessionTitle(sessionId, title).subscribe({
+      next: () => {
+        this.chatStore.updateSessionTitle(sessionId, title);
+        this.editingSessionId.set(null);
+      },
+      error: (err) => {
+        console.error('[SupportSidebar] Failed to rename session:', err);
+        this.editingSessionId.set(null);
+      },
+    });
+  }
+
+  onRenameKeydown(event: KeyboardEvent, sessionId: string): void {
+    if (event.key === 'Enter')  { this.confirmRename(sessionId); }
+    if (event.key === 'Escape') { this.cancelRename(); }
+  }
+
+  cancelRename(): void {
+    this.editingSessionId.set(null);
+    this.editingTitle.set('');
+  }
+
+  // ── Logout ────────────────────────────────────────────────────────────────
 
   onLogout(event: MouseEvent): void {
     event.stopPropagation();

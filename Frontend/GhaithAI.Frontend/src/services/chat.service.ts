@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 import {
   StartSessionRequest,
   SessionModel,
-  PaginatedSessions,
+  PaginatedSessionsResponse,
   ChatHistoryResponse,
   UserChatRequest,
   SendMessageResponse,
@@ -33,11 +33,11 @@ export class ChatHttpService {
    * GET /api/Chat/sessions?page=1&pageSize=20
    * Returns paginated list of the user's sessions.
    */
-  getSessions(page = 1, pageSize = 20): Observable<PaginatedSessions> {
+  getSessions(page = 1, pageSize = 20): Observable<PaginatedSessionsResponse> {
     const params = new HttpParams()
       .set('page', page)
       .set('pageSize', pageSize);
-    return this.http.get<PaginatedSessions>(`${API}/sessions`, { params });
+    return this.http.get<PaginatedSessionsResponse>(`${API}/sessions`, { params });
   }
 
   /**
@@ -62,6 +62,14 @@ export class ChatHttpService {
    */
   deleteSession(sessionId: string): Observable<void> {
     return this.http.delete<void>(`${API}/sessions/${sessionId}`);
+  }
+
+  /**
+   * PUT /api/Chat/sessions/{sessionId}/title
+   * Updates the display title of a session. Returns the updated SessionModel.
+   */
+  updateSessionTitle(sessionId: string, title: string): Observable<SessionModel> {
+    return this.http.put<SessionModel>(`${API}/sessions/${sessionId}/title`, { title });
   }
 
   // ── Message Endpoints ────────────────────────────────────────────────────────

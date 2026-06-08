@@ -151,6 +151,17 @@ export class SignalRService {
         console.error('[SignalR] SessionEnded handler error:', err);
       }
     });
+
+    // 6. Session title updated by another client / server-side rename
+    this.hub.on('SessionTitleUpdated', (updatedSession: SessionModel) => {
+      try {
+        this.ngZone.run(() => {
+          this.chatStore.updateSessionTitle(updatedSession.id, updatedSession.title ?? '');
+        });
+      } catch (err) {
+        console.error('[SignalR] SessionTitleUpdated handler error:', err);
+      }
+    });
   }
 
   // ── Connection Lifecycle Hooks ────────────────────────────────────────────────

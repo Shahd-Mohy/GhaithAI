@@ -23,6 +23,10 @@ export class ChatStore {
   readonly isLoadingHistory   = signal<boolean>(false);
   readonly isLoadingSessions  = signal<boolean>(false);
   readonly isSendingMessage   = signal<boolean>(false);
+  readonly sessionsPage       = signal<number>(1);
+  readonly sessionsTotalCount = signal<number>(0);
+  readonly sessionsHasNext    = signal<boolean>(false);
+  readonly isLoadingMoreSessions = signal<boolean>(false);
 
   // ── Computed Signals ─────────────────────────────────────────────────────────
   readonly hasActiveSession = computed(() => this.activeSession() !== null);
@@ -91,6 +95,10 @@ export class ChatStore {
     this.sessions.set(sessions);
   }
 
+  appendSessions(newItems: SessionModel[]): void {
+    this.sessions.update(existing => [...existing, ...newItems]);
+  }
+
   /** Update a single session inside the sessions list (e.g. after session ends). */
   updateSessionInList(updated: SessionModel): void {
     this.sessions.update(list =>
@@ -103,6 +111,18 @@ export class ChatStore {
     this.sessions.update(list => list.filter(s => s.id !== sessionId));
     if (this.activeSession()?.id === sessionId) {
       this.setActiveSession(null);
+    }
+  }
+
+  /** Patch only the title of a session in the list. */
+  updateSessionTitle(sessionId: string, newTitle: string): void {
+    this.sessions.update(list =>
+      list.map(s => s.id === sessionId ? { ...s, title: newTitle } : s)
+    );
+    // Also patch the active session if it is the same one
+    if (this.activeSession()?.id === sessionId) {
+      const current = this.activeSession();
+      if (current) this.activeSession.set({ ...current, title: newTitle });
     }
   }
 
@@ -136,5 +156,9 @@ export class ChatStore {
     this.isLoadingHistory.set(false);
     this.isLoadingSessions.set(false);
     this.isSendingMessage.set(false);
+    this.sessionsPage.set(1);
+    this.sessionsTotalCount.set(0);
+    this.sessionsHasNext.set(false);
+    this.isLoadingMoreSessions.set(false);
   }
 }

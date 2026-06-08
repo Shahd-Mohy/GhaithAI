@@ -34,6 +34,16 @@ export interface SessionModel {
   messageCount: number;
 }
 
+export interface PaginatedSessionsResponse {
+  items: SessionModel[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 /** Mirrors: ChatMessageDTO (+ frontend-only fields) */
 export interface ChatMessageModel {
   id: string;                          // GUID
