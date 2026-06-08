@@ -87,8 +87,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background-color: #d1fae5;
-  color: #0d9488;
+  color: #0B8FAC;
+  background-color: #e0f2fe;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -98,7 +98,7 @@
 .icon-wrapper svg {
   width: 24px;
   height: 24px;
-  stroke: #0d9488;
+  stroke: #0B8FAC;
 }
 
 .card-title {
@@ -121,7 +121,7 @@
 
 .card-duration {
   font-size: 11px;
-  color: #0d9488;
+  color: #0B8FAC;
   font-weight: 500;
   margin-top: 4px;
 }
@@ -163,7 +163,7 @@
 }
 
 .category-row:hover {
-  background-color: #f8fafc;
+  background-color: #b6d5dc;
 }
 
 .category-left {
@@ -177,6 +177,7 @@
   height: 40px;
   border-radius: 12px;
   background-color: #f1f5f9;
+  color: #0B8FAC;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -192,7 +193,7 @@
 /* 🎨 كلاسات الألوان المتناسقة للأقسام الخمسة */
 .breathing-bg {
   background-color: #ecfdf5;
-  color: #059669;
+  color: #0B8FAC;
 }
 
 .mindfulness-bg {
@@ -242,7 +243,7 @@
 }
 
 .category-row:hover .arrow-icon {
-  color: #64748b;
+  color: #a5bbdb;
 }
 
 .demo-tag {
@@ -264,7 +265,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid #e2e8f0;
-  border-top-color: #059669;
+  border-top-color: #0B8FAC;
   border-radius: 50%;
   animation: spin 1s infinite linear;
 }
@@ -308,7 +309,7 @@
 }
 
 .sub-exercise-card:hover {
-  border-color: #059669;
+  border-color: #0B8FAC;
   box-shadow: 0 2px 8px rgba(5, 150, 105, 0.1);
   background-color: #f0fdf4;
 }
@@ -329,7 +330,7 @@
 }
 
 .sub-exercise-card:hover .sub-ex-title {
-  color: #059669;
+  color: #0B8FAC;
 }
 
 .sub-ex-play-icon {

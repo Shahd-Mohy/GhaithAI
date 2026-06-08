@@ -28,7 +28,7 @@
 }
 
 .back-link:hover {
-  color: #0d9488;
+  color: #0B8FAC;
 }
 
 .main-title {
@@ -97,8 +97,12 @@
 }
 
 .technique-item.active {
-  border-color: #0d9488;
-  background-color: #f0fdfa;
+  border-color: #0B8FAC;
+  background-color: rgba(11, 143, 172, 0.08);
+}
+
+.technique-item.active .tech-title {
+  color: #0B8FAC;
 }
 
 .tech-title {
@@ -131,7 +135,8 @@
   align-items: center;
   justify-content: center;
   z-index: 3;
-  box-shadow: 0 4px 20px rgba(45, 212, 191, 0.3);
+  box-shadow: 0 4px 20px rgba(11, 143, 172, 0.15);
+  /* شادو ناعم متناسق */
   transition: background 0.3s ease;
 }
 
@@ -140,9 +145,11 @@
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  background: rgba(94, 234, 212, 0.4);
+  background: rgba(11, 143, 172, 0.3);
+  /* متناسق مع اللون الرئيسي */
   z-index: 2;
   animation: pulseRing 4s infinite ease-in-out;
+  -webkit-animation: pulseRing 4s infinite ease-in-out;
 }
 
 .breathing-ring-outer {
@@ -150,14 +157,15 @@
   width: 200px;
   height: 200px;
   border-radius: 50%;
-  background: rgba(94, 234, 212, 0.15);
+  background: rgba(11, 143, 172, 0.1);
+  /* تدرج أفتح للخارج */
   z-index: 1;
 }
 
 .timer-display {
   font-size: 28px;
   font-weight: 700;
-  color: #111827;
+  color: white;
 }
 
 /* قسم الكونترول */
@@ -193,37 +201,36 @@
   transition: all 0.2s ease;
 }
 
-/* Start - أخضر فاتح زي البروجكت */
 .btn-start {
-  background: #0d9488;
+  background: #0B8FAC;
   color: white;
   border: 2px solid transparent;
 }
 
 .btn-start:hover {
-  background: #0f766e;
+  background: #09748c;
 }
 
-/* Pause - أبيض مع بوردر أسود */
-.btn-pause {
-  background: #ffffff;
-  color: #1e293b;
-  border: 2px solid #0d9488;
-}
-
-.btn-pause:hover {
-  background: #f1f5f9;
-}
-
-/* Reset - نفس لون Start */
 .btn-reset {
-  background: #0d9488;
-  color: white;
-  border: 2px solid transparent;
+  background: #0B8FAC;
+  color: #ffffff;
+  border: 2px solid #0B8FAC;
 }
 
 .btn-reset:hover {
-  background: #0f766e;
+  color: white;
+}
+
+/* Reset - يفضل تغيير لون الـ Reset عن الـ Start لعدم تشتيت المستخدم */
+.btn-pause {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 2px solid transparent;
+}
+
+.btn-pause:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 /* النصائح - من الشمال */
@@ -242,10 +249,11 @@
   font-size: 16px;
   color: #475569;
   line-height: 1.6;
-  background: #f8fafc;
+  background: rgba(11, 143, 172, 0.03);
+  /* خلفية خفيفة جداً من لون الهوية */
   padding: 14px;
   border-radius: 8px;
-  border-left: 4px solid #0d9488;
+  border-left: 4px solid #0B8FAC;
   margin-bottom: 16px;
   text-align: left;
   direction: ltr;
@@ -271,17 +279,19 @@
 }
 
 .static-tips-list li span {
-  width: 22px;
-  height: 22px;
-  min-width: 22px;
-  background: #ccfbf1;
-  color: #0d9488;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  background: rgba(11, 143, 172, 0.15);
+  /* خلفية متناسقة وهادئة */
+  color: #0B8FAC;
+  /* لون الخط الرئيسي */
   font-weight: 600;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* أنيميشن */
