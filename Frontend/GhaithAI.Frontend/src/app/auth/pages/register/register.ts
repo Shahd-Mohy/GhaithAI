@@ -39,7 +39,6 @@ export class RegisterComponent implements OnInit {
   ec2rel = '';
   ecError = false;
 
-  // ✅ flag لإظهار/إخفاء Contact 2
   showSecondContact = false;
 
   age: number | null = null;
@@ -99,14 +98,77 @@ export class RegisterComponent implements OnInit {
     return this.selectedConcerns.includes(concern);
   }
 
-  // ✅ toggle الـ second contact
   toggleSecondContact(): void {
     this.showSecondContact = !this.showSecondContact;
     if (!this.showSecondContact) {
-      // لو أخفاه يمسح البيانات
       this.ec2name = '';
       this.ec2phone = '';
       this.ec2rel = '';
+    }
+  }
+
+  // ─── Real-time blur validation ────────────────────────
+  validateField(field: string): void {
+
+    switch (field) {
+
+      case 'firstName':
+        if (!this.firstName.trim()) {
+          this.errors['firstName'] = true;
+          this.errorMessages['firstName'] = 'First name is required';
+        } else {
+          this.errors['firstName'] = false;
+        }
+        break;
+
+      case 'lastName':
+        if (!this.lastName.trim()) {
+          this.errors['lastName'] = true;
+          this.errorMessages['lastName'] = 'Last name is required';
+        } else {
+          this.errors['lastName'] = false;
+        }
+        break;
+
+      case 'email':
+        if (!this.email.trim()) {
+          this.errors['email'] = true;
+          this.errorMessages['email'] = 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) {
+          this.errors['email'] = true;
+          this.errorMessages['email'] = 'Enter a valid email address';
+        } else {
+          this.errors['email'] = false;
+        }
+        break;
+
+      case 'phone':
+        const phoneClean = this.phone.trim().replace(/\s/g, '');
+        if (!phoneClean) {
+          this.errors['phone'] = true;
+          this.errorMessages['phone'] = 'Phone number is required';
+        } else if (!/^01[0-9]{9}$/.test(phoneClean)) {
+          this.errors['phone'] = true;
+          this.errorMessages['phone'] = 'Phone number must start with 01 and be exactly 11 digits';
+        } else {
+          this.errors['phone'] = false;
+        }
+        break;
+
+      case 'password':
+        if (this.password.length < 8) {
+          this.errors['password'] = true;
+          this.errorMessages['password'] = 'Password must be at least 8 characters';
+        } else if (!/\d/.test(this.password)) {
+          this.errors['password'] = true;
+          this.errorMessages['password'] = 'Password must contain at least one number';
+        } else if (!/[!@#$%^&*(),.?":{}|<>_\-]/.test(this.password)) {
+          this.errors['password'] = true;
+          this.errorMessages['password'] = 'Password must contain at least one symbol';
+        } else {
+          this.errors['password'] = false;
+        }
+        break;
     }
   }
 
@@ -139,15 +201,15 @@ export class RegisterComponent implements OnInit {
     }
 
     const phoneClean = this.phone.trim().replace(/\s/g, '');
-if (!phoneClean) {
-  this.errors['phone'] = true;
-  this.errorMessages['phone'] = 'Phone number is required';
-  valid = false;
-} else if (!/^01[0-9]{9}$/.test(phoneClean)) {
-  this.errors['phone'] = true;
-  this.errorMessages['phone'] = 'Phone number must start with 01 and be exactly 11 digits';
-  valid = false;
-}
+    if (!phoneClean) {
+      this.errors['phone'] = true;
+      this.errorMessages['phone'] = 'Phone number is required';
+      valid = false;
+    } else if (!/^01[0-9]{9}$/.test(phoneClean)) {
+      this.errors['phone'] = true;
+      this.errorMessages['phone'] = 'Phone number must start with 01 and be exactly 11 digits';
+      valid = false;
+    }
 
     if (this.password.length < 8) {
       this.errors['password'] = true;
@@ -174,18 +236,21 @@ if (!phoneClean) {
   // ─── Step 2 Validation ────────────────────────────────
   step2Next(): void {
 
-    const phoneClean = this.ec1phone.trim().replace(/\s/g, '');
+    const ec1phoneClean = this.ec1phone.trim().replace(/\s/g, '');
 
-    // ✅ Contact 1 إجباري بس
-    if (!this.ec1name.trim() || !phoneClean) {
+    if (!this.ec1name.trim()) {
       this.ecError = true;
       return;
     }
 
-    // ✅ لو Contact 2 ظاهر، لازم يكون كامل
+    if (!/^01[0-9]{9}$/.test(ec1phoneClean)) {
+      this.ecError = true;
+      return;
+    }
+
     if (this.showSecondContact) {
       const ec2phoneClean = this.ec2phone.trim().replace(/\s/g, '');
-      if (!this.ec2name.trim() || !ec2phoneClean) {
+      if (!this.ec2name.trim() || !/^01[0-9]{9}$/.test(ec2phoneClean)) {
         this.ecError = true;
         return;
       }
@@ -211,7 +276,6 @@ if (!phoneClean) {
 
     this.apiError = '';
 
-    // ✅ secondContact بس لو showSecondContact وفيه بيانات
     const secondContact =
       this.showSecondContact &&
       this.ec2name.trim() &&

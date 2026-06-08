@@ -30,7 +30,6 @@ export class LoginComponent {
     });
   }
 
-  // ─── Getters للـ validation ───────────────────────────
   get emailCtrl() { return this.loginForm.get('email')!; }
   get passwordCtrl() { return this.loginForm.get('password')!; }
 
@@ -56,7 +55,6 @@ export class LoginComponent {
 
   login(): void {
 
-    // ✅ mark all touched عشان تظهر الـ errors
     this.loginForm.markAllAsTouched();
 
     if (this.loginForm.invalid) return;
@@ -80,14 +78,11 @@ export class LoginComponent {
 
         if (err.status === 400 && message.toLowerCase().includes('google')) {
           this.apiError = 'This account uses Google Sign-In. Please login with Google.';
-        }
-        else if (err.status === 400) {
+        } else if (err.status === 400) {
           this.apiError = message || 'Invalid email or password.';
-        }
-        else if (err.status === 500) {
+        } else if (err.status === 500) {
           this.apiError = 'Something went wrong. Please try again later.';
-        }
-        else {
+        } else {
           this.apiError = 'Login failed. Please try again.';
         }
       }
