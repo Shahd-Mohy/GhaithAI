@@ -1,0 +1,142 @@
+using GhaithAI.GaithAI.Application.DTOs.ClinicPatient;
+using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+
+namespace GhaithAI.GaithAI.Application.Services.Class
+{
+    public class ClinicPatientService : IClinicPatientService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<ClinicPatientService> _logger;
+
+        public ClinicPatientService(IUnitOfWork unitOfWork, ILogger<ClinicPatientService> logger)
+        {
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        public async Task<IEnumerable<DoctorClinicPatientListDto>> GetPatientsByClinicAsync(Guid clinicId , string? searchTerm,int pageNumber = 1,int pageSize = 10)
+        {
+            _logger.LogInformation("Fetching patients with Pagination & Search for Clinic ID: {ClinicId}", clinicId);
+
+            var query =  _unitOfWork.ClinicPatient.GetAllQueryableNoTracking().Where(p => p.ClinicId == clinicId);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var cleanedSearch = searchTerm.Trim().ToLower();
+                query = query.Where(p =>p.PatientFullName.ToLower().Contains(cleanedSearch) || p.PatientPhone.Contains(cleanedSearch));
+            }
+
+            var patients = await query
+                .OrderBy(p => p.PatientFullName) 
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+
+            return patients.Select(p => new DoctorClinicPatientListDto
+            {
+                Id = p.Id,
+                ClinicId = p.ClinicId,
+                PatientFullName = p.PatientFullName,
+                PatientPhone = p.PatientPhone
+            });
+        }
+
+        public async Task<DoctorClinicPatientDetailsDto> GetByIdAsync(Guid id)
+        {
+            if (id == Guid.Empty) throw new ArgumentException("Invalid patient ID.");
+
+            var patient = await _unitOfWork.ClinicPatient.GetByIdAsync(id);
+            if (patient == null)
+            {
+                _logger.LogWarning("Patient with ID {PatientId} not found.", id);
+                throw new KeyNotFoundException($"Patient was not found.");
+            }
+
+            return new DoctorClinicPatientDetailsDto
+            {
+                Id = patient.Id,
+                ClinicId = patient.ClinicId,
+                PatientFullName = patient.PatientFullName,
+                PatientPhone = patient.PatientPhone,
+                Notes = patient.Notes
+            };
+        }
+
+        public async Task<DoctorClinicPatientDetailsDto> CreateAsync(CreateClinicPatientDto dto)
+        {
+            var trimmedName = dto.PatientFullName?.Trim();
+            var trimmedPhone = dto.PatientPhone?.Trim();
+
+            if (string.IsNullOrWhiteSpace(trimmedName) || string.IsNullOrWhiteSpace(trimmedPhone))
+                throw new ArgumentException("Patient name and phone are required.");
+
+            var isDuplicate = await _unitOfWork.ClinicPatient.GetAllQueryableNoTracking()
+                .AnyAsync(p => p.ClinicId == dto.ClinicId && p.PatientPhone == trimmedPhone);
+
+            if (isDuplicate)
+            {
+                _logger.LogWarning("Validation failed: Phone {Phone} already exists in clinic {ClinicId}", trimmedPhone, dto.ClinicId);
+                throw new InvalidOperationException("A patient with this phone number already exists in this clinic.");
+            }
+
+            var patient = new ClinicPatient
+            {
+                Id = Guid.NewGuid(),
+                ClinicId = dto.ClinicId,
+                PatientFullName = trimmedName,
+                PatientPhone = trimmedPhone,
+                Notes = dto.Notes?.Trim() ?? string.Empty
+            };
+
+            await _unitOfWork.ClinicPatient.AddAsync(patient);
+            await _unitOfWork.CompleteAsync();
+
+            _logger.LogInformation("Successfully created patient {PatientId} for clinic {ClinicId}", patient.Id, patient.ClinicId);
+
+            return new DoctorClinicPatientDetailsDto
+            {
+                Id = patient.Id,
+                ClinicId = patient.ClinicId,
+                PatientFullName = patient.PatientFullName,
+                PatientPhone = patient.PatientPhone,
+                Notes = patient.Notes
+            };
+        }
+        public async Task<bool> UpdateAsync(UpdateClinicPatientDto dto)
+        {
+            if (dto.Id == Guid.Empty) throw new ArgumentException("Invalid patient ID.");
+
+            var patient = await _unitOfWork.ClinicPatient.GetByIdAsync(dto.Id);
+            if (patient == null) throw new KeyNotFoundException("Patient does not exist.");
+
+            var trimmedPhone = dto.PatientPhone?.Trim();
+
+            var isDuplicate = await _unitOfWork.ClinicPatient.GetAllQueryableNoTracking()
+                .AnyAsync(p => p.ClinicId == dto.ClinicId && p.PatientPhone == trimmedPhone && p.Id != dto.Id);
+
+            if (isDuplicate)
+                throw new InvalidOperationException("Another patient with this phone number already exists in this clinic.");
+
+            patient.PatientFullName = dto.PatientFullName?.Trim();
+            patient.PatientPhone = trimmedPhone;
+            patient.Notes = dto.Notes?.Trim() ?? string.Empty;
+
+            _unitOfWork.ClinicPatient.Update(patient);
+            await _unitOfWork.CompleteAsync();
+            return true;
+        }
+
+        public async Task<string> DeleteAsync(Guid id)
+        {
+            if (id == Guid.Empty) throw new ArgumentException("Invalid patient ID.");
+
+            await _unitOfWork.ClinicPatient.DeleteAsync(id);
+            await _unitOfWork.CompleteAsync();
+
+            _logger.LogInformation("Hard deleted patient with ID: {PatientId}", id);
+            return "Patient deleted successfully from the system.";
+        }
+    }
+}

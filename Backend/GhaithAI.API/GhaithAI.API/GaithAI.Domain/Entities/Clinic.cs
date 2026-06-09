@@ -11,7 +11,6 @@ namespace GhaithAI.GaithAI.Domain.Entities
         public string ContactEmail { get; set; }
         public decimal FeePerSession { get; set; }
         public int SessionDurationMinutes { get; set; }
-        // åĞÇ ÇáÍŞá íÍÏÏ ÅĞÇ ßÇäÊ ÇáÚíÇÏÉ ÙÇåÑÉ İí äÊÇÆÌ ÇáÈÍË ÇáÚÇãÉ Ãã áÇ¡ æíÃÎĞ false ÇİÊÑÇÖí áÍÏ ãÇ ÇáÃÏãä íæÇİŞ Úáì ÙåæÑåÇ
         public bool IsPublicListed { get; set; }
 
         public virtual DoctorsProfile Doctor { get; set; }

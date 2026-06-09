@@ -1,6 +1,6 @@
 namespace GhaithAI.GaithAI.Domain.Entities
 {
-    public class ClinicPatient : AuditableEntity<Guid>
+    public class ClinicPatient : BaseEntity<Guid>
     {
         public Guid ClinicId { get; set; }
         public string PatientFullName { get; set; }

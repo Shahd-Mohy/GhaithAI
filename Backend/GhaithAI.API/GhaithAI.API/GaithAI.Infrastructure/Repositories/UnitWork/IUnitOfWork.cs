@@ -10,6 +10,7 @@ namespace GhaithAI.API.Repositories.UnitWork
         ISelfHelpRepository SelfHelp { get; }
         IBaseSpecialtyRepository BaseSpecialty { get; }
         IBaseLanguageRepository BaseLanguage { get; }
+        IClinicPatientRepository ClinicPatient { get; }
 
         Task<int> CompleteAsync();
         int Complete();

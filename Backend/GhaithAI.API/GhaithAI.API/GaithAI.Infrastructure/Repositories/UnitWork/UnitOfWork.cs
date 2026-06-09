@@ -11,6 +11,7 @@ namespace GhaithAI.API.Repositories.UnitWork
         private ISelfHelpRepository _selfHelp;
         private IBaseSpecialtyRepository _baseSpecialty;
         private IBaseLanguageRepository _baseLanguage;
+        private IClinicPatientRepository _clinicPatient;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -28,6 +29,7 @@ namespace GhaithAI.API.Repositories.UnitWork
 
         public IBaseSpecialtyRepository BaseSpecialty => _baseSpecialty ??= new BaseSpecialtyRepository(_context);
         public IBaseLanguageRepository BaseLanguage => _baseLanguage ??= new BaseLanguageRepository(_context);
+        public IClinicPatientRepository ClinicPatient => _clinicPatient ??= new ClinicPatientRepository(_context);  
         public async Task<int> CompleteAsync()
         {
             try
