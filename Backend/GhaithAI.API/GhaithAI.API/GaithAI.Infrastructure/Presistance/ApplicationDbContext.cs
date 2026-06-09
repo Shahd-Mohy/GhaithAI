@@ -41,6 +41,20 @@ namespace GhaithAI.API.Presistance
         public DbSet<UserAssessment> UserAssessments { get; set; }
         public DbSet<ExerciseTip> ExerciseTips { get; set; }
 
+        //--------------------------------------------------------------
+        public DbSet<DoctorsProfile> DoctorsProfiles { get; set; }
+        public DbSet<Clinic> Clinics { get; set; }
+        public DbSet<BaseSpecialty> BaseSpecialties { get; set; }
+        public DbSet<DoctorSpecialty> DoctorSpecialties { get; set; }
+        public DbSet<BaseLanguage> BaseLanguages { get; set; }
+        public DbSet<DoctorLanguage> DoctorLanguages { get; set; }
+        public DbSet<ClinicPatient> ClinicPatients { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<DoctorDefaultSchedule> DoctorDefaultSchedules { get; set; }
+        public DbSet<DoctorCustomSchedule> DoctorCustomSchedules { get; set; }
+        public DbSet<DoctorReview> DoctorReviews { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
