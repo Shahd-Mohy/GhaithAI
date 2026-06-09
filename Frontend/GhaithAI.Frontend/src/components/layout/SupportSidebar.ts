@@ -869,7 +869,8 @@ export class SupportSidebar implements OnInit, OnDestroy {
 
   private readUser(): { fullName?: string; email?: string; profilePicture?: string } | null {
     try {
-      const raw = localStorage.getItem('user');
+      const raw = localStorage.getItem('registered_users');
+
       return raw ? JSON.parse(raw) : null;
     } catch {
       return null;

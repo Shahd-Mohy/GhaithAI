@@ -1,64 +1,31 @@
-global using GhaithAI.API.GaithAI.Application.DTOs.Chat;
-global using System.Text;
-global using System.Text.Json;
 using GhaithAI.API.GaithAI.API.Configurations;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace GhaithAI.API.GaithAI.Application.Services.Class
 {
-    public class LangflowService : ILangflowService
+    public sealed class LangflowService : ILangflowService
     {
         private readonly HttpClient _httpClient;
         private readonly LangflowSettings _langflowSettings;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-
-        private const string AgentNodeId = "Prompt-Agent-xUYMm";
+        private readonly ILogger<LangflowService> _logger;
 
         public LangflowService(
             HttpClient httpClient,
             IOptions<LangflowSettings> langflowSettings,
-            IUnitOfWork unitOfWork,
-            IMapper mapper)
+            ILogger<LangflowService> logger)
         {
             _httpClient = httpClient;
             _langflowSettings = langflowSettings.Value;
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
+            _logger = logger;
         }
 
-        public async Task<string> SendMessageAsync(string userMessage, string sessionId)
+        public async Task<GhaithFinalResultDto> ProcessUserMessageAsync(
+            Guid sessionId,
+            string userMessage,
+            AiContextPackageDto contextPackage)
         {
-            var request = new
-            {
-                input_value = userMessage,
-                session_id = sessionId,
-                output_type = "chat",
-                input_type = "chat"
-            };
-
-            _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add("x-api-key", _langflowSettings.ApiKey);
-
-            var response = await _httpClient.PostAsJsonAsync(
-                $"{_langflowSettings.BaseUrl}/api/v1/run/{_langflowSettings.FlowId}?stream=false",
-                request);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Langflow Error: {error}");
-            }
-
-            var result = await response.Content.ReadFromJsonAsync<LangflowResponse>();
-
-            return result!.Outputs[0].Outputs[0].Results.Message.Text;
-        }
-
-        public async Task<GhaithFinalResultDto> ProcessUserMessageAsync(Guid sessionId, string userMessage)
-        {
-            string conversationHistory = await _unitOfWork.Session.GetLast30MessagesFormattedAsync(sessionId);
-
+            // ── 1. Build request
             var requestBody = new LangflowRequestDto
             {
                 InputValue = userMessage,
@@ -66,126 +33,219 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                 Tweaks = new Dictionary<string, Dictionary<string, string>>
                 {
                     {
-                        AgentNodeId, new Dictionary<string, string>
+                        _langflowSettings.AgentNodeId,
+                        new Dictionary<string, string>
                         {
-                            { "CONVERSATION_HISTORY_PLACEHOLDER", conversationHistory }
+                            { _langflowSettings.ConversationHistoryPlaceholder, contextPackage.ConversationHistory },
+                            { _langflowSettings.UserContextPlaceholder,         FormatUserContext(contextPackage.UserContext) },
+                            { _langflowSettings.MoodContextPlaceholder,         FormatMoodContext(contextPackage.MoodContext) }
                         }
                     }
                 }
             };
 
-            var jsonRequest = JsonSerializer.Serialize(requestBody);
-            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
             var requestUrl = $"{_langflowSettings.BaseUrl.TrimEnd('/')}/api/v1/run/{_langflowSettings.FlowId}?stream=false";
 
-            var request = new HttpRequestMessage(HttpMethod.Post, requestUrl) { Content = content };
+            using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
+            {
+                Content = JsonContent.Create(requestBody)
+            };
             request.Headers.Add("x-api-key", _langflowSettings.ApiKey);
 
+            // ── 2. Send & validate
             var response = await _httpClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
 
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                _logger.LogError(
+                    "Langflow returned {StatusCode} for session {SessionId}. Body: {ErrorBody}",
+                    (int)response.StatusCode, sessionId, errorBody);
+
+                throw new HttpRequestException($"Langflow service returned {(int)response.StatusCode}: {errorBody}");
+            }
+
+            // ── 3. Parse response
+            var rawText = await ExtractTextFromResponseAsync(response, sessionId);
+
+            // ── 4. Detect structured risk payload
+            return ParseAiResult(rawText, sessionId);
+        }
+
+        private static string FormatUserContext(AiUserContextDto user)
+        {
+            if (user is null) return "User context unavailable.";
+
+            return $"""
+                [USER PROFILE]
+                Name: {user.FullName}
+                Preferred Language: "Arabic"
+                Country: {user.CountryCode}
+                Memory Enabled: {(user.MemoryEnabled ? "Yes" : "No")}
+                """;
+        }
+
+        private static string FormatMoodContext(AiMoodContextDto mood)
+        {
+            if (mood is null || mood.HasNoData)
+                return "Mood context: No mood data available for the last 7 days.";
+
+            var emotionLine = mood.EmotionPattern.Any()
+                ? string.Join(", ", mood.EmotionPattern)
+                : "None recorded";
+
+            return $"""
+                [MOOD CONTEXT — Last 7 Days]
+                Average Mood Score: {mood.AverageMoodScore}/10 ({mood.AverageMoodLabel})
+                Mood Trend: {mood.MoodTrend} ({(mood.ChangeFromPreviousWeek >= 0 ? "+" : "")}{mood.ChangeFromPreviousWeek} vs previous week)
+                Days Logged: {mood.LoggedDaysCount}/7
+                Current Streak: {mood.StreakDays} day(s)
+                Dominant Emotion: {mood.DominantEmotion} (appeared {mood.DominantEmotionCount} time(s))
+                Emotion Pattern: {emotionLine}
+                """;
+        }
+
+        private async Task<string> ExtractTextFromResponseAsync(HttpResponseMessage response, Guid sessionId)
+        {
             var jsonResponse = await response.Content.ReadAsStringAsync();
 
-            using var doc = JsonDocument.Parse(jsonResponse);
-            var root = doc.RootElement;
-
-            var rawText = root.GetProperty("outputs").EnumerateArray().First()
-                              .GetProperty("outputs").EnumerateArray().First()
-                              .GetProperty("results")
-                              .GetProperty("message")
-                              .GetProperty("text")
-                              .GetString() ?? string.Empty;
-
-            rawText = rawText.Trim();
-
-            var finalResult = new GhaithFinalResultDto();
-
-            if (rawText.StartsWith("{") && rawText.EndsWith("}"))
+            try
             {
-                try
-                {
-                    var internalJson = JsonSerializer.Deserialize<GhaithAiInternalResponseDto>(rawText);
-                    if (internalJson != null)
-                    {
-                        finalResult.AiResponse = internalJson.AiResponse;
-                        finalResult.IsRiskDetected = internalJson.IsRiskDetected;
-                        finalResult.RiskDetails = internalJson.RiskDetails;
-                    }
-                }
-                catch
-                {
-                    finalResult.AiResponse = rawText;
-                    finalResult.IsRiskDetected = false;
-                }
+                using var doc = JsonDocument.Parse(jsonResponse);
+                var root = doc.RootElement;
+
+                if (!root.TryGetProperty("outputs", out var outputs) || outputs.ValueKind != JsonValueKind.Array)
+                    throw new InvalidOperationException("Missing 'outputs' array in Langflow response.");
+
+                var firstOutput = outputs.EnumerateArray().FirstOrDefault();
+                if (firstOutput.ValueKind == JsonValueKind.Undefined)
+                    throw new InvalidOperationException("Langflow 'outputs' array is empty.");
+
+                if (!firstOutput.TryGetProperty("outputs", out var innerOutputs) || innerOutputs.ValueKind != JsonValueKind.Array)
+                    throw new InvalidOperationException("Missing nested 'outputs' array.");
+
+                var firstInner = innerOutputs.EnumerateArray().FirstOrDefault();
+                if (firstInner.ValueKind == JsonValueKind.Undefined)
+                    throw new InvalidOperationException("Langflow nested 'outputs' array is empty.");
+
+                var text = firstInner
+                    .GetProperty("results")
+                    .GetProperty("message")
+                    .GetProperty("text")
+                    .GetString() ?? string.Empty;
+
+                return text.Trim();
             }
-            else
+            catch (Exception ex) when (ex is not InvalidOperationException)
             {
-                finalResult.AiResponse = rawText;
-                finalResult.IsRiskDetected = false;
+                _logger.LogError(ex,
+                    "Failed to parse Langflow response for session {SessionId}. Raw: {Raw}",
+                    sessionId, jsonResponse);
+
+                throw new InvalidOperationException("Failed to parse Langflow response. See inner exception.", ex);
             }
-
-            var userMessageEntity = new ChatMessage
-            {
-                Id = Guid.NewGuid(),
-                SessionId = sessionId,
-                SenderType = "User",
-                Content = userMessage
-            };
-
-            var aiMessageEntity = new ChatMessage
-            {
-                Id = Guid.NewGuid(),
-                SessionId = sessionId,
-                SenderType = "AI",
-                Content = finalResult.AiResponse
-            };
-
-            await _unitOfWork.Message.AddAsync(userMessageEntity);
-            await _unitOfWork.Message.AddAsync(aiMessageEntity);
-
-            if (finalResult.IsRiskDetected && finalResult.RiskDetails != null)
-            {
-                var riskEntity = _mapper.Map<RiskEvent>(finalResult.RiskDetails);
-                riskEntity.SessionId = sessionId;
-                riskEntity.MessageId = userMessageEntity.Id;
-
-                await _unitOfWork.Risk.AddAsync(riskEntity);
-            }
-
-            await _unitOfWork.CompleteAsync();
-
-            return finalResult;
         }
-    }
 
-    public class LangflowResponse
-    {
-        [JsonPropertyName("outputs")]
-        public List<OutputItem> Outputs { get; set; } = new();
-    }
+        /// <summary>
+        /// Strips any Markdown code-fence wrapper that Langflow may add around the
+        /// JSON payload (e.g. ```json ... ```) and then attempts to deserialise
+        /// the cleaned text as <see cref="GhaithAiInternalResponseDto"/>.
+        ///
+        /// Three cases handled:
+        ///   1. Fenced JSON  →  ```json\n{...}\n```  →  stripped → deserialised
+        ///   2. Bare JSON    →  {AiResponse:...}      →  deserialised directly
+        ///   3. Plain text   →  anything else         →  returned as-is
+        /// </summary>
+        private GhaithFinalResultDto ParseAiResult(string rawText, Guid sessionId)
+        {
+            // ── 1. Strip Markdown code-fence (```json ... ``` or ``` ... ```) ──
+            var cleaned = StripMarkdownCodeFence(rawText);
 
-    public class OutputItem
-    {
-        [JsonPropertyName("outputs")]
-        public List<OutputData> Outputs { get; set; } = new();
-    }
+            // ── 2. Fast-path: not JSON-shaped → return as plain AI text ──────
+            if (!cleaned.StartsWith('{') || !cleaned.EndsWith('}'))
+            {
+                return new GhaithFinalResultDto
+                {
+                    AiResponse = cleaned,
+                    IsRiskDetected = false
+                };
+            }
 
-    public class OutputData
-    {
-        [JsonPropertyName("results")]
-        public ResultData Results { get; set; } = new();
-    }
+            // ── 3. Attempt structured deserialization ─────────────────────────
+            try
+            {
+                var structured = JsonSerializer.Deserialize<GhaithAiInternalResponseDto>(
+                    cleaned,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-    public class ResultData
-    {
-        [JsonPropertyName("message")]
-        public MessageData Message { get; set; } = new();
-    }
+                if (structured is not null)
+                {
+                    return new GhaithFinalResultDto
+                    {
+                        AiResponse = structured.AiResponse,
+                        IsRiskDetected = structured.IsRiskDetected,
+                        RiskDetails = structured.RiskDetails
+                    };
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex,
+                    "AI response for session {SessionId} looked like JSON but failed to deserialise as GhaithAiInternalResponseDto. Treating as plain text.",
+                    sessionId);
+            }
 
-    public class MessageData
-    {
-        [JsonPropertyName("text")]
-        public string Text { get; set; } = string.Empty;
+            // ── 4. JSON parse failed → return cleaned text as-is ─────────────
+            return new GhaithFinalResultDto
+            {
+                AiResponse = cleaned,
+                IsRiskDetected = false
+            };
+        }
+
+        /// <summary>
+        /// Removes a leading Markdown code-fence (``` or ```json / ```JSON)
+        /// and its matching trailing ```.
+        ///
+        /// Handles:
+        ///   • ```json\n...\n```   (Langflow's most common output)
+        ///   • ```\n...\n```       (fence without language specifier)
+        ///   • No fence            (returned unchanged)
+        ///
+        /// Preserves any content that genuinely starts/ends with backticks
+        /// but is not a well-formed fence pair.
+        /// </summary>
+        private static string StripMarkdownCodeFence(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return text;
+
+            var trimmed = text.Trim();
+
+            // Must start with ``` and end with ```
+            if (!trimmed.StartsWith("```") || !trimmed.EndsWith("```"))
+                return trimmed;
+
+            // Locate the end of the opening fence line (after the optional language specifier)
+            var firstNewline = trimmed.IndexOf('\n');
+            if (firstNewline < 0)
+                return trimmed; // Malformed single-line fence — leave as-is
+
+            // Validate that the opening line is only a fence + optional language tag
+            // e.g. "```json" or "```" — nothing else
+            var openingLine = trimmed[..firstNewline].TrimEnd('\r');
+            if (!Regex.IsMatch(openingLine, "^```[a-zA-Z]*$"))
+                return trimmed;
+
+            // Strip the opening fence line and the closing ```
+            var afterOpen = trimmed[(firstNewline + 1)..];
+            var lastFence = afterOpen.LastIndexOf("```", StringComparison.Ordinal);
+
+            if (lastFence < 0)
+                return trimmed; // No closing fence — leave as-is
+
+            var innerContent = afterOpen[..lastFence].TrimEnd('\r', '\n').Trim();
+            return innerContent;
+        }
     }
 }

@@ -16,6 +16,12 @@ namespace GhaithAI.API.Models
 
         public string Content { get; set; }
 
+        /// <summary>
+        /// The UTC timestamp when the message was created.
+        /// Stored in the BaseEntity.CreatedAt property. Provided here for clarity.
+        /// </summary>
+        // public DateTime SentAt => CreatedAt;
+
         public decimal? SentimentScore { get; set; }
 
         public string? DetectedEmotion { get; set; }
