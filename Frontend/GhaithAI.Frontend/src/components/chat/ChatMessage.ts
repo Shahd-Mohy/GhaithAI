@@ -170,6 +170,23 @@ import { ChatMessageModel } from '../../types/chat.types';
       text-decoration: underline;
       margin-left: 4px;
     }
+
+    /* ── Typewriter Cursor ────────────────────────────────── */
+    .streaming-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background-color: var(--chat-primary, #0d9488);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      border-radius: 1px;
+      animation: cursor-blink 0.7s ease-in-out infinite;
+    }
+
+    @keyframes cursor-blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
   `],
   template: `
     <div class="message-enter d-flex gap-3 align-items-end w-100"
@@ -202,6 +219,9 @@ import { ChatMessageModel } from '../../types/chat.types';
              [style.border-color]="message.senderType === 'User' && message.status === 'error' ? 'var(--destructive, #dc2626)' : ''">
 
           {{ displayedContent() }}
+          @if (isStreaming()) {
+            <span class="streaming-cursor" aria-hidden="true"></span>
+          }
 
           @if (message.senderType === 'AI' && message.status === 'error') {
             <div class="mt-3">
@@ -264,9 +284,12 @@ import { ChatMessageModel } from '../../types/chat.types';
 export class ChatMessage implements OnInit, OnDestroy {
   @Input() message!: ChatMessageModel;
   @Output() retryMessage = new EventEmitter<ChatMessageModel>();
+  @Output() streamingStarted = new EventEmitter<void>();
+  @Output() streamingFinished = new EventEmitter<void>();
 
   readonly isCopied = signal<boolean>(false);
   readonly displayedContent = signal<string>('');
+  readonly isStreaming = signal<boolean>(false);
   
   isRiskDetectedInBubble: boolean = false;
 
@@ -281,40 +304,102 @@ export class ChatMessage implements OnInit, OnDestroy {
         this.streamText(cleanContent);
       } else {
         this.displayedContent.set(cleanContent);
+        this.streamingFinished.emit();
       }
     } else {
       this.displayedContent.set(cleanContent);
     }
   }
 
+  /**
+   * Extracts the displayable AI message text from whatever the backend sends.
+   *
+   * Handles four cases in order:
+   *   1. Markdown-fenced JSON  →  ```json\n{...}\n```
+   *   2. Bare JSON object      →  { "AiResponse": "...", ... }
+   *   3. Plain text            →  returned as-is
+   *   4. Empty / null          →  returned as empty string
+   *
+   * The C# LangflowService is the authoritative layer that should strip fences.
+   * This method is the Angular safety net — it gracefully handles any leakage
+   * so the user never sees raw JSON in a chat bubble.
+   */
   private extractCleanContent(rawContent: string): string {
     if (!rawContent) return '';
-    
-    const trimmed = rawContent.trim();
-    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+
+    // ── Step 1: strip Markdown code fence if present ──────────────────
+    const stripped = this.stripMarkdownCodeFence(rawContent.trim());
+
+    // ── Step 2: try to parse as JSON object ───────────────────────────
+    if (stripped.startsWith('{') && stripped.endsWith('}')) {
       try {
-        const parsed = JSON.parse(trimmed);
+        const parsed = JSON.parse(stripped);
+
         if (parsed && typeof parsed === 'object') {
-          const aiResponse = parsed.AiResponse ?? parsed.aiResponse;
-          if (aiResponse !== undefined) {
-            this.isRiskDetectedInBubble = !!(parsed.IsRiskDetected ?? parsed.isRiskDetected);
+          // Support both PascalCase (C# default) and camelCase
+          const aiResponse = parsed['AiResponse'] ?? parsed['aiResponse'];
+
+          if (typeof aiResponse === 'string') {
+            this.isRiskDetectedInBubble =
+              !!(parsed['IsRiskDetected'] ?? parsed['isRiskDetected']);
             return aiResponse;
           }
         }
-      } catch (e) {
+      } catch {
+        // Looked like JSON but wasn't — fall through to return stripped text
       }
     }
-    return rawContent;
+
+    // ── Step 3: plain text (or unparseable JSON) ──────────────────────
+    return stripped;
+  }
+
+  /**
+   * Removes a leading Markdown code fence (``` or ```json) and its
+   * matching trailing ```.
+   *
+   * Returns the original string unchanged when:
+   *   • it does not start with ```
+   *   • it starts with ``` but has no matching closing ```
+   *   • the opening fence line contains non-language characters
+   *
+   * Examples:
+   *   "```json\n{...}\n```"  →  "{...}"
+   *   "```\n{...}\n```"      →  "{...}"
+   *   "Hello world"          →  "Hello world"
+   *   "{...}"                →  "{...}"
+   */
+  private stripMarkdownCodeFence(text: string): string {
+    if (!text.startsWith('`')) return text;
+
+    // Opening fence: ``` optionally followed by a language tag (letters only)
+    const fencePattern = /^```[a-zA-Z]*\r?\n([\s\S]*?)```$/;
+    const match = text.match(fencePattern);
+
+    if (!match) return text; // No well-formed fence pair
+
+    return match[1].trim();
   }
 
   streamText(fullText: string) {
+    if (!fullText) {
+      this.displayedContent.set('');
+      this.streamingFinished.emit();
+      return;
+    }
+
     let index = 0;
-    this.streamSub = interval(30).subscribe(() => {
+    this.isStreaming.set(true);
+    this.streamingStarted.emit();
+
+    this.streamSub = interval(18).subscribe(() => {
       if (index < fullText.length) {
         index++;
         this.displayedContent.set(fullText.substring(0, index));
       } else {
+        this.isStreaming.set(false);
         this.streamSub?.unsubscribe();
+        this.streamingFinished.emit();
       }
     });
   }

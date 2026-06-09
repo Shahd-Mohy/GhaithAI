@@ -259,11 +259,13 @@ const NEAR_BOTTOM_THRESHOLD = 120;
           @for (msg of messages; track msg.id) {
             <app-chat-message
               [message]="msg"
-              (retryMessage)="retryMessage.emit($event)" />
+              (retryMessage)="retryMessage.emit($event)"
+              (streamingStarted)="isAnyMessageStreaming.set(true)"
+              (streamingFinished)="isAnyMessageStreaming.set(false)" />
           }
 
           <!-- Typing indicator -->
-          <app-typing-indicator [visible]="isAiTyping" />
+          <app-typing-indicator [visible]="isAiTyping && !isAnyMessageStreaming()" />
         }
 
         <!-- Physical spacer — replaces CSS bottom padding to give scrollHeight stable geometry -->
@@ -323,6 +325,8 @@ export class ChatWindow implements AfterViewInit, OnDestroy {
 
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('messageList')     private messageList!: ElementRef<HTMLDivElement>;
+
+  readonly isAnyMessageStreaming = signal<boolean>(false);
 
   private readonly shouldAutoScroll = signal<boolean>(true);
   private resizeObserver: ResizeObserver | null = null;
