@@ -8,8 +8,8 @@ import {
   inject,
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, zip, timer } from 'rxjs';
-import { takeUntil, take, filter, finalize } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil, take, filter } from 'rxjs/operators';
 
 import { ChatStore } from '../../../store/chat.store';
 import { SignalRService } from '../../../hooks/useSignalR';
@@ -411,12 +411,17 @@ export class ChatPage implements OnInit, OnDestroy {
   // ── Message Handling ─────────────────────────────────────────────────────────
 
   async onMessageSent(content: string): Promise<void> {
-    if (this.chatStore.isSendingMessage() || this.chatStore.isAiTyping() || this.chatStore.connectionStatus() !== 'connected') return;
+    if (
+      this.chatStore.isSendingMessage() ||
+      this.chatStore.isAiTyping() ||
+      this.chatStore.connectionStatus() !== 'connected'
+    ) return;
+
     if (!content || !content.trim()) return;
 
     this.chatStore.setSendingMessage(true);
 
-    // Add optimistic message to UI immediately
+    // ── 1. Optimistic user message ──────────────────────────────────────────
     const tempId = crypto.randomUUID();
     const optimisticMsg: ChatMessageModel = {
       id: tempId,
@@ -427,45 +432,51 @@ export class ChatPage implements OnInit, OnDestroy {
       status: 'sending'
     };
     this.chatStore.addMessage(optimisticMsg);
-    this.chatStore.typingBufferActive.set(true);
 
     try {
+      // ── 2. Ensure session exists ────────────────────────────────────────────
       let session = this.chatStore.activeSession();
-
-      // If no active session, create one first
       if (!session) {
         session = await this.createNewSession();
         if (!session) {
           this.chatStore.removeMessage(tempId);
-          this.chatStore.typingBufferActive.set(false);
           this.chatStore.setSendingMessage(false);
           return;
         }
       }
 
-      const responseSubject = new Subject<ChatMessageModel>();
-      
-      const responseSubscription = zip(
-        responseSubject.pipe(take(1)),
-        timer(1200)
-      ).pipe(
-        finalize(() => {
-          this.chatStore.setSendingMessage(false);
-          this.chatStore.isAiTyping.set(false);
-          this.chatStore.typingBufferActive.set(false);
-        })
-      ).subscribe({
-        next: ([aiMsg]) => {
-          this.chatStore.commitAiMessage(aiMsg);
-        }
-      });
+      // ── 3. Subscribe to AI response BEFORE sending ──────────────────────────
+      //      Take exactly 1 emission, then auto-unsubscribe.
+      const aiResponseSub = this.chatStore.apiResponse$
+        .pipe(
+          take(1),
+          takeUntil(this.destroy$)   // safety: unsubscribe on component destroy
+        )
+        .subscribe({
+          next: (aiMsg: ChatMessageModel) => {
+            this.chatStore.clearTypingWatchdog();
+            // Commit the real AI message
+            this.chatStore.commitAiMessage(aiMsg);
 
-      const apiSub = this.chatStore.apiResponse$.pipe(take(1)).subscribe(msg => {
-        responseSubject.next(msg);
-      });
+            // ── Hide typing indicator IMMEDIATELY on response arrival ─────────
+            this.chatStore.isAiTyping.set(false);
+            this.chatStore.typingBufferActive.set(false);
+            this.chatStore.setSendingMessage(false);
+          },
+          error: () => {
+            this.chatStore.isAiTyping.set(false);
+            this.chatStore.typingBufferActive.set(false);
+            this.chatStore.setSendingMessage(false);
+          }
+        });
 
-      // Send via SignalR (primary channel)
+      // ── 4. Send via SignalR ─────────────────────────────────────────────────
       try {
+        // Transition: start showing AI typing indicator immediately
+        this.chatStore.isAiTyping.set(true);
+        this.chatStore.typingBufferActive.set(true);
+        this.chatStore.startTypingWatchdog();
+
         await this.signalRService.sendMessage({
           sessionId: session.id,
           message: content.trim()
@@ -478,31 +489,35 @@ export class ChatPage implements OnInit, OnDestroy {
           status: 'sent'
         });
 
-        // Transition synchronously: send is complete -> typing starts
-        this.chatStore.isAiTyping.set(true);
         this.chatStore.setSendingMessage(false);
 
-      } catch (err) {
-        console.error('[ChatPage] SendMessage failed:', err);
-        apiSub.unsubscribe();
-        this.chatStore.markMessageError(tempId);
+      } catch (signalrErr) {
+        // SignalR send failed — clean up and show empathetic fallback
+        console.error('[ChatPage] SendMessage failed:', signalrErr);
 
-        // Append Empathetic Fallback Alert via the response pipeline
-        const fallbackId = crypto.randomUUID();
-        responseSubject.next({
-          id: fallbackId,
+        aiResponseSub.unsubscribe();   // prevent stale subscription
+        this.chatStore.markMessageError(tempId);
+        this.chatStore.isAiTyping.set(false);
+        this.chatStore.typingBufferActive.set(false);
+        this.chatStore.setSendingMessage(false);
+
+        // Inject fallback AI message directly into the store
+        const fallbackMsg: ChatMessageModel = {
+          id: crypto.randomUUID(),
           senderType: 'AI',
           content: "I'm having a little trouble connecting right now. Don't worry, your thoughts are safe and won't be lost. Whenever you're ready, let's try again.",
           sentAt: new Date().toISOString(),
           isOptimistic: false,
           status: 'error'
-        });
+        };
+        this.chatStore.addMessage(fallbackMsg);
       }
-    } catch (err) {
-      console.error('[ChatPage] Unexpected error:', err);
+
+    } catch (unexpectedErr) {
+      console.error('[ChatPage] Unexpected error in onMessageSent:', unexpectedErr);
       this.chatStore.removeMessage(tempId);
-      this.chatStore.typingBufferActive.set(false);
       this.chatStore.isAiTyping.set(false);
+      this.chatStore.typingBufferActive.set(false);
       this.chatStore.setSendingMessage(false);
     }
   }

@@ -143,8 +143,31 @@ export class ChatStore {
     this.isSendingMessage.set(val);
   }
 
+  private typingTimeoutRef: ReturnType<typeof setTimeout> | null = null;
+
+  /** Starts a 30-second watchdog. If no AI response arrives, auto-clears typing state. */
+  startTypingWatchdog(): void {
+    this.clearTypingWatchdog();
+    this.typingTimeoutRef = setTimeout(() => {
+      if (this.isAiTyping()) {
+        console.warn('[ChatStore] Typing watchdog fired — no AI response in 30s. Resetting typing state.');
+        this.isAiTyping.set(false);
+        this.typingBufferActive.set(false);
+      }
+    }, 30_000);
+  }
+
+  /** Cancels the watchdog timer (call after AI message arrives). */
+  clearTypingWatchdog(): void {
+    if (this.typingTimeoutRef !== null) {
+      clearTimeout(this.typingTimeoutRef);
+      this.typingTimeoutRef = null;
+    }
+  }
+
   /** Full reset — called on logout or session cleanup. */
   reset(): void {
+    this.clearTypingWatchdog();
     this.activeSession.set(null);
     this.messages.set([]);
     this.sessions.set([]);
