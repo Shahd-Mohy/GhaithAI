@@ -1,10 +1,9 @@
 ﻿using GhaithAI.API.Constants;
 using GhaithAI.API.DTOs.Chat;
 using GhaithAI.API.GaithAI.Domain.Exceptions;
+using GhaithAI.API.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using GhaithAI.API.Interfaces.InterfaceService;
-using GhaithAI.API.Services.Interfaces;
 
 namespace GhaithAI.API.Services.Class
 {
@@ -51,20 +50,23 @@ namespace GhaithAI.API.Services.Class
 
             // Phase 2: Single Active Session Constraint 
             // Query with tracking to automatically capture state changes for persistence
-            var activeSession = await _unitOfWork.Session
+            var activeSessions = await _unitOfWork.Session
                 .GetAllQueryableTracking()
-                .Where(s => s.UserId == userId && s.Status == SessionStatus.Active)
-                .FirstOrDefaultAsync();
+                .Where(s => s.UserId == userId && s.Status == SessionStatus.Active).ToListAsync();
+            //.FirstOrDefaultAsync();
 
-            if (activeSession is not null)
+            foreach (var activeSession in activeSessions)
             {
-                // Update state directly in memory
-                activeSession.Status = SessionStatus.Ended;
-                activeSession.EndedAt = DateTime.UtcNow;
+                if (activeSession is not null)
+                {
+                    // Update state directly in memory
+                    activeSession.Status = SessionStatus.Ended;
+                    activeSession.EndedAt = DateTime.UtcNow;
 
-                _logger.LogInformation(
-                    "Auto-closed previous active session {SessionId} for user {UserId}",
-                    activeSession.Id, userId);
+                    _logger.LogInformation(
+                        "Auto-closed previous active session {SessionId} for user {UserId}",
+                        activeSession.Id, userId);
+                }
             }
 
             // Phase 3: New Session Creation & Privacy Policy 
@@ -216,11 +218,11 @@ namespace GhaithAI.API.Services.Class
                 MoodContext = moodContext
             };
 
-            // ── 4. Delegate to Langflow (pure HTTP — no DB side-effects)
+            // 4. Delegate to Langflow (pure HTTP — no DB side-effects)
             var langflowResult = await _langflowService
                 .ProcessUserMessageAsync(sessionId, dto.Message, contextPackage);
 
-            // ── 5. Persist messages & risk (ChatService owns DB writes)
+            // 5. Persist messages & risk (ChatService owns DB writes)
             var nowUtc = DateTime.UtcNow;
 
             var userMessageEntity = new ChatMessage
