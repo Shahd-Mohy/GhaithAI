@@ -6,6 +6,8 @@ global using GhaithAI.API.Repositories.Interfaces;
 global using GhaithAI.API.Services.Class;
 global using GhaithAI.API.Services.Interfaces;
 global using System.Reflection;
+using GhaithAI.GaithAI.Application.Services.Class;
+using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 
 namespace GhaithAI.API.GaithAI.Application.Helpers
 {
@@ -25,7 +27,7 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             //services.AddScoped<ISessionRepository, SessionRepository>();
             services.AddScoped<IRiskRepository, RiskRepository>();
             services.AddScoped<ISelfHelpRepository, SelfHelpRepository>();
-
+            services.AddScoped<IBaseSpecialtyRepository, BaseSpecialtyRepository>();
             return services;
         }
 
@@ -44,6 +46,7 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IInsightService, InsightService>();
             services.AddScoped<ISelfHelpAdminService, SelfHelpAdminService>();
             services.AddScoped<ISelfHelpUserService, SelfHelpUserService>();
+            services.AddScoped<IBaseSpecialtyService, BaseSpecialtyService>();
 
             return services;
         }
