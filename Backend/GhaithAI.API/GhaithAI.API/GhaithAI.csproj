@@ -30,6 +30,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="GaithAI.API\Controllers\NewFolder1\" />
+		<Folder Include="GaithAI.API\Controllers\NewFolder\" />
 		<Folder Include="GaithAI.Infrastructure\ExternalService\" />
 	</ItemGroup>
 

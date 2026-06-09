@@ -28,6 +28,7 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IRiskRepository, RiskRepository>();
             services.AddScoped<ISelfHelpRepository, SelfHelpRepository>();
             services.AddScoped<IBaseSpecialtyRepository, BaseSpecialtyRepository>();
+            services.AddScoped<IBaseLanguageRepository, BaseLanguageRepository>();
             return services;
         }
 
@@ -47,6 +48,7 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<ISelfHelpAdminService, SelfHelpAdminService>();
             services.AddScoped<ISelfHelpUserService, SelfHelpUserService>();
             services.AddScoped<IBaseSpecialtyService, BaseSpecialtyService>();
+            services.AddScoped<IBaseLanguageService, BaseLanguageService>();
 
             return services;
         }
