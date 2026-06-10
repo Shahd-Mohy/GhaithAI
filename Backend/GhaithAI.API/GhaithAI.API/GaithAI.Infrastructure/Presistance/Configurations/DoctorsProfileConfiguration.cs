@@ -21,7 +21,7 @@ namespace GhaithAI.GaithAI.Infrastructure.Presistance.Configurations
        
 
             builder.Property(d => d.DoctorType).HasConversion<string>().HasMaxLength(50).IsRequired();
-            builder.Property(d => d.ApprovalStatus).HasConversion<string>().HasMaxLength(30).HasDefaultValue("Pending");
+            builder.Property(d => d.ApprovalStatus).HasConversion<string>().HasMaxLength(30).HasDefaultValue(ApprovalStatus.Pending);
 
             builder.Property(d => d.UserId).IsRequired();
             builder.HasOne(d => d.User).WithOne(u => u.DoctorsProfile) 
