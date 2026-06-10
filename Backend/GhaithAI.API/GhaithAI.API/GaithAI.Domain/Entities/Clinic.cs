@@ -9,15 +9,9 @@ namespace GhaithAI.GaithAI.Domain.Entities
         public string CountryCode { get; set; }
         public string Phone { get; set; }
         public string ContactEmail { get; set; }
-        public decimal FeePerSession { get; set; }
-        public int SessionDurationMinutes { get; set; }
-        public bool IsPublicListed { get; set; }
 
+        public bool IsPublicListed { get; set; }
         public virtual DoctorsProfile Doctor { get; set; }
-        public virtual ICollection<ClinicPatient> ClinicPatients { get; set; } = new List<ClinicPatient>();
-        public virtual ICollection<DoctorDefaultSchedule> DefaultSchedules { get; set; } = new List<DoctorDefaultSchedule>();
-        public virtual ICollection<DoctorCustomSchedule> CustomSchedules { get; set; } = new List<DoctorCustomSchedule>();
-        public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
-        public virtual ICollection<DoctorReview> Reviews { get; set; } = new List<DoctorReview>();
+       
     }
 }

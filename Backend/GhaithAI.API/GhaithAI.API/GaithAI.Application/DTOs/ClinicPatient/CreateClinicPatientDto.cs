@@ -2,8 +2,8 @@ namespace GhaithAI.GaithAI.Application.DTOs.ClinicPatient
 {
     public class CreateClinicPatientDto
     {
-        [Required(ErrorMessage = "Clinic ID is required.")]
-        public Guid ClinicId { get; set; }
+        [Required(ErrorMessage = "Doctor ID is required.")]
+        public Guid DoctorId { get; set; }
 
         [Required(ErrorMessage = "Patient full name is required.")]
         [StringLength(150, ErrorMessage = "Patient name cannot exceed 150 characters.")]

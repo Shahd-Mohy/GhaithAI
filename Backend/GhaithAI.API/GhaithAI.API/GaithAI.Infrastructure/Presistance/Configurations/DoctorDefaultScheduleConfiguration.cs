@@ -9,11 +9,12 @@ namespace GhaithAI.GaithAI.Infrastructure.Presistance.Configurations
             builder.Property(dds => dds.StartTime).IsRequired();  
             builder.Property(dds => dds.EndTime) .IsRequired(); 
             builder.Property(dds => dds.IsActive).IsRequired().HasDefaultValue(true); 
-            builder.Property(dds => dds.DayOfWeek).HasConversion<string>() .HasMaxLength(20) .IsRequired();
+            builder.Property(dds => dds.DayOfWeek).HasConversion<string>().HasMaxLength(20).IsRequired();
  
-            builder.HasOne(dds => dds.Clinic).WithMany(c => c.DefaultSchedules)  
-                .HasForeignKey(dds => dds.ClinicId).OnDelete(DeleteBehavior.Cascade); 
-                
+            builder.HasOne(dds => dds.Doctor).WithMany(c => c.DefaultSchedules)  
+                .HasForeignKey(dds => dds.DoctorId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasIndex(dds => new { dds.DoctorId, dds.DayOfWeek }).IsUnique();
+
         }
     }
 }

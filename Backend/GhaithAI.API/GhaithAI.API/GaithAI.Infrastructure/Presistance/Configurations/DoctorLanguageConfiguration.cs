@@ -10,8 +10,10 @@ namespace GhaithAI.GaithAI.Infrastructure.Presistance.Configurations
             builder.HasOne(dl => dl.Doctor).WithMany(d => d.DoctorLanguages) 
                 .HasForeignKey(dl => dl.DoctorId).OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(dl => dl.BaseLanguage).WithMany(bl => bl.DoctorLanguages) 
-                .HasForeignKey("BaseLanguageId").OnDelete(DeleteBehavior.Restrict); 
+            builder.HasOne(dl => dl.BaseLanguage).WithMany(bl => bl.DoctorLanguages)
+                .HasForeignKey(dl => dl.BaseLanguageId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(dl => new { dl.DoctorId, dl.BaseLanguageId }).IsUnique();
         }
     } 
 }

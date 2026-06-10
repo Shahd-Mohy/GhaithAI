@@ -13,22 +13,24 @@ namespace GhaithAI.GaithAI.Infrastructure.Presistance.Configurations
             builder.Property(b => b.ConfirmedBy).HasMaxLength(150).IsRequired(false);
             builder.Property(b => b.CancelledBy).HasMaxLength(150).IsRequired(false);
 
-            builder.Property(b => b.SessionType).HasConversion<string>().HasMaxLength(30).HasDefaultValue(SessionType.Offline);
-            builder.Property(b => b.BookingSource).HasConversion<string>().HasMaxLength(30).HasDefaultValue(BookingSource.App);
-            builder.Property(b => b.Status).HasConversion<string>().HasMaxLength(30).HasDefaultValue(BookingStatus.Confirmed);
+            builder.Property(b => b.SessionType).HasConversion<string>().HasMaxLength(30).HasDefaultValue("offline");
+            builder.Property(b => b.BookingSource).HasConversion<string>().HasMaxLength(30).HasDefaultValue("App");
+            builder.Property(b => b.Status).HasConversion<string>().HasMaxLength(30).HasDefaultValue("Confirmed");
 
             builder.Property(b => b.PatientId).IsRequired(false);
             builder.Property(b => b.ClinicPatientId).IsRequired(false);
 
 
-            builder.HasOne(b => b.Clinic).WithMany(c => c.Bookings)
-                .HasForeignKey(b => b.ClinicId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(b => b.Doctor).WithMany(c => c.Bookings)
+                .HasForeignKey(b => b.DoctorId).OnDelete(DeleteBehavior.Restrict);
  
             builder.HasOne(b => b.Patient).WithMany()
                 .HasForeignKey(b => b.PatientId).OnDelete(DeleteBehavior.Restrict);
            
             builder.HasOne(b => b.ClinicPatient).WithMany(cp => cp.Bookings)
                 .HasForeignKey(b => b.ClinicPatientId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(b => new { b.DoctorId, b.BookingDate, b.SlotTime }).IsUnique();
         }
     }
 }

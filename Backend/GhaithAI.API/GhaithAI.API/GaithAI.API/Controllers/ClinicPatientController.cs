@@ -16,100 +16,49 @@ namespace GhaithAI.GaithAI.API.Controllers
             _patientService = patientService;
         }
 
-        [HttpGet("clinic/{clinicId:guid}")]
+        [HttpGet("doctor/{doctorId:guid}")]
         public async Task<IActionResult> GetPatients(
-            [FromRoute] Guid clinicId,
+            [FromRoute] Guid doctorId,
             [FromQuery] string? searchTerm,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
         {
-
-            var patients = await _patientService.GetPatientsByClinicAsync(clinicId, searchTerm, pageNumber, pageSize);
+            var patients = await _patientService.GetPatientsByClinicAsync(doctorId, searchTerm, pageNumber, pageSize);
             return Ok(patients);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            try
-            {
-                var patient = await _patientService.GetByIdAsync(id);
-                return Ok(patient);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var patient = await _patientService.GetByIdAsync(id);
+            return Ok(patient);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateClinicPatientDto dto)
         {
-
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var result = await _patientService.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var result = await _patientService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateClinicPatientDto dto)
         {
-
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                await _patientService.UpdateAsync(dto);
-                return NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            await _patientService.UpdateAsync(dto);
+            return NoContent();
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            try
-            {
-                var message = await _patientService.DeleteAsync(id);
-                return Ok(new { message });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            var message = await _patientService.DeleteAsync(id);
+            return Ok(new { message });
         }
     }
 }

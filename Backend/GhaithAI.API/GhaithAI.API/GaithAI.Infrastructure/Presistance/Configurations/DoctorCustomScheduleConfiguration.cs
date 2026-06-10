@@ -13,9 +13,10 @@ namespace GhaithAI.GaithAI.Infrastructure.Presistance.Configurations
             builder.Property(dcs => dcs.EndTime).IsRequired();
             builder.Property(dcs => dcs.IsOffDay).IsRequired().HasDefaultValue(false); 
 
-            builder.HasOne(dcs => dcs.Clinic).WithMany(c => c.CustomSchedules) 
-                .HasForeignKey(dcs => dcs.ClinicId).OnDelete(DeleteBehavior.Cascade); 
-                
+            builder.HasOne(dcs => dcs.Doctor).WithMany(c => c.CustomSchedules) 
+                .HasForeignKey(dcs => dcs.DoctorId).OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(dcs => new { dcs.DoctorId, dcs.CustomDate }).IsUnique();
         }
     }
 }

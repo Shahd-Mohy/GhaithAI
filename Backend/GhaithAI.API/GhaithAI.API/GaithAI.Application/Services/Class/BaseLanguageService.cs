@@ -90,21 +90,20 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
         public async Task<bool> UpdateAsync(UpdateLanguageDto dto)
         {
-            var trimmedId = dto.Id?.Trim().ToLower();
             var trimmedName = dto.LanguageName?.Trim();
 
-            if (string.IsNullOrWhiteSpace(trimmedId) || string.IsNullOrWhiteSpace(trimmedName))
+            if ( string.IsNullOrWhiteSpace(trimmedName))
                 throw new ArgumentException("Language ID and Name cannot be empty.");
 
-            var language = await _unitOfWork.BaseLanguage.GetByIdAsync(trimmedId);
+            var language = await _unitOfWork.BaseLanguage.GetByIdAsync(dto.Id);
             if (language == null)
             {
-                _logger.LogWarning("Update failed: Language with Code {LanguageId} does not exist.", trimmedId);
-                throw new KeyNotFoundException($"Language with Code '{trimmedId}' does not exist.");
+                _logger.LogWarning("Update failed: Language with Code {LanguageId} does not exist.", dto.Id);
+                throw new KeyNotFoundException($"Language with Code '{dto.Id}' does not exist.");
             }
 
             var isDuplicateName = await _unitOfWork.BaseLanguage.GetAllQueryableNoTracking()
-                .AnyAsync(l => l.LanguageName.ToLower() == trimmedName.ToLower() && l.Id != trimmedId);
+                .AnyAsync(l => l.LanguageName.ToLower() == trimmedName.ToLower() && l.Id != dto.Id);
 
             if (isDuplicateName)
             {
@@ -117,7 +116,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             _unitOfWork.BaseLanguage.Update(language);
             await _unitOfWork.CompleteAsync();
 
-            _logger.LogInformation("Successfully updated language Code: {LanguageId} to '{LanguageName}'", trimmedId, trimmedName);
+            _logger.LogInformation("Successfully updated language Code: {LanguageId} to '{LanguageName}'", dto.Id, trimmedName);
             return true;
         }
 

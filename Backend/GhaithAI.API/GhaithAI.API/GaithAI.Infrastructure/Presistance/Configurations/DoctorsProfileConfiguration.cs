@@ -18,13 +18,13 @@ namespace GhaithAI.GaithAI.Infrastructure.Presistance.Configurations
             builder.Property(d => d.DocumentsPdfUrl).HasMaxLength(500).IsRequired();
             builder.Property(d => d.RejectionReason).HasMaxLength(500).IsRequired(false);
             builder.Property(d => d.AverageRating).HasColumnType("real").HasDefaultValue(0.0f);
-
+       
 
             builder.Property(d => d.DoctorType).HasConversion<string>().HasMaxLength(50).IsRequired();
-            builder.Property(d => d.ApprovalStatus).HasConversion<string>().HasMaxLength(30).HasDefaultValue(ApprovalStatus.Pending); 
+            builder.Property(d => d.ApprovalStatus).HasConversion<string>().HasMaxLength(30).HasDefaultValue("Pending");
 
             builder.Property(d => d.UserId).IsRequired();
-            builder.HasOne(d => d.User).WithOne() 
+            builder.HasOne(d => d.User).WithOne(u => u.DoctorsProfile) 
                 .HasForeignKey<DoctorsProfile>(d => d.UserId)
                 .OnDelete(DeleteBehavior.Restrict); 
         }

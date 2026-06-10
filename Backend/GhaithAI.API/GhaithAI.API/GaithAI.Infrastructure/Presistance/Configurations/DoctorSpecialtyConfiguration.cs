@@ -11,7 +11,9 @@ namespace GhaithAI.GaithAI.Infrastructure.Presistance.Configurations
                 .HasForeignKey(ds => ds.DoctorId).OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(ds => ds.BaseSpecialty).WithMany(bs => bs.DoctorSpecialties) 
-                .HasForeignKey(ds => ds.SpecialtyId).OnDelete(DeleteBehavior.Restrict); 
+                .HasForeignKey(ds => ds.SpecialtyId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(ds => new { ds.DoctorId, ds.SpecialtyId }).IsUnique();
         }
     }
 }

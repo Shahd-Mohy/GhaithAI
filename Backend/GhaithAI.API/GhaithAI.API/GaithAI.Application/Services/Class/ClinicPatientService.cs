@@ -15,11 +15,11 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<DoctorClinicPatientListDto>> GetPatientsByClinicAsync(Guid clinicId , string? searchTerm,int pageNumber = 1,int pageSize = 10)
+        public async Task<IEnumerable<DoctorClinicPatientListDto>> GetPatientsByClinicAsync(Guid doctorId, string? searchTerm,int pageNumber = 1,int pageSize = 10)
         {
-            _logger.LogInformation("Fetching patients with Pagination & Search for Clinic ID: {ClinicId}", clinicId);
+            _logger.LogInformation("Fetching patients with Pagination & Search for Clinic ID: {ClinicId}", doctorId);
 
-            var query =  _unitOfWork.ClinicPatient.GetAllQueryableNoTracking().Where(p => p.ClinicId == clinicId);
+            var query =  _unitOfWork.ClinicPatient.GetAllQueryableNoTracking().Where(p => p.DoctorId == doctorId);
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -37,7 +37,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             return patients.Select(p => new DoctorClinicPatientListDto
             {
                 Id = p.Id,
-                ClinicId = p.ClinicId,
+                DoctorId = p.DoctorId,
                 PatientFullName = p.PatientFullName,
                 PatientPhone = p.PatientPhone
             });
@@ -57,7 +57,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             return new DoctorClinicPatientDetailsDto
             {
                 Id = patient.Id,
-                ClinicId = patient.ClinicId,
+                DoctorId = patient.DoctorId,
                 PatientFullName = patient.PatientFullName,
                 PatientPhone = patient.PatientPhone,
                 Notes = patient.Notes
@@ -73,18 +73,18 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 throw new ArgumentException("Patient name and phone are required.");
 
             var isDuplicate = await _unitOfWork.ClinicPatient.GetAllQueryableNoTracking()
-                .AnyAsync(p => p.ClinicId == dto.ClinicId && p.PatientPhone == trimmedPhone);
+                .AnyAsync(p => p.DoctorId == dto.DoctorId && p.PatientPhone == trimmedPhone);
 
             if (isDuplicate)
             {
-                _logger.LogWarning("Validation failed: Phone {Phone} already exists in clinic {ClinicId}", trimmedPhone, dto.ClinicId);
+                _logger.LogWarning("Validation failed: Phone {Phone} already exists in doctor {DoctorId}", trimmedPhone, dto.DoctorId);
                 throw new InvalidOperationException("A patient with this phone number already exists in this clinic.");
             }
 
             var patient = new ClinicPatient
             {
                 Id = Guid.NewGuid(),
-                ClinicId = dto.ClinicId,
+                DoctorId = dto.DoctorId,
                 PatientFullName = trimmedName,
                 PatientPhone = trimmedPhone,
                 Notes = dto.Notes?.Trim() ?? string.Empty
@@ -93,12 +93,12 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             await _unitOfWork.ClinicPatient.AddAsync(patient);
             await _unitOfWork.CompleteAsync();
 
-            _logger.LogInformation("Successfully created patient {PatientId} for clinic {ClinicId}", patient.Id, patient.ClinicId);
+            _logger.LogInformation("Successfully created patient {PatientId} for doctor {DoctorId}", patient.Id, patient.DoctorId);
 
             return new DoctorClinicPatientDetailsDto
             {
                 Id = patient.Id,
-                ClinicId = patient.ClinicId,
+                DoctorId = patient.DoctorId,
                 PatientFullName = patient.PatientFullName,
                 PatientPhone = patient.PatientPhone,
                 Notes = patient.Notes
@@ -114,10 +114,10 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             var trimmedPhone = dto.PatientPhone?.Trim();
 
             var isDuplicate = await _unitOfWork.ClinicPatient.GetAllQueryableNoTracking()
-                .AnyAsync(p => p.ClinicId == dto.ClinicId && p.PatientPhone == trimmedPhone && p.Id != dto.Id);
+                .AnyAsync(p => p.DoctorId == dto.DoctorId && p.PatientPhone == trimmedPhone && p.Id != dto.Id);
 
             if (isDuplicate)
-                throw new InvalidOperationException("Another patient with this phone number already exists in this clinic.");
+                throw new InvalidOperationException("Another patient with this phone number already exists in your records.");
 
             patient.PatientFullName = dto.PatientFullName?.Trim();
             patient.PatientPhone = trimmedPhone;
@@ -131,6 +131,9 @@ namespace GhaithAI.GaithAI.Application.Services.Class
         public async Task<string> DeleteAsync(Guid id)
         {
             if (id == Guid.Empty) throw new ArgumentException("Invalid patient ID.");
+
+            var patient = await _unitOfWork.ClinicPatient.GetByIdAsync(id);
+            if (patient == null) throw new KeyNotFoundException("Patient does not exist.");
 
             await _unitOfWork.ClinicPatient.DeleteAsync(id);
             await _unitOfWork.CompleteAsync();

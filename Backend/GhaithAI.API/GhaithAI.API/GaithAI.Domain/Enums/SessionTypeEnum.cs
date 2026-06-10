@@ -3,6 +3,7 @@ namespace GhaithAI.GaithAI.Domain.Enums
     public enum SessionType
     {
         Online,
-        Offline
+        Offline,
+        both
     }
 }

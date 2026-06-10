@@ -9,11 +9,13 @@ namespace GhaithAI.GaithAI.Infrastructure.Presistance.Configurations
             builder.Property(dr => dr.Rating).IsRequired();
             builder.Property(dr => dr.Comment).HasMaxLength(500).IsRequired(false);
 
-            builder.HasOne(dr => dr.Clinic).WithMany(c => c.Reviews)
-                .HasForeignKey(dr => dr.ClinicId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(dr => dr.Doctor).WithMany(c => c.Reviews)
+                .HasForeignKey(dr => dr.DoctorId).OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(dr => dr.Patient).WithMany()
+            builder.HasOne(dr => dr.Patient).WithMany(dr=> dr.DoctorReviews)
                 .HasForeignKey(dr => dr.PatientId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(dr => new { dr.PatientId, dr.DoctorId }).IsUnique();
 
         }
     }
