@@ -160,6 +160,74 @@ namespace GhaithAI.API.Services.Class
             };
         }
 
+        /// <inheritdoc/>
+        public async Task<AiMoodContextDto> GetLast7DaysMoodSummaryAsync(string userId)
+        {
+            var utcNow = DateTime.UtcNow;
+            var from7 = utcNow.AddDays(-7);
+            var from14 = utcNow.AddDays(-14);
+
+            var last7Logs = await _moodRepository.GetAllByUserIdAsync(userId, from7, utcNow);
+            var prev7Logs = await _moodRepository.GetAllByUserIdAsync(userId, from14, from7);
+
+            if (!last7Logs.Any())
+            {
+                return new AiMoodContextDto
+                {
+                    LoggedDaysCount = 0,
+                    AverageMoodScore = 0,
+                    AverageMoodLabel = "No data",
+                    MoodTrend = "Insufficient data",
+                    ChangeFromPreviousWeek = 0,
+                    DominantEmotion = "None",
+                    DominantEmotionCount = 0,
+                    EmotionPattern = new(),
+                    StreakDays = 0
+                };
+            }
+
+            var loggedDays = last7Logs.Select(l => ToEgyptDate(l.LoggedAt)).Distinct().Count();
+            var last7Avg = Math.Round((decimal)last7Logs.Average(l => l.MoodScore), 1);
+            var prev7Avg = prev7Logs.Any() ? Math.Round((decimal)prev7Logs.Average(l => l.MoodScore), 1) : last7Avg;
+
+            var change = Math.Round(last7Avg - prev7Avg, 1);
+
+            var trend = change switch
+            {
+                > 0.5m => "Improving",
+                < -0.5m => "Declining",
+                _ => "Stable"
+            };
+
+            var validEmotions = new HashSet<string>(EmotionTypes.ValidEmotions, StringComparer.OrdinalIgnoreCase);
+
+            var emotionGroups = last7Logs
+                .Where(l => !string.IsNullOrWhiteSpace(l.EmotionTags))
+                .SelectMany(l => EmotionTypes.Parse(l.EmotionTags))
+                .Where(t => validEmotions.Contains(t))
+                .GroupBy(t => t, StringComparer.OrdinalIgnoreCase)
+                .OrderByDescending(g => g.Count())
+                .ToList();
+
+            var dominantGroup = emotionGroups.FirstOrDefault();
+            var emotionPattern = emotionGroups.Select(g => g.Key).Take(5).ToList();
+
+            var streak = CalculateStreak(last7Logs);
+
+            return new AiMoodContextDto
+            {
+                LoggedDaysCount = loggedDays,
+                AverageMoodScore = last7Avg,
+                AverageMoodLabel = MoodTypes.GetLabel((int)Math.Round(last7Avg)),
+                MoodTrend = trend,
+                ChangeFromPreviousWeek = change,
+                DominantEmotion = dominantGroup?.Key ?? "None",
+                DominantEmotionCount = dominantGroup?.Count() ?? 0,
+                EmotionPattern = emotionPattern,
+                StreakDays = streak
+            };
+        }
+
         // GET /api/mood/{id}
         public async Task<MoodHistoryDTO?> GetByIdAsync(string userId, Guid moodLogId)
         {

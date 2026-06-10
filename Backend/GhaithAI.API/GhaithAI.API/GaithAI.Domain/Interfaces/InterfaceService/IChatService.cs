@@ -40,6 +40,12 @@ namespace GhaithAI.API.Services.Interfaces
         Task<SendMessageResponseDTO> SendMessageAsync(string userId, UserChatRequestDto dto);
 
         /// <summary>
+        /// Updates the title of a session owned by the user.
+        /// Returns the updated SessionDTO.
+        /// </summary>
+        Task<SessionDTO> UpdateSessionTitleAsync(string userId, Guid sessionId, string newTitle);
+
+        /// <summary>
         /// Soft-deletes a session (marks IsDeleted = true via EF Core interceptor).
         /// Validates ownership before deletion.
         /// </summary>

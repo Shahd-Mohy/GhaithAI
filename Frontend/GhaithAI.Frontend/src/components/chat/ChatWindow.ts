@@ -8,7 +8,8 @@ import {
   ChangeDetectionStrategy,
   ViewChild,
   ElementRef,
-  AfterViewChecked,
+  AfterViewInit,
+  OnDestroy,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -37,10 +38,10 @@ const NEAR_BOTTOM_THRESHOLD = 120;
     .scroll-area {
       flex: 1 1 0%;
       overflow-y: scroll; /* Force track to prevent layout width shift blink */
-      scroll-behavior: smooth;
+      overflow-anchor: none;
       transform: translateZ(0); /* Hardware acceleration */
       min-height: 0;
-      padding: 1rem 1rem 160px 1rem; /* Extra padding at bottom for floating input */
+      padding: 1rem 1rem 0 1rem;
       scrollbar-width: thin;
       scrollbar-color: rgba(13, 148, 136, 0.2) transparent;
     }
@@ -61,7 +62,7 @@ const NEAR_BOTTOM_THRESHOLD = 120;
     }
 
     @media (min-width: 768px) {
-      .scroll-area { padding: 1.5rem 1.5rem 160px 1.5rem; }
+      .scroll-area { padding: 1.5rem 1.5rem 0 1.5rem; }
     }
 
     /* ── Message spacing ─────────────────────────────────────── */
@@ -232,7 +233,7 @@ const NEAR_BOTTOM_THRESHOLD = 120;
   template: `
     <!-- ── Scrollable Messages Area ─────────────────────────── -->
     <div #scrollContainer class="scroll-area" (scroll)="onScroll()">
-      <div class="message-list">
+      <div #messageList class="message-list">
 
         <!-- Loading Skeletons -->
         @if (isLoading) {
@@ -258,15 +259,17 @@ const NEAR_BOTTOM_THRESHOLD = 120;
           @for (msg of messages; track msg.id) {
             <app-chat-message
               [message]="msg"
-              (retryMessage)="retryMessage.emit($event)" />
+              (retryMessage)="retryMessage.emit($event)"
+              (streamingStarted)="isAnyMessageStreaming.set(true)"
+              (streamingFinished)="isAnyMessageStreaming.set(false)" />
           }
 
           <!-- Typing indicator -->
-          <app-typing-indicator [visible]="isAiTyping" />
+          <app-typing-indicator [visible]="isAiTyping && !isAnyMessageStreaming()" />
         }
 
-        <!-- Bottom scroll anchor -->
-        <div style="height: 8px;"></div>
+        <!-- Physical spacer — replaces CSS bottom padding to give scrollHeight stable geometry -->
+        <div class="bottom-spacer" style="height: 160px; flex-shrink: 0; pointer-events: none;"></div>
       </div>
     </div>
 
@@ -310,7 +313,7 @@ const NEAR_BOTTOM_THRESHOLD = 120;
     }
   `,
 })
-export class ChatWindow implements AfterViewChecked {
+export class ChatWindow implements AfterViewInit, OnDestroy {
   @Input() messages: ChatMessageModel[]  = [];
   @Input() isAiTyping: boolean           = false;
   @Input() isLoading: boolean            = false;
@@ -321,13 +324,28 @@ export class ChatWindow implements AfterViewChecked {
   @Output() retryMessage   = new EventEmitter<ChatMessageModel>();
 
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('messageList')     private messageList!: ElementRef<HTMLDivElement>;
+
+  readonly isAnyMessageStreaming = signal<boolean>(false);
 
   private readonly shouldAutoScroll = signal<boolean>(true);
+  private resizeObserver: ResizeObserver | null = null;
 
-  ngAfterViewChecked(): void {
-    if (this.shouldAutoScroll()) {
-      this.scrollToBottom();
+  ngAfterViewInit(): void {
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.shouldAutoScroll()) {
+        this.scrollToBottom();
+      }
+    });
+
+    if (this.messageList?.nativeElement) {
+      this.resizeObserver.observe(this.messageList.nativeElement);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
   }
 
   onScroll(): void {
@@ -341,11 +359,8 @@ export class ChatWindow implements AfterViewChecked {
   }
 
   private scrollToBottom(): void {
-    try {
-      const el = this.scrollContainer.nativeElement;
-      el.scrollTop = el.scrollHeight;
-    } catch {
-      // noop
-    }
+    if (!this.scrollContainer?.nativeElement) return;
+    const el = this.scrollContainer.nativeElement;
+    el.scrollTop = el.scrollHeight;
   }
 }

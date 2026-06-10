@@ -20,7 +20,6 @@ namespace GhaithAI.API.GaithAI.API.Hubs
             _logger = logger;
         }
 
-
         private string UserId =>
             Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? throw new HubException("Unauthorized: User ID not found in token.");
@@ -50,24 +49,29 @@ namespace GhaithAI.API.GaithAI.API.Hubs
 
         /// <summary>
         /// Client calls this to send a message.
-        /// Flow: SaveUserMsg → CallLangflow → SaveAIMsg → (SaveRiskEvent) → Push to client.
+        /// Flow: AiTyping(true) → SaveUserMsg → CallLangflow → SaveAIMsg → (SaveRiskEvent)
+        ///       → ReceiveMessage → AiTyping(false).
+        ///
+        /// AiTyping(false) is guaranteed to fire via the finally block even on exception,
+        /// so the client typing indicator can never get permanently stuck.
         /// </summary>
         public async Task SendMessage(UserChatRequestDto dto)
         {
+            var typingStarted = false;
+
             try
             {
-                // Show typing indicator while AI is processing
+                // ── 1. Signal typing start
                 await Clients.Caller.SendAsync("AiTyping", true);
+                typingStarted = true;
 
+                // ── 2. Process message (DB + Langflow — side-effects inside ChatService)
                 var result = await _chatService.SendMessageAsync(UserId, dto);
 
-                // Hide typing indicator
-                await Clients.Caller.SendAsync("AiTyping", false);
-
-                // Push AI message to client
+                // ── 3. Push AI message BEFORE hiding the typing indicator
                 await Clients.Caller.SendAsync("ReceiveMessage", result.AiMessage);
 
-                // Push risk alert if detected
+                // ── 4. Push risk alert if detected
                 if (result.IsRiskDetected && result.RiskDetails is not null)
                 {
                     await Clients.Caller.SendAsync("RiskAlert", new
@@ -84,14 +88,30 @@ namespace GhaithAI.API.GaithAI.API.Hubs
                 _logger.LogError(ex,
                     "Error in SendMessage for user {UserId}", UserId);
 
-                await Clients.Caller.SendAsync("AiTyping", false);
-
                 if (ex is UserAccountSuspendedException || ex is AiConsentRequiredException)
                 {
                     throw new HubException($"Failed to process message: {ex.Message}");
                 }
 
                 throw new HubException("An error occurred while processing your message. Please try again later.");
+            }
+            finally
+            {
+                // Always attempt to hide typing indicator if it was started.
+                if (typingStarted)
+                {
+                    try
+                    {
+                        await Clients.Caller.SendAsync("AiTyping", false);
+                    }
+                    catch (Exception finallyEx)
+                    {
+                        // Connection may have dropped — log and swallow to avoid throwing from finally.
+                        _logger.LogWarning(finallyEx,
+                            "Failed to send AiTyping(false) in finally block for user {UserId}. Client connection may have dropped.",
+                            UserId);
+                    }
+                }
             }
         }
 
@@ -145,5 +165,34 @@ namespace GhaithAI.API.GaithAI.API.Hubs
             }
         }
 
+        /// <summary>
+        /// Client calls this to update the session title via SignalR.
+        /// </summary>
+        public async Task UpdateSessionTitle(string sessionId, string title)
+        {
+            try
+            {
+                if (!Guid.TryParse(sessionId, out var parsedId))
+                    throw new HubException("Invalid session ID format.");
+
+                if (string.IsNullOrWhiteSpace(title))
+                    throw new HubException("Title cannot be empty.");
+
+                var updated = await _chatService.UpdateSessionTitleAsync(UserId, parsedId, title);
+
+                // Notify the caller that update succeeded and broadcast to all user's connections
+                await Clients.Caller.SendAsync("SessionTitleUpdated", updated);
+                await Clients.User(UserId).SendAsync("SessionTitleUpdated", updated);
+            }
+            catch (HubException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating session title for user {UserId}", UserId);
+                throw new HubException("An error occurred while updating the session title. Please try again later.");
+            }
+        }
     }
 }

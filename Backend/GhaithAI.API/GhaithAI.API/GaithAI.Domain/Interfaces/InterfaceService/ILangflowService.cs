@@ -22,12 +22,9 @@ namespace GhaithAI.API.Services.Interfaces
 {
     public interface ILangflowService
     {
-        Task<string> SendMessageAsync(
-            string userMessage,
-            string sessionId);
-
         Task<GhaithFinalResultDto> ProcessUserMessageAsync(
             Guid sessionId,
-            string userMessage);
+            string userMessage,
+            AiContextPackageDto contextPackage);
     }
 }

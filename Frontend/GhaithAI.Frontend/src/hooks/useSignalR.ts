@@ -97,7 +97,14 @@ export class SignalRService {
     // 1. AI typing indicator — show/hide animated dots
     this.hub.on('AiTyping', (isTyping: boolean) => {
       try {
-        this.ngZone.run(() => this.chatStore.isAiTyping.set(isTyping));
+        this.ngZone.run(() => {
+          this.chatStore.isAiTyping.set(isTyping);
+          if (!isTyping) {
+            // Backend confirmed typing stopped — also clear the watchdog
+            this.chatStore.clearTypingWatchdog();
+            this.chatStore.typingBufferActive.set(false);
+          }
+        });
       } catch (err) {
         console.error('[SignalR] AiTyping handler error:', err);
       }
@@ -149,6 +156,17 @@ export class SignalRService {
         });
       } catch (err) {
         console.error('[SignalR] SessionEnded handler error:', err);
+      }
+    });
+
+    // 6. Session title updated by another client / server-side rename
+    this.hub.on('SessionTitleUpdated', (updatedSession: SessionModel) => {
+      try {
+        this.ngZone.run(() => {
+          this.chatStore.updateSessionTitle(updatedSession.id, updatedSession.title ?? '');
+        });
+      } catch (err) {
+        console.error('[SignalR] SessionTitleUpdated handler error:', err);
       }
     });
   }

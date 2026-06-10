@@ -23,6 +23,10 @@ export class ChatStore {
   readonly isLoadingHistory   = signal<boolean>(false);
   readonly isLoadingSessions  = signal<boolean>(false);
   readonly isSendingMessage   = signal<boolean>(false);
+  readonly sessionsPage       = signal<number>(1);
+  readonly sessionsTotalCount = signal<number>(0);
+  readonly sessionsHasNext    = signal<boolean>(false);
+  readonly isLoadingMoreSessions = signal<boolean>(false);
 
   // ── Computed Signals ─────────────────────────────────────────────────────────
   readonly hasActiveSession = computed(() => this.activeSession() !== null);
@@ -91,6 +95,10 @@ export class ChatStore {
     this.sessions.set(sessions);
   }
 
+  appendSessions(newItems: SessionModel[]): void {
+    this.sessions.update(existing => [...existing, ...newItems]);
+  }
+
   /** Update a single session inside the sessions list (e.g. after session ends). */
   updateSessionInList(updated: SessionModel): void {
     this.sessions.update(list =>
@@ -106,6 +114,18 @@ export class ChatStore {
     }
   }
 
+  /** Patch only the title of a session in the list. */
+  updateSessionTitle(sessionId: string, newTitle: string): void {
+    this.sessions.update(list =>
+      list.map(s => s.id === sessionId ? { ...s, title: newTitle } : s)
+    );
+    // Also patch the active session if it is the same one
+    if (this.activeSession()?.id === sessionId) {
+      const current = this.activeSession();
+      if (current) this.activeSession.set({ ...current, title: newTitle });
+    }
+  }
+
   /** Store a risk alert and flag risk as detected. */
   setRiskAlert(payload: RiskAlertPayload): void {
     this.isRiskDetected.set(true);
@@ -118,8 +138,36 @@ export class ChatStore {
     this.riskDetails.set(null);
   }
 
+  /** Set sending message state. */
+  setSendingMessage(val: boolean): void {
+    this.isSendingMessage.set(val);
+  }
+
+  private typingTimeoutRef: ReturnType<typeof setTimeout> | null = null;
+
+  /** Starts a 30-second watchdog. If no AI response arrives, auto-clears typing state. */
+  startTypingWatchdog(): void {
+    this.clearTypingWatchdog();
+    this.typingTimeoutRef = setTimeout(() => {
+      if (this.isAiTyping()) {
+        console.warn('[ChatStore] Typing watchdog fired — no AI response in 30s. Resetting typing state.');
+        this.isAiTyping.set(false);
+        this.typingBufferActive.set(false);
+      }
+    }, 30_000);
+  }
+
+  /** Cancels the watchdog timer (call after AI message arrives). */
+  clearTypingWatchdog(): void {
+    if (this.typingTimeoutRef !== null) {
+      clearTimeout(this.typingTimeoutRef);
+      this.typingTimeoutRef = null;
+    }
+  }
+
   /** Full reset — called on logout or session cleanup. */
   reset(): void {
+    this.clearTypingWatchdog();
     this.activeSession.set(null);
     this.messages.set([]);
     this.sessions.set([]);
@@ -131,5 +179,9 @@ export class ChatStore {
     this.isLoadingHistory.set(false);
     this.isLoadingSessions.set(false);
     this.isSendingMessage.set(false);
+    this.sessionsPage.set(1);
+    this.sessionsTotalCount.set(0);
+    this.sessionsHasNext.set(false);
+    this.isLoadingMoreSessions.set(false);
   }
 }

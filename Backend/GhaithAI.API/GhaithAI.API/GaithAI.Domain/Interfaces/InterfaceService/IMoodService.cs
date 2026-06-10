@@ -23,5 +23,11 @@ namespace GhaithAI.API.Services.Interfaces
         Task<bool> UpdateAsync(string userId, Guid moodLogId, UpdateMoodLogDTO dto);
 
         Task<byte[]> ExportCsvAsync(string userId);
+
+        /// <summary>
+        /// Returns a structured mood context summary for the last 7 days,
+        /// intended for injection into the AI context pipeline.
+        /// </summary>
+        Task<AiMoodContextDto> GetLast7DaysMoodSummaryAsync(string userId);
     }
 }

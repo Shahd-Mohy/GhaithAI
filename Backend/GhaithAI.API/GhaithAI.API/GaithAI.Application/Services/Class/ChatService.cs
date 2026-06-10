@@ -1,12 +1,7 @@
-﻿using AutoMapper;
-using GhaithAI.API.Constants;
+﻿using GhaithAI.API.Constants;
 using GhaithAI.API.DTOs.Chat;
-using GhaithAI.API.GaithAI.Application.DTOs.Chat;
 using GhaithAI.API.GaithAI.Domain.Exceptions;
-using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
-using GhaithAI.API.Models;
-using GhaithAI.API.Repositories.UnitWork;
-using GhaithAI.API.Services.Interfaces;
+using GhaithAI.API.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +13,8 @@ namespace GhaithAI.API.Services.Class
         private readonly ILangflowService _langflowService;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserService _userService;
+        private readonly IMoodService _moodService;
         private readonly ILogger<ChatService> _logger;
 
         public ChatService(
@@ -25,12 +22,16 @@ namespace GhaithAI.API.Services.Class
             ILangflowService langflowService,
             IMapper mapper,
             UserManager<ApplicationUser> userManager,
+            IUserService userService,
+            IMoodService moodService,
             ILogger<ChatService> logger)
         {
             _unitOfWork = unitOfWork;
             _langflowService = langflowService;
             _mapper = mapper;
             _userManager = userManager;
+            _userService = userService;
+            _moodService = moodService;
             _logger = logger;
         }
 
@@ -49,20 +50,23 @@ namespace GhaithAI.API.Services.Class
 
             // Phase 2: Single Active Session Constraint 
             // Query with tracking to automatically capture state changes for persistence
-            var activeSession = await _unitOfWork.Session
+            var activeSessions = await _unitOfWork.Session
                 .GetAllQueryableTracking()
-                .Where(s => s.UserId == userId && s.Status == SessionStatus.Active)
-                .FirstOrDefaultAsync();
+                .Where(s => s.UserId == userId && s.Status == SessionStatus.Active).ToListAsync();
+            //.FirstOrDefaultAsync();
 
-            if (activeSession is not null)
+            foreach (var activeSession in activeSessions)
             {
-                // Update state directly in memory
-                activeSession.Status = SessionStatus.Ended;
-                activeSession.EndedAt = DateTime.UtcNow;
+                if (activeSession is not null)
+                {
+                    // Update state directly in memory
+                    activeSession.Status = SessionStatus.Ended;
+                    activeSession.EndedAt = DateTime.UtcNow;
 
-                _logger.LogInformation(
-                    "Auto-closed previous active session {SessionId} for user {UserId}",
-                    activeSession.Id, userId);
+                    _logger.LogInformation(
+                        "Auto-closed previous active session {SessionId} for user {UserId}",
+                        activeSession.Id, userId);
+                }
             }
 
             // Phase 3: New Session Creation & Privacy Policy 
@@ -181,72 +185,146 @@ namespace GhaithAI.API.Services.Class
                 ?? throw new KeyNotFoundException("Session not found or access denied.");
 
             if (session.Status != SessionStatus.Active)
+            {
+                _logger.LogWarning(
+                    "Session {SessionId} is no longer active. User {UserId} attempted to send a message.",
+                    sessionId, userId);
+
                 throw new InvalidOperationException(
                     "This session has ended. Please start a new session.");
+            }
 
             _logger.LogInformation(
                 "Processing message for session {SessionId} by user {UserId}",
                 sessionId, userId);
 
-            // 3. Delegate to LangflowService for AI Processing
-            var langflowResult = await _langflowService
-                .ProcessUserMessageAsync(sessionId, dto.Message);
+            // ── 3. Fetch enriched AI context (conversation + user profile + mood)
+            var conversationHistory = await _unitOfWork.Session
+                .GetLast30MessagesFormattedAsync(sessionId);
 
-            // 4. Strategic In-Memory Mutation & Atomic Persistence 
+            var userProfile = await _userService.GetProfileAsync(userId);
+            var moodContext = await _moodService.GetLast7DaysMoodSummaryAsync(userId);
+
+            var contextPackage = new AiContextPackageDto
+            {
+                ConversationHistory = conversationHistory,
+                UserContext = new AiUserContextDto
+                {
+                    FullName = userProfile.FullName,
+                    PreferredLanguage = userProfile.PreferredLanguage,
+                    CountryCode = userProfile.CountryCode,
+                    MemoryEnabled = userProfile.MemoryEnabled
+                },
+                MoodContext = moodContext
+            };
+
+            // 4. Delegate to Langflow (pure HTTP — no DB side-effects)
+            var langflowResult = await _langflowService
+                .ProcessUserMessageAsync(sessionId, dto.Message, contextPackage);
+
+            // 5. Persist messages & risk (ChatService owns DB writes)
+            var nowUtc = DateTime.UtcNow;
+
+            var userMessageEntity = new ChatMessage
+            {
+                Id = Guid.NewGuid(),
+                SessionId = sessionId,
+                SenderType = SenderTypes.User,
+                Content = dto.Message,
+                CreatedAt = nowUtc
+            };
+
+            var aiMessageEntity = new ChatMessage
+            {
+                Id = Guid.NewGuid(),
+                SessionId = sessionId,
+                SenderType = SenderTypes.AI,
+                Content = langflowResult.AiResponse,
+                CreatedAt = nowUtc
+            };
+
+            await _unitOfWork.Message.AddAsync(userMessageEntity);
+            await _unitOfWork.Message.AddAsync(aiMessageEntity);
+
             if (langflowResult.IsRiskDetected && langflowResult.RiskDetails is not null)
             {
                 session.RiskLevel = langflowResult.RiskDetails.RiskType.ToLower();
 
-                _logger.LogWarning(
-                    "Risk detected in session {SessionId}: {RiskType} - updating RiskLevel",
-                    sessionId, langflowResult.RiskDetails.RiskType);
+                var riskEntity = _mapper.Map<RiskEvent>(langflowResult.RiskDetails);
+                riskEntity.SessionId = sessionId;
+                riskEntity.MessageId = userMessageEntity.Id;
 
-                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.Risk.AddAsync(riskEntity);
+
+                _logger.LogWarning(
+                    "Risk detected in session {SessionId}: {RiskType} — updating session risk level.",
+                    sessionId, langflowResult.RiskDetails.RiskType);
             }
 
-            // 5. Zero-Query In-Memory Response Construction
-            var nowUtc = DateTime.UtcNow;
-
-            var userMessageDto = new ChatMessageDTO
-            {
-                Id = Guid.NewGuid(),
-                SenderType = "User",
-                Content = dto.Message,
-                SentAt = nowUtc
-            };
-
-            var aiMessageDto = new ChatMessageDTO
-            {
-                Id = Guid.NewGuid(),
-                SenderType = "AI",
-                Content = langflowResult.AiResponse,
-                SentAt = nowUtc
-            };
+            // ── 6. Single atomic commit
+            await _unitOfWork.CompleteAsync();
 
             _logger.LogInformation(
-                "Message exchange completed for session {SessionId}",
-                sessionId);
+                "Message exchange persisted for session {SessionId}. UserMsgId={UserMsgId} AiMsgId={AiMsgId}",
+                sessionId, userMessageEntity.Id, aiMessageEntity.Id);
 
+            // ── 7. Return DTOs whose IDs match what was saved
             return new SendMessageResponseDTO
             {
-                UserMessage = userMessageDto,
-                AiMessage = aiMessageDto,
+                UserMessage = new ChatMessageDTO
+                {
+                    Id = userMessageEntity.Id,
+                    SenderType = SenderTypes.User,
+                    Content = userMessageEntity.Content,
+                    SentAt = nowUtc
+                },
+                AiMessage = new ChatMessageDTO
+                {
+                    Id = aiMessageEntity.Id,
+                    SenderType = SenderTypes.AI,
+                    Content = aiMessageEntity.Content,
+                    SentAt = nowUtc
+                },
                 IsRiskDetected = langflowResult.IsRiskDetected,
                 RiskDetails = langflowResult.RiskDetails
             };
         }
 
         /// <inheritdoc/>
-        public async Task<bool> DeleteSessionAsync(string userId, Guid sessionId)
+        public async Task<SessionDTO> UpdateSessionTitleAsync(string userId, Guid sessionId, string newTitle)
         {
-            // Ownership check first
-            if (!await _unitOfWork.Session.BelongsToUserAsync(sessionId, userId))
-                throw new KeyNotFoundException("Session not found.");
+            if (string.IsNullOrWhiteSpace(newTitle))
+                throw new ArgumentException("Title cannot be empty.");
+
+            var normalized = newTitle.Trim();
+
+            var updated = await _unitOfWork.Session.UpdateTitleAsync(sessionId, userId, normalized);
+
+            if (!updated)
+                throw new KeyNotFoundException("Session not found or access denied.");
+
+            _logger.LogInformation(
+                "Session {SessionId} title updated by user {UserId}",
+                sessionId, userId);
 
             var session = await _unitOfWork.Session
-                .GetAllQueryableTracking()
+                .GetAllQueryableNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId)
-                ?? throw new KeyNotFoundException("Session not found.");
+                ?? throw new KeyNotFoundException("Session not found after update.");
+
+            return _mapper.Map<SessionDTO>(session);
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeleteSessionAsync(string userId, Guid sessionId)
+        {
+            // Lightweight ownership check without loading the entity
+            var exists = await _unitOfWork.Session
+                .GetAllQueryableNoTracking()
+                .AnyAsync(s => s.Id == sessionId && s.UserId == userId);
+
+            if (!exists)
+                throw new KeyNotFoundException("Session not found or access denied.");
 
             // For soft delete entities (ISoftDelete), use DeleteAsync
             await _unitOfWork.Session.DeleteAsync(sessionId);

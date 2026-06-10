@@ -82,5 +82,18 @@ namespace GhaithAI.API.Repositories.Class
                 .AsNoTracking()
                 .AnyAsync(s => s.Id == sessionId && s.UserId == userId);
         }
+
+        /// <inheritdoc/>
+        public async Task<bool> UpdateTitleAsync(Guid sessionId, string userId, string newTitle)
+        {
+            // Perform a single-server-side update without loading the entity into memory.
+            var affected = await _dbSet
+                .Where(s => s.Id == sessionId && s.UserId == userId)
+                .ExecuteUpdateAsync(update => update
+                    .SetProperty(s => s.Title, _ => newTitle)
+                    .SetProperty(s => s.UpdatedAt, _ => DateTime.UtcNow));
+
+            return affected > 0;
+        }
     }
 }
