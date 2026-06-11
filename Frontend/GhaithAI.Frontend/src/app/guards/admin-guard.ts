@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { TokenService } from '../services/token';
 
-export const authGuard: CanActivateFn = () => {
+export const adminGuard: CanActivateFn = () => {
   const token = inject(TokenService);
   const router = inject(Router);
 
@@ -10,5 +10,11 @@ export const authGuard: CanActivateFn = () => {
     router.navigate(['/login']);
     return false;
   }
+
+  if (!token.isAdmin()) {
+    router.navigate(['/dashboard']);
+    return false;
+  }
+
   return true;
 };

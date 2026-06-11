@@ -6,6 +6,7 @@ using GhaithAI.API.GaithAI.Application.Helpers;
 using GhaithAI.API.Interfaces.InterfaceService;
 using GhaithAI.API.Seeders;
 using GhaithAI.API.Services;
+using GhaithAI.GaithAI.Infrastructure.Seeders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -126,6 +127,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAngular");
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
@@ -137,6 +139,20 @@ using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     await RoleSeeder.SeedAsync(roleManager);
+}
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager =
+        scope.ServiceProvider
+            .GetRequiredService<RoleManager<IdentityRole>>();
+
+    await RoleSeeder.SeedAsync(roleManager);
+
+    var userManager =
+        scope.ServiceProvider
+            .GetRequiredService<UserManager<ApplicationUser>>();
+
+    await AdminSeeder.SeedAsync(userManager);
 }
 
 app.Run();

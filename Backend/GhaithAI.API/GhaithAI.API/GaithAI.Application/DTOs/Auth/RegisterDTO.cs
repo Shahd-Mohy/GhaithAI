@@ -43,5 +43,7 @@ namespace GhaithAI.API.DTOs.Auth
         public bool HasTherapyHistory { get; set; }
 
         public bool TakesMedication { get; set; }
+
+        public Gender Gender { get; set; }
     }
 }

@@ -12,5 +12,8 @@ namespace GhaithAI.API.Services.Interfaces
             LoginDTO dto);
         Task<AuthResponseDTO> GoogleLoginAsync(
             GoogleLoginDTO dto);
+
+        Task<AuthResponseDTO> RegisterClinicianAsync(
+            RegisterClinicianDTO dto);
     }
 }

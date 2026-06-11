@@ -17,15 +17,18 @@ namespace GhaithAI.API.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             IConfiguration configuration,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IWebHostEnvironment env )
         {
             _userManager = userManager;
             _configuration = configuration;
             _context = context;
+            _env = env;
         }
 
         public async Task<AuthResponseDTO> RegisterAsync(RegisterDTO dto)
@@ -48,6 +51,8 @@ namespace GhaithAI.API.Services
                     PhoneNumber = dto.PhoneNumber,
                     CountryCode = dto.CountryCode,
                     PreferredLanguage = dto.PreferredLanguage,
+
+                    Gender = dto.Gender,
 
                     AcceptedTerms = dto.AcceptedTerms,
                     AcceptedPrivacyPolicy = dto.AcceptedPrivacyPolicy,
@@ -135,7 +140,8 @@ namespace GhaithAI.API.Services
                     Email = user.Email,
                     FullName = user.FullName,
                     ProfilePicture = user.ProfilePicture,
-                    Expiration = DateTime.UtcNow.AddDays(7)
+                    Expiration = DateTime.UtcNow.AddDays(7),
+                    Role = roles.FirstOrDefault() ?? "User"
                 };
             }
             catch
@@ -156,24 +162,57 @@ namespace GhaithAI.API.Services
 
         public async Task<AuthResponseDTO> LoginAsync(LoginDTO dto)
         {
-            var user = await _userManager.FindByEmailAsync(dto.Email);
+            var user = await _context.Users
+                .Include(x => x.DoctorsProfile)
+                .FirstOrDefaultAsync(x => x.Email == dto.Email);
 
             if (user == null)
                 throw new Exception("Invalid Email");
 
-            if (user.IsGoogleAccount && string.IsNullOrEmpty(user.PasswordHash))
-                throw new Exception("This account uses Google Sign-In. Please login with Google.");
+            if (user.DoctorsProfile != null)
+            {
+                if (user.DoctorsProfile.ApprovalStatus ==
+                    ApprovalStatus.Pending)
+                {
+                    throw new Exception(
+                        "Your account is pending approval.");
+                }
 
-            var valid = await _userManager.CheckPasswordAsync(user, dto.Password);
+                if (user.DoctorsProfile.ApprovalStatus ==
+                    ApprovalStatus.Rejected)
+                {
+                    throw new Exception(
+                        $"Your account was rejected. Reason: {user.DoctorsProfile.RejectionReason}");
+                }
+            }
+
+            if (user.IsGoogleAccount &&
+                string.IsNullOrEmpty(user.PasswordHash))
+            {
+                throw new Exception(
+                    "This account uses Google Sign-In. Please login with Google.");
+            }
+
+            var valid =
+                await _userManager.CheckPasswordAsync(
+                    user,
+                    dto.Password);
 
             if (!valid)
                 throw new Exception("Invalid Password");
 
             user.LastLoginAt = DateTime.UtcNow;
+
             await _userManager.UpdateAsync(user);
 
-            var roles = await _userManager.GetRolesAsync(user);
-            var token = JWTTokenHelper.GenerateToken(user, _configuration, roles);
+            var roles =
+                await _userManager.GetRolesAsync(user);
+
+            var token =
+                JWTTokenHelper.GenerateToken(
+                    user,
+                    _configuration,
+                    roles);
 
             return new AuthResponseDTO
             {
@@ -181,7 +220,8 @@ namespace GhaithAI.API.Services
                 Email = user.Email,
                 FullName = user.FullName,
                 ProfilePicture = user.ProfilePicture,
-                Expiration = DateTime.UtcNow.AddDays(7)
+                Expiration = DateTime.UtcNow.AddDays(7),
+                Role = roles.FirstOrDefault() ?? "User"
             };
         }
 
@@ -245,8 +285,142 @@ namespace GhaithAI.API.Services
                 Email = user.Email,
                 FullName = user.FullName,
                 ProfilePicture = user.ProfilePicture,
-                Expiration = DateTime.UtcNow.AddDays(7)
+                Expiration = DateTime.UtcNow.AddDays(7),
+                Role = roles.FirstOrDefault() ?? "User"
             };
+        }
+
+        public async Task<AuthResponseDTO> RegisterClinicianAsync(
+    RegisterClinicianDTO dto)
+        {
+            var exists =
+                await _userManager.FindByEmailAsync(dto.Email);
+
+            if (exists != null)
+                throw new Exception("Email already exists");
+
+            string pdfPath = "";
+
+            if (dto.DocumentsPdf != null)
+            {
+                var fileName =
+                    FileUploadHelper.GenerateFileName(
+                        dto.DocumentsPdf.FileName);
+
+                var uploadFolder =
+                    Path.Combine(
+                        _env.WebRootPath,
+                        "uploads",
+                        "doctors");
+
+                if (!Directory.Exists(uploadFolder))
+                {
+                    Directory.CreateDirectory(uploadFolder);
+                }
+
+                var filePath =
+                    Path.Combine(
+                        uploadFolder,
+                        fileName);
+
+                using var stream =
+                    new FileStream(
+                        filePath,
+                        FileMode.Create);
+
+                await dto.DocumentsPdf.CopyToAsync(stream);
+
+                pdfPath =
+                    $"/uploads/doctors/{fileName}";
+            }
+
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var user = new ApplicationUser
+                {
+                    FullName = dto.FullName,
+                    Email = dto.Email,
+                    UserName = dto.Email,
+                    PhoneNumber = dto.PhoneNumber,
+                    CountryCode = dto.CountryCode,
+                    PreferredLanguage = dto.PreferredLanguage,
+                    Gender = dto.Gender,
+                    IsActive = false
+                };
+
+                var result =
+                    await _userManager.CreateAsync(
+                        user,
+                        dto.Password);
+
+                if (!result.Succeeded)
+                    throw new Exception(
+                        result.Errors.First().Description);
+
+                var roleResult =
+                    await _userManager.AddToRoleAsync(
+                        user,
+                        Roles.Clinician);
+
+                if (!roleResult.Succeeded)
+                    throw new Exception(
+                        roleResult.Errors.First().Description);
+
+                var doctor = new DoctorsProfile
+                {
+                    FullName = dto.FullName,
+                    UserId = user.Id,
+
+                    DoctorType = dto.DoctorType,
+
+                    Specialization =
+                        dto.Specialization,
+
+                    Bio = dto.Bio,
+
+                    YearsOfExperience =
+                        dto.YearsOfExperience,
+
+                    DocumentsPdfUrl =
+                        pdfPath,
+
+                    ApprovalStatus =
+                        ApprovalStatus.Pending
+                };
+
+                await _context.DoctorsProfiles
+                    .AddAsync(doctor);
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                return new AuthResponseDTO
+                {
+                    Email = user.Email,
+                    FullName = user.FullName,
+                    ProfilePicture = user.ProfilePicture,
+                    Token = "",
+                    Expiration = DateTime.UtcNow
+                };
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+
+                var createdUser =
+                    await _userManager.FindByEmailAsync(dto.Email);
+
+                if (createdUser != null)
+                {
+                    await _userManager.DeleteAsync(createdUser);
+                }
+
+                throw;
+            }
         }
     }
 }
