@@ -24,9 +24,9 @@ export interface DoctorProfile {
 @Injectable({ providedIn: 'root' })
 export class AdminService {
 
-  private readonly baseUrl = `${environment.apiUrl}/api/admin`;
+  private readonly baseUrl = `${environment.apiUrl}/admin`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getPendingDoctors(): Observable<DoctorProfile[]> {
     return this.http.get<DoctorProfile[]>(`${this.baseUrl}/doctors/pending`);

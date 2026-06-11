@@ -12,13 +12,6 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./auth/pages/login/login').then(m => m.LoginComponent)
   },
-  //   {
-  //   path: 'admin',
-  //   canActivate: [adminGuard],
-  //   loadComponent: () =>
-  //     import('./auth/pages/admin-dashboard/admin-dashboard')
-  //       .then(m => m.AdminDashboardComponent)
-  // },
   {
     path: 'admin',
     canActivate: [adminGuard],
@@ -29,6 +22,11 @@ export const routes: Routes = [
         path: 'self-help',
         loadComponent: () => import('./features/AdminSelfHelp/components/self-help-dashboard/self-help-dashboard')
           .then(m => m.SelfHelpDashboardComponent)
+      },
+      {
+        path: 'dashboard-home',
+        loadComponent: () => import('./features/admin-dashboard-home/admin-dashboard-home')
+          .then(m => m.AdminDashboardHome)
       }
     ]
   },
