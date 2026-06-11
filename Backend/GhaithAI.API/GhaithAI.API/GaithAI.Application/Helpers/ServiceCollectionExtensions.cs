@@ -30,6 +30,7 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IBaseSpecialtyRepository, BaseSpecialtyRepository>();
             services.AddScoped<IBaseLanguageRepository, BaseLanguageRepository>();
             services.AddScoped<IClinicPatientRepository , ClinicPatientRepository>();
+            services.AddScoped<IExerciseTipsRepository, ExerciseTipsRepository>();
             return services;
         }
 

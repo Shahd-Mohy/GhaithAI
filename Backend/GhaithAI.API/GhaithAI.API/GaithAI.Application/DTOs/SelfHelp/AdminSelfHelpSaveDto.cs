@@ -22,5 +22,12 @@ namespace GhaithAI.API.GaithAI.Application.DTOs.SelfHelp
         public string DifficultyLevel { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        public List<CreateExerciseTipDto> ExerciseTips { get; set; } = new();
+    }
+    public class CreateExerciseTipDto
+    {
+        [Required]
+        public string Text { get; set; }
     }
 }

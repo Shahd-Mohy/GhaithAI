@@ -13,6 +13,7 @@ namespace GhaithAI.API.Repositories.UnitWork
         private IBaseLanguageRepository _baseLanguage;
         private IClinicPatientRepository _clinicPatient;
         private IDoctorProfileRepository _doctorProfile;
+        private IExerciseTipsRepository _exerciseTips;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -33,6 +34,7 @@ namespace GhaithAI.API.Repositories.UnitWork
         public IClinicPatientRepository ClinicPatient => _clinicPatient ??= new ClinicPatientRepository(_context);
         public IDoctorProfileRepository DoctorProfile => _doctorProfile ??= new DoctorProfileRepository(_context);
 
+        public IExerciseTipsRepository ExerciseTips => _exerciseTips ??= new ExerciseTipsRepository(_context);
         public async Task<int> CompleteAsync()
         {
             try

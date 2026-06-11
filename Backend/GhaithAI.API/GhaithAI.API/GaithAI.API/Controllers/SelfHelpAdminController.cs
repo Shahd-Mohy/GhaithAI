@@ -1,10 +1,13 @@
 
+using GhaithAI.GaithAI.Application.DTOs.SelfHelp;
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace GhaithAI.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class SelfHelpAdminController : ControllerBase
     {
         private readonly ISelfHelpAdminService _adminService;
@@ -15,7 +18,7 @@ namespace GhaithAI.API.Controllers
             _adminService = adminService ?? throw new ArgumentNullException(nameof(adminService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-        [HttpGet]
+        [HttpGet("Get_All")]
         public async Task<IActionResult> GetAll()
         {
             try
@@ -30,8 +33,8 @@ namespace GhaithAI.API.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        [HttpGet("Get_Content_Details/{id:guid}")]
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
             if (id == Guid.Empty)
             {
@@ -53,19 +56,20 @@ namespace GhaithAI.API.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("Create_SelfHelp_Content")]
         public async Task<IActionResult> Create([FromBody] AdminSelfHelpSaveDto dto)
         {
             if (!ModelState.IsValid)
             {
                 _logger.LogWarning("Admin Controller: Invalid Model State submitted for creation.");
-                return BadRequest(ModelState); 
+                return BadRequest(ModelState);
             }
 
             if (dto == null)
                 return BadRequest(new { message = "Payload configuration error. Content body cannot be null." });
 
-            string currentAdminId = GetCurrentAdminId();
+            string currentAdminId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                                    ?? GetCurrentAdminId();
 
             if (string.IsNullOrWhiteSpace(currentAdminId))
             {
@@ -84,60 +88,41 @@ namespace GhaithAI.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
             }
         }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] AdminSelfHelpSaveDto dto)
+        [HttpPut("Update_SelfHelp_Content")]
+        public async Task<IActionResult> Update([FromBody] AdminSelfHelpUpdateDto dto)
         {
-            if (id == Guid.Empty)
-                return BadRequest(new { message = "Invalid resource identifier. Target ID cannot be empty." });
-
-            if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("Admin Controller: Invalid Model State submitted for updating ID: {Id}", id);
-                return BadRequest(ModelState);
-            }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             string currentAdminId = GetCurrentAdminId();
-
-            if (string.IsNullOrWhiteSpace(currentAdminId))
-                return Unauthorized(new { message = "Action denied. Valid Admin credentials required." });
+            if (string.IsNullOrWhiteSpace(currentAdminId)) return Unauthorized();
 
             try
             {
-                var result = await _adminService.UpdateContentAsync(id, dto, currentAdminId);
-                if (result == null)
-                    return NotFound(new { message = "No active content matches this ID, or the record has been locked/deleted." });
-
-                return Ok(result);
+                var result = await _adminService.UpdateContentAsync(dto, currentAdminId);
+                return Ok(new { success = result, message = "Content and associated tips updated successfully." });
             }
             catch (ApplicationException ex)
             {
-                _logger.LogError(ex, "Admin Controller: Exception thrown during updating content ID: {Id} by Admin: {AdminId}", id, currentAdminId);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
             }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+
+        [HttpDelete("Delete_SelfHelp_Content/{id:guid}")]
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            if (id == Guid.Empty)
-                return BadRequest(new { message = "Invalid resource identifier for deletion." });
+            if (id == Guid.Empty) return BadRequest(new { message = "Invalid ID." });
 
             string currentAdminId = GetCurrentAdminId();
-            if (string.IsNullOrWhiteSpace(currentAdminId))
-                return Unauthorized(new { message = "Action denied. Valid Admin credentials required." });
+            if (string.IsNullOrWhiteSpace(currentAdminId)) return Unauthorized();
 
             try
             {
-                var isDeleted = await _adminService.SoftDeleteContentAsync(id, currentAdminId);
-                if (!isDeleted)
-                    return NotFound(new { message = "The target content does not exist or has already been soft-deleted." });
-
-                return Ok(new { message = "The content has been successfully soft-deleted from active records." });
+                var result = await _adminService.DeleteContentAsync(id, currentAdminId);
+                return Ok(new { success = result, message = "Content marked as deleted successfully." });
             }
             catch (ApplicationException ex)
             {
-                _logger.LogError(ex, "Admin Controller: Soft delete transaction failed for content ID: {Id}", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
             }
         }

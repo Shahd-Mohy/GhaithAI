@@ -148,7 +148,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 throw new InvalidOperationException("Cannot delete this specialty because it is currently linked to active doctors in the system.");
             }
 
-            await _unitOfWork.BaseSpecialty.DeleteAsync(specialty);
+            await _unitOfWork.BaseSpecialty.DeleteAsync(specialty.Id);
             await _unitOfWork.CompleteAsync();
 
             _logger.LogInformation("Successfully deleted specialty with ID: {SpecialtyId}", id);

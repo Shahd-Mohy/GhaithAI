@@ -4,10 +4,10 @@ namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
 {
     public interface IClinicPatientService
     {
-        Task<IEnumerable<DoctorClinicPatientListDto>> GetPatientsByClinicAsync(Guid doctorId, string? searchTerm, int pageNumber = 1, int pageSize = 10);
-        Task<DoctorClinicPatientDetailsDto> GetByIdAsync(Guid id);
-        Task<DoctorClinicPatientDetailsDto> CreateAsync(CreateClinicPatientDto dto);
-        Task<bool> UpdateAsync(UpdateClinicPatientDto dto);
-        Task<string> DeleteAsync(Guid id);
+        Task<IEnumerable<DoctorClinicPatientListDto>> GetPatientsByClinicAsync(string userId, string? searchTerm, int pageNumber = 1, int pageSize = 10);
+        Task<DoctorClinicPatientDetailsDto> GetByIdAsync(Guid id , string userId);
+        Task<DoctorClinicPatientDetailsDto> CreateAsync(CreateClinicPatientDto dto ,string userId);
+        Task<bool> UpdateAsync(UpdateClinicPatientDto dto , string userId);
+        Task<string> DeleteAsync(Guid id , string userId);
     }
 }

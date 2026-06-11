@@ -8,9 +8,17 @@ namespace GhaithAI.API.GaithAI.Application.Mapping.SelfHelpMapper
     {
         public SelfHelpMappingProfile()
         {
+            CreateMap<SelfHelpContent, AdminSelfHelpGetAllDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
+
+
+
+            CreateMap<SelfHelpContent, AdminSelfHelpDetailsDTO>();
+            CreateMap<ExerciseTip, ExerciseTipDto>();
+
             CreateMap<AdminSelfHelpSaveDto, SelfHelpContent>();
-            CreateMap<SelfHelpContent, AdminSelfHelpResponseDto>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
+            CreateMap<CreateExerciseTipDto, ExerciseTip>();
+
 
             CreateMap<SelfHelpContent, UserSelfHelpResponseDto>();
             CreateMap<SelfHelpContent, UserSelfHelpDetailsResponseDto>()

@@ -79,7 +79,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             await _unitOfWork.BaseLanguage.AddAsync(language);
             await _unitOfWork.CompleteAsync();
 
-            _logger.LogInformation("Successfully created language '{LanguageName}' with Code: {LanguageId}", trimmedName);
+            _logger.LogInformation("Successfully created language '{LanguageName}' ", trimmedName);
 
             return new LanguageDetailsDto
             {
@@ -143,7 +143,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 throw new InvalidOperationException("Cannot delete this language because it is currently linked to active doctors in the system.");
             }
 
-            await _unitOfWork.BaseLanguage.DeleteAsync(language);
+            await _unitOfWork.BaseLanguage.DeleteAsync(language.Id);
             await _unitOfWork.CompleteAsync();
 
             _logger.LogInformation("Successfully deleted language Code: {LanguageId}", id);
