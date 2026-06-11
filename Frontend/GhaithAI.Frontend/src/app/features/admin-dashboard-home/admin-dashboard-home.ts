@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardStats } from './Services/dashboard-stats';
@@ -7,18 +7,19 @@ import { Specialties } from './Services/specialties';
 import { AdminDashboardStatsDto } from './interfaces/dashboard-stats.interface';
 import { CreateSpecialtyDto, SpecialtyListDto } from './interfaces/specialty.interface';
 import { CreateLanguageDto, LanguageListDto } from './interfaces/language.interface';
+
 @Component({
   selector: 'app-admin-dashboard-home',
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-dashboard-home.html',
   styleUrl: './admin-dashboard-home.css',
+  changeDetection: ChangeDetectionStrategy.Default
 })
-export class AdminDashboardHome {
+export class AdminDashboardHome implements OnInit {
   private statsService = inject(DashboardStats);
   private languagesService = inject(Languages);
   private specialtiesService = inject(Specialties);
   private cdr = inject(ChangeDetectorRef);
-
 
   stats: AdminDashboardStatsDto = {
     pendingDoctors: 0,
@@ -28,16 +29,21 @@ export class AdminDashboardHome {
     totalAIChatSessions: 0,
     totalAIChatMassage: 0
   };
+
   languages: LanguageListDto[] = [];
   specialties: SpecialtyListDto[] = [];
 
   newLanguageName = '';
   newSpecialtyName = '';
 
+  // متغيرات رسائل الخطأ تحت الانبوت
+  languageError = '';
+  specialtyError = '';
+
   loadingStats = false;
   loadingLanguages = false;
   loadingSpecialties = false;
-
+  currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   ngOnInit(): void {
     this.loadDashboardStats();
     this.loadLanguages();
@@ -65,15 +71,14 @@ export class AdminDashboardHome {
 
   loadLanguages(): void {
     this.loadingLanguages = true;
-    this.cdr.detectChanges(); // 👈 أضمن إن الـ Loader يظهر فوراً
+    this.cdr.detectChanges();
 
     this.languagesService.getAll().subscribe({
-      next: (res) => {
-        if (res && res.success) {
-          this.languages = res.data;
-        }
+      next: (res: LanguageListDto[]) => {
+        console.log('Languages response:', res);
+        this.languages = [...res]; // الـ res مصفوفة مباشرة
         this.loadingLanguages = false;
-        this.cdr.detectChanges(); // 🎯 1. إجبار الـ UI يعرض الداتا الجديدة فوراً
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Failed to load languages', err);
@@ -83,48 +88,13 @@ export class AdminDashboardHome {
     });
   }
 
-  addLanguage(): void {
-    if (!this.newLanguageName.trim()) return;
-
-    const dto: CreateLanguageDto = { languageName: this.newLanguageName.trim() };
-
-    this.languagesService.create(dto).subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.newLanguageName = ''; // فك التجميد وتفضية الإنبت
-          this.loadLanguages();      // هينده الـ Get والـ Get جواها detectChanges
-        }
-      },
-      error: (err: Error) => {
-        alert(err.message);
-        this.cdr.detectChanges(); // أضمن إن الـ Alert والـ State يمشوا مظبوط
-      }
-    });
-  }
-
-  deleteLanguage(id: string): void {
-    if (confirm('Are you sure you want to delete this language?')) {
-      this.languagesService.delete(id).subscribe({
-        next: (res) => {
-          if (res.success) {
-            this.loadLanguages();
-          }
-        },
-        error: (err: Error) => {
-          alert(err.message);
-          this.cdr.detectChanges();
-        }
-      });
-    }
-  }
-  // ─── [CRUD Specialties] ───
   loadSpecialties(): void {
     this.loadingSpecialties = true;
+    this.cdr.detectChanges();
+
     this.specialtiesService.getAll().subscribe({
-      next: (res) => {
-        if (res && res.success) {
-          this.specialties = res.data;
-        }
+      next: (res: SpecialtyListDto[]) => {
+        this.specialties = [...res];
         this.loadingSpecialties = false;
         this.cdr.detectChanges();
       },
@@ -136,37 +106,91 @@ export class AdminDashboardHome {
     });
   }
 
+
+
+
+  addLanguage(): void {
+    this.languageError = '';
+    if (!this.newLanguageName.trim()) {
+      this.languageError = 'Language name cannot be empty.';
+      return;
+    }
+
+    const dto: CreateLanguageDto = { languageName: this.newLanguageName.trim() };
+
+    this.languagesService.create(dto).subscribe({
+      next: () => {
+        this.newLanguageName = '';
+        this.loadLanguages();
+      },
+      error: (err: Error) => {
+        this.languageError = err.message; // إظهار الخطأ تحت الإنبت
+        this.cdr.detectChanges();
+      }
+    });
+  }
+  pendingDeleteLanguageId: string | null = null;
+  pendingDeleteSpecialtyId: string | null = null;
+  deleteLanguage(id: string): void {
+    // لو أول مرة يدوس، يخليه في حالة انتظار التأكيد
+    if (this.pendingDeleteLanguageId !== id) {
+      this.pendingDeleteLanguageId = id;
+      return;
+    }
+
+    // لو داس تاني والـ id متطابق، ينفذ الحذف المباشر
+    this.languagesService.delete(id).subscribe({
+      next: () => {
+        this.pendingDeleteLanguageId = null; // تصفير الحالة
+        this.loadLanguages();
+      },
+      error: (err: Error) => {
+        this.languageError = err.message;
+        this.pendingDeleteLanguageId = null;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ─── [CRUD Specialties] ───
+
   addSpecialty(): void {
-    if (!this.newSpecialtyName.trim()) return;
+    this.specialtyError = ''; // تصفير الخطأ القديم
+    if (!this.newSpecialtyName.trim()) {
+      this.specialtyError = 'Specialty name cannot be empty.';
+      return;
+    }
 
     const dto: CreateSpecialtyDto = { specialtyName: this.newSpecialtyName.trim() };
 
     this.specialtiesService.create(dto).subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.newSpecialtyName = '';
-          this.loadSpecialties();
-        }
+      next: () => {
+        this.newSpecialtyName = '';
+        this.loadSpecialties();
       },
       error: (err: Error) => {
-        alert(err.message);
+        this.specialtyError = err.message; // إظهار الخطأ تحت الإنبت
+        this.cdr.detectChanges();
       }
     });
   }
 
   deleteSpecialty(id: string): void {
-    if (confirm('Are you sure you want to delete this specialty?')) {
-      this.specialtiesService.delete(id).subscribe({
-        next: (res) => {
-          if (res.success) {
-            this.loadSpecialties();
-          }
-        },
-        error: (err: Error) => {
-          alert(err.message);
-        }
-      });
+    if (this.pendingDeleteSpecialtyId !== id) {
+      this.pendingDeleteSpecialtyId = id;
+      return;
     }
+
+    this.specialtiesService.delete(id).subscribe({
+      next: () => {
+        this.pendingDeleteSpecialtyId = null;
+        this.loadSpecialties();
+      },
+      error: (err: Error) => {
+        this.specialtyError = err.message;
+        this.pendingDeleteSpecialtyId = null;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }
-

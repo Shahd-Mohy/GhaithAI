@@ -10,8 +10,8 @@ export class Languages {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/BaseLanguage`;
 
-  getAll(): Observable<{ success: boolean; data: LanguageListDto[] }> {
-    return this.http.get<{ success: boolean; data: LanguageListDto[] }>(`${this.apiUrl}/Dropdown`).pipe(
+  getAll(): Observable<LanguageListDto[]> {
+    return this.http.get<LanguageListDto[]>(`${this.apiUrl}/Dropdown`).pipe(
       catchError(this.handleError)
     );
   }

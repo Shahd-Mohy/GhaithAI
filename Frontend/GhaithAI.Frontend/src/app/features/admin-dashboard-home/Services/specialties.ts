@@ -11,11 +11,17 @@ export class Specialties {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/BaseSpecialty`;
 
-  getAll(): Observable<{ success: boolean; data: SpecialtyListDto[] }> {
-    return this.http.get<{ success: boolean; data: SpecialtyListDto[] }>(`${this.apiUrl}/getAll/dropDown`).pipe(
+  getAll(): Observable<SpecialtyListDto[]> {
+    return this.http.get<SpecialtyListDto[]>(`${this.apiUrl}/getAll/dropDown`).pipe(
       catchError(this.handleError)
     );
   }
+
+  //  getAll(): Observable<LanguageListDto[]> {
+  //     return this.http.get<LanguageListDto[]>(`${this.apiUrl}/Dropdown`).pipe(
+  //       catchError(this.handleError)
+  //     );
+  //   }
 
   create(dto: CreateSpecialtyDto): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/Create_Specialty`, dto).pipe(
