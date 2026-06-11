@@ -19,20 +19,43 @@ namespace GhaithAI.API.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
         [HttpGet("Get_All")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+
             try
             {
-                var result = await _adminService.GetAllContentAsync();
-                return Ok(result);
+                var (items, totalCount) = await _adminService.GetAllContentAsync(pageNumber, pageSize);
+
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                return Ok(new
+                {
+                    success = true,
+                    data = items, 
+                    pagination = new
+                    {
+                        currentPage = pageNumber,
+                        pageSize = pageSize,
+                        totalCount = totalCount,
+                        totalPages = totalPages,
+                        hasNext = pageNumber < totalPages,
+                        hasPrevious = pageNumber > 1
+                    }
+                });
             }
             catch (ApplicationException ex)
             {
-                _logger.LogError(ex, "Admin Controller: Failed to fetch all self-help contents.");
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                _logger.LogError(ex, "Admin Controller: Failed to fetch all self-help contents with pagination.");
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
         }
-
         [HttpGet("Get_Content_Details/{id:guid}")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {

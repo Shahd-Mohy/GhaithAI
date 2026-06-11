@@ -3,6 +3,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { TokenService } from '../services/token';
 
 export const adminGuard: CanActivateFn = () => {
+
   const token = inject(TokenService);
   const router = inject(Router);
 

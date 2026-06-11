@@ -1,4 +1,4 @@
-﻿namespace GhaithAI.GaithAI.Application.DTOs.SelfHelp
+namespace GhaithAI.GaithAI.Application.DTOs.SelfHelp
 {
     public class AdminSelfHelpDetailsDTO
     {
@@ -11,7 +11,6 @@
         public string DifficultyLevel { get; set; }
         public bool IsActive { get; set; }
 
-        // 📝 لستة النصائح والتمارين المربوطة بالمقال ده
         public List<ExerciseTipDto> ExerciseTips { get; set; } = new();
     }
     public class ExerciseTipDto

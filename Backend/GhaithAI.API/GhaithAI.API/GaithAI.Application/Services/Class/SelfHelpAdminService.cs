@@ -17,26 +17,29 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             _logger=logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<AdminSelfHelpGetAllDto>> GetAllContentAsync()
+        public async Task<(IEnumerable<AdminSelfHelpGetAllDto> Items, int TotalCount)> GetAllContentAsync(int pageNumber, int pageSize)
         {
             try
             {
                 if (_unitOfWork.SelfHelp == null)
                 {
                     _logger.LogError("Admin Service: SelfHelp Repository is null.");
-                    return Enumerable.Empty<AdminSelfHelpGetAllDto>();
+                    return (Enumerable.Empty<AdminSelfHelpGetAllDto>(), 0);
                 }
 
-                var contents = await _unitOfWork.SelfHelp.GetAllAsync();
-                if (contents == null)
-                    return Enumerable.Empty<AdminSelfHelpGetAllDto>();
+                var (contents, totalCount) = await _unitOfWork.SelfHelp.GetPagedAsync(pageNumber, pageSize);
 
-                return _mapper.Map<IEnumerable<AdminSelfHelpGetAllDto>>(contents);
+                if (contents == null)
+                    return (Enumerable.Empty<AdminSelfHelpGetAllDto>(), 0);
+
+                var mappedItems = _mapper.Map<IEnumerable<AdminSelfHelpGetAllDto>>(contents);
+
+                return (mappedItems, totalCount);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Admin Service: Error occurred while fetching all content.");
-                throw new ApplicationException(" system error occurred while fetching data to the control panel.", ex);
+                _logger.LogError(ex, "Admin Service: Error occurred while fetching all content with repository pagination.");
+                throw new ApplicationException("A system error occurred while fetching data to the control panel.", ex);
             }
         }
 

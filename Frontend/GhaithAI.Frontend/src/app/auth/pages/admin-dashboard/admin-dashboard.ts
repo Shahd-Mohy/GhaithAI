@@ -1,23 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterOutlet, RouterModule } from '@angular/router';
 import { AdminService, DoctorProfile } from '../../../services/admin.service';
 import { TokenService } from '../../../services/token';
 
 type Tab = 'pending' | 'approved' | 'rejected';
-
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterOutlet, RouterModule],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.css']
 })
 export class AdminDashboardComponent implements OnInit {
-
   activeTab: Tab = 'pending';
-
   pending: DoctorProfile[] = [];
   approved: DoctorProfile[] = [];
   rejected: DoctorProfile[] = [];
@@ -25,13 +22,11 @@ export class AdminDashboardComponent implements OnInit {
   loading = false;
   actionLoading: string | null = null;
 
-  // Reject modal
   showRejectModal = false;
   rejectTargetId = '';
   rejectReason = '';
   rejectError = '';
 
-  // Details modal
   showDetailsModal = false;
   selectedDoctor: DoctorProfile | null = null;
 
@@ -44,10 +39,27 @@ export class AdminDashboardComponent implements OnInit {
     private adminService: AdminService,
     private tokenService: TokenService,
     private router: Router
-  ) {}
+  ) { }
+
 
   ngOnInit(): void {
     this.loadAll();
+  }
+  isBaseAdminRoute(): boolean {
+    // بنجيب الباث النظيف بدون الـ Query Parameters لو موجودة
+    const currentPath = this.router.url.split('?')[0];
+
+    // لازم الباث يكون '/admin' أو '/admin/' بالظبط عشان نعرض الدكاترة
+    return currentPath === '/admin' || currentPath === '/admin/';
+  }
+
+  navigateToDoctors(tab: Tab): void {
+    this.setTab(tab);
+    this.router.navigate(['/admin']);
+  }
+
+  setTab(tab: Tab): void {
+    this.activeTab = tab;
   }
 
   loadAll(): void {
@@ -82,9 +94,7 @@ export class AdminDashboardComponent implements OnInit {
     return this.rejected;
   }
 
-  setTab(tab: Tab): void {
-    this.activeTab = tab;
-  }
+
 
   // ─── Approve ──────────────────────────────────────────
   approve(id: string): void {

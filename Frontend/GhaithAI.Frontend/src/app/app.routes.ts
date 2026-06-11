@@ -12,13 +12,26 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./auth/pages/login/login').then(m => m.LoginComponent)
   },
+  //   {
+  //   path: 'admin',
+  //   canActivate: [adminGuard],
+  //   loadComponent: () =>
+  //     import('./auth/pages/admin-dashboard/admin-dashboard')
+  //       .then(m => m.AdminDashboardComponent)
+  // },
   {
-  path: 'admin',
-  canActivate: [adminGuard],
-  loadComponent: () =>
-    import('./auth/pages/admin-dashboard/admin-dashboard')
-      .then(m => m.AdminDashboardComponent)
-},
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./auth/pages/admin-dashboard/admin-dashboard')
+      .then(m => m.AdminDashboardComponent),
+    children: [
+      {
+        path: 'self-help',
+        loadComponent: () => import('./features/AdminSelfHelp/components/self-help-dashboard/self-help-dashboard')
+          .then(m => m.SelfHelpDashboardComponent)
+      }
+    ]
+  },
 
   {
     path: 'register',
