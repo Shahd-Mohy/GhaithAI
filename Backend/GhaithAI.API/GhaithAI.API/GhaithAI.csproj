@@ -31,6 +31,7 @@
 
 	<ItemGroup>
 		<Folder Include="GaithAI.Infrastructure\ExternalService\" />
+		<Folder Include="wwwroot\uploads\doctors\" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -4,42 +4,49 @@ import { Observable } from 'rxjs';
 import { RegisterRequest } from '../models/auth/register-request.model';
 import { AuthResponse } from '../models/auth/auth-response.model';
 import { GoogleLoginRequest } from '../models/auth/google-login-request.model';
+import { environment } from '../../environments/environment';
+import { RegisterClinicianRequest } from '../models/auth/register-clinician-request.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private readonly baseUrl = 'https://localhost:53898/api/Auth';
+  private readonly baseUrl = `${environment.apiUrl}/api/auth`;
 
   constructor(private http: HttpClient) {}
 
-  // ─── Register ───────────────────────────────────────
   register(payload: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(
-      `${this.baseUrl}/register`,
-      payload
-    );
+    return this.http.post<AuthResponse>(`${this.baseUrl}/register`, payload);
   }
 
-  // ─── Login ──────────────────────────────────────────
   login(credentials: { email: string; password: string }): Observable<AuthResponse> {
-  return this.http.post<AuthResponse>(
-    `${this.baseUrl}/login`,
-    credentials
-  );
-}
-
-  // ─── Google Login ────────────────────────────────────
-  googleLogin(idToken: string): Observable<AuthResponse> {
-    const payload: GoogleLoginRequest = { idToken };
-    return this.http.post<AuthResponse>(
-      `${this.baseUrl}/google-login`,
-      payload
-    );
+    return this.http.post<AuthResponse>(`${this.baseUrl}/login`, credentials);
   }
 
-  // ─── Token Helpers ───────────────────────────────────
+  googleLogin(idToken: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/google-login`, { idToken });
+  }
+
+  registerClinician(payload: RegisterClinicianRequest | any): Observable<AuthResponse> {
+    const formData = new FormData();
+    formData.append('fullName', payload.fullName);
+    formData.append('email', payload.email);
+    formData.append('password', payload.password);
+    formData.append('phoneNumber', payload.phoneNumber);
+    formData.append('countryCode', payload.countryCode);
+    formData.append('preferredLanguage', payload.preferredLanguage);
+    formData.append('gender', payload.gender.toString());
+    formData.append('doctorType', payload.doctorType.toString());
+    formData.append('specialization', payload.specialization);
+    formData.append('bio', payload.bio);
+    formData.append('yearsOfExperience', payload.yearsOfExperience.toString());
+    if (payload.documentsPdf) {
+      formData.append('documentsPdf', payload.documentsPdf);
+    }
+    return this.http.post<AuthResponse>(`${this.baseUrl}/register-clinician`, formData);
+  }
+
   saveSession(response: AuthResponse): void {
     localStorage.setItem('token', response.token);
     localStorage.setItem('user', JSON.stringify(response));

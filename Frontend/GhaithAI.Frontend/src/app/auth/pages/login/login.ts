@@ -54,38 +54,47 @@ export class LoginComponent {
   }
 
   login(): void {
+  this.loginForm.markAllAsTouched();
+  if (this.loginForm.invalid) return;
 
-    this.loginForm.markAllAsTouched();
+  this.submitting = true;
+  this.apiError = '';
 
-    if (this.loginForm.invalid) return;
+  this.auth.login(this.loginForm.value).subscribe({
 
-    this.submitting = true;
-    this.apiError = '';
+    next: (res) => {
+      this.auth.saveSession(res);
+      this.submitting = false;
 
-    this.auth.login(this.loginForm.value).subscribe({
-
-      next: (res) => {
-        this.auth.saveSession(res);
-        this.submitting = false;
+      // ✅ توجيه حسب الـ role
+      if (res.role === 'Admin') {
+        this.router.navigate(['/admin']);
+      } else if (res.role === 'Clinician') {
+        this.router.navigate(['/doctor-dashboard']);
+      } else {
         this.router.navigate(['/dashboard']);
-      },
-
-      error: (err) => {
-        console.error(err);
-        this.submitting = false;
-
-        const message = err.error?.message || '';
-
-        if (err.status === 400 && message.toLowerCase().includes('google')) {
-          this.apiError = 'This account uses Google Sign-In. Please login with Google.';
-        } else if (err.status === 400) {
-          this.apiError = message || 'Invalid email or password.';
-        } else if (err.status === 500) {
-          this.apiError = 'Something went wrong. Please try again later.';
-        } else {
-          this.apiError = 'Login failed. Please try again.';
-        }
       }
-    });
-  }
+    },
+
+    error: (err) => {
+      this.submitting = false;
+      const message = err.error?.message || '';
+
+      if (err.status === 400 && message.toLowerCase().includes('google')) {
+        this.apiError = 'This account uses Google Sign-In. Please login with Google.';
+      } else if (err.status === 400 && message.toLowerCase().includes('pending')) {
+        this.apiError = 'Your account is pending approval. Please wait for admin review.';
+      } else if (err.status === 400 && message.toLowerCase().includes('rejected')) {
+        this.apiError = message;
+      } else if (err.status === 400) {
+        this.apiError = message || 'Invalid email or password.';
+      } else if (err.status === 500) {
+        this.apiError = 'Something went wrong. Please try again later.';
+      } else {
+        this.apiError = 'Login failed. Please try again.';
+      }
+    }
+  });
 }
+}
+

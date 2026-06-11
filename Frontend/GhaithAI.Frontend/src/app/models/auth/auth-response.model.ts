@@ -4,4 +4,5 @@ export interface AuthResponse {
   fullName: string;
   profilePicture?: string;
   expiration: string;
+  role: string;
 }

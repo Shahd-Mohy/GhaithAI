@@ -24,4 +24,5 @@ export interface RegisterRequest {
   stressLevel: string;
   hasTherapyHistory: boolean;
   takesMedication: boolean;
+  gender: string;
 }

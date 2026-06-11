@@ -12,8 +12,7 @@ namespace GhaithAI.API.Seeders
             {
                 Roles.Admin,
                 Roles.User,
-                Roles.Moderator,
-                Roles.Therapist
+                Roles.Clinician
             };
 
             foreach (var role in roles)

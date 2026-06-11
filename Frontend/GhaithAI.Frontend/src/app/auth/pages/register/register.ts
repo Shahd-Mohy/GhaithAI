@@ -42,6 +42,7 @@ export class RegisterComponent implements OnInit {
   showSecondContact = false;
 
   age: number | null = null;
+  gender = '';
   lang = 'en';
   selectedConcerns: string[] = [];
   sleep = '';
@@ -291,6 +292,7 @@ export class RegisterComponent implements OnInit {
       fullName: `${this.firstName} ${this.lastName}`,
       email: this.email,
       password: this.password,
+      gender: this.gender,
       phoneNumber: this.phone,
       countryCode: 'EG',
       preferredLanguage: this.lang,
