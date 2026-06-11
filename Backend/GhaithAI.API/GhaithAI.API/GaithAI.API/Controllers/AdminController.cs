@@ -8,7 +8,7 @@ namespace GhaithAI.GaithAI.API.Controllers
 {
     [ApiController]
     [Route("api/admin")]
-    // [Authorize(Roles = Roles.Admin)]
+     [Authorize(Roles = Roles.Admin)]
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;

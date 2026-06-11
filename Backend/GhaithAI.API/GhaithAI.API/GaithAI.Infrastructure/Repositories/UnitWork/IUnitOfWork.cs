@@ -11,6 +11,7 @@ namespace GhaithAI.API.Repositories.UnitWork
         IBaseSpecialtyRepository BaseSpecialty { get; }
         IBaseLanguageRepository BaseLanguage { get; }
         IClinicPatientRepository ClinicPatient { get; }
+        IDoctorProfileRepository DoctorProfile { get; }
 
         Task<int> CompleteAsync();
         int Complete();
