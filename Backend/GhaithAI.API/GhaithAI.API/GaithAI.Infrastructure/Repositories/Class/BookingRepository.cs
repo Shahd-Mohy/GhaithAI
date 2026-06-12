@@ -6,5 +6,6 @@ namespace GhaithAI.GaithAI.Infrastructure.Repositories.Class
         public BookingRepository(ApplicationDbContext context) : base(context)
         {
         }
+       
     }
 }

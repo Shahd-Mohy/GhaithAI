@@ -55,6 +55,7 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IClinicPatientService, ClinicPatientService>();
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IAdminDashboardStatsService, AdminDashboardStatsService>();
+            services.AddScoped<IBookingService, BookingService>();
 
             return services;
         }
