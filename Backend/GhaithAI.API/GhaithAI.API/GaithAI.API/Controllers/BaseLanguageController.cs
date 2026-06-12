@@ -1,5 +1,6 @@
 using GhaithAI.GaithAI.Application.DTOs.Language;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,7 +41,7 @@ namespace GhaithAI.GaithAI.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPost("Create_Language")]
         public async Task<IActionResult> Create([FromBody] CreateLanguageDto dto)
         {
@@ -62,7 +63,7 @@ namespace GhaithAI.GaithAI.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("Update_Language")]
         public async Task<IActionResult> Update([FromBody] UpdateLanguageDto dto)
         {
@@ -88,7 +89,7 @@ namespace GhaithAI.GaithAI.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("Delete_Language/{id}")]
         public async Task<IActionResult> Delete([FromRoute]Guid id)
         {

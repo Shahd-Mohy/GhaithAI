@@ -1,4 +1,4 @@
-using GhaithAI.GaithAI.Application.DTOs.ClinicPatient;
+﻿using GhaithAI.GaithAI.Application.DTOs.ClinicPatient;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
@@ -15,8 +15,9 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<DoctorClinicPatientListDto>> GetPatientsByClinicAsync(Guid doctorId, string? searchTerm,int pageNumber = 1,int pageSize = 10)
+        public async Task<IEnumerable<DoctorClinicPatientListDto>> GetPatientsByClinicAsync(string userId , string? searchTerm,int pageNumber = 1,int pageSize = 10)
         {
+            var doctorId = await GetDoctorIdByUserIdAsync(userId);
             _logger.LogInformation("Fetching patients with Pagination & Search for Clinic ID: {ClinicId}", doctorId);
 
             var query =  _unitOfWork.ClinicPatient.GetAllQueryableNoTracking().Where(p => p.DoctorId == doctorId);
@@ -43,15 +44,19 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             });
         }
 
-        public async Task<DoctorClinicPatientDetailsDto> GetByIdAsync(Guid id)
+        public async Task<DoctorClinicPatientDetailsDto> GetByIdAsync(Guid id, string userId)
         {
             if (id == Guid.Empty) throw new ArgumentException("Invalid patient ID.");
 
-            var patient = await _unitOfWork.ClinicPatient.GetByIdAsync(id);
+            Guid doctorId = await GetDoctorIdByUserIdAsync(userId);
+
+            var patient = await _unitOfWork.ClinicPatient.GetAllQueryableNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == id && p.DoctorId == doctorId);
+
             if (patient == null)
             {
-                _logger.LogWarning("Patient with ID {PatientId} not found.", id);
-                throw new KeyNotFoundException($"Patient was not found.");
+                _logger.LogWarning("Patient with ID {PatientId} not found or doesn't belong to Doctor {DoctorId}.", id, doctorId);
+                throw new KeyNotFoundException("Patient record does not exist or you do not have permission to view it.");
             }
 
             return new DoctorClinicPatientDetailsDto
@@ -64,8 +69,10 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             };
         }
 
-        public async Task<DoctorClinicPatientDetailsDto> CreateAsync(CreateClinicPatientDto dto)
+        public async Task<DoctorClinicPatientDetailsDto> CreateAsync(CreateClinicPatientDto dto , string userId)
         {
+            Guid doctorId = await GetDoctorIdByUserIdAsync(userId);
+
             var trimmedName = dto.PatientFullName?.Trim();
             var trimmedPhone = dto.PatientPhone?.Trim();
 
@@ -73,18 +80,18 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 throw new ArgumentException("Patient name and phone are required.");
 
             var isDuplicate = await _unitOfWork.ClinicPatient.GetAllQueryableNoTracking()
-                .AnyAsync(p => p.DoctorId == dto.DoctorId && p.PatientPhone == trimmedPhone);
+                .AnyAsync(p => p.DoctorId == doctorId && p.PatientPhone == trimmedPhone);
 
             if (isDuplicate)
             {
-                _logger.LogWarning("Validation failed: Phone {Phone} already exists in doctor {DoctorId}", trimmedPhone, dto.DoctorId);
+                _logger.LogWarning("Validation failed: Phone {Phone} already exists in doctor {DoctorId}", trimmedPhone, doctorId);
                 throw new InvalidOperationException("A patient with this phone number already exists in this clinic.");
             }
 
             var patient = new ClinicPatient
             {
                 Id = Guid.NewGuid(),
-                DoctorId = dto.DoctorId,
+                DoctorId =doctorId,
                 PatientFullName = trimmedName,
                 PatientPhone = trimmedPhone,
                 Notes = dto.Notes?.Trim() ?? string.Empty
@@ -104,17 +111,20 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 Notes = patient.Notes
             };
         }
-        public async Task<bool> UpdateAsync(UpdateClinicPatientDto dto)
+        public async Task<bool> UpdateAsync(UpdateClinicPatientDto dto , string userId)
         {
             if (dto.Id == Guid.Empty) throw new ArgumentException("Invalid patient ID.");
+            var doctorId = await GetDoctorIdByUserIdAsync(userId);
+            var patient = await _unitOfWork.ClinicPatient.GetAllQueryableTracking()
+                .FirstOrDefaultAsync(p => p.Id == dto.Id && p.DoctorId == doctorId);
 
-            var patient = await _unitOfWork.ClinicPatient.GetByIdAsync(dto.Id);
-            if (patient == null) throw new KeyNotFoundException("Patient does not exist.");
+            if (patient == null)
+                throw new KeyNotFoundException("Patient record does not exist or you do not have permission to update it.");
 
             var trimmedPhone = dto.PatientPhone?.Trim();
 
             var isDuplicate = await _unitOfWork.ClinicPatient.GetAllQueryableNoTracking()
-                .AnyAsync(p => p.DoctorId == dto.DoctorId && p.PatientPhone == trimmedPhone && p.Id != dto.Id);
+                .AnyAsync(p => p.DoctorId == doctorId && p.PatientPhone == trimmedPhone && p.Id != dto.Id);
 
             if (isDuplicate)
                 throw new InvalidOperationException("Another patient with this phone number already exists in your records.");
@@ -128,18 +138,35 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             return true;
         }
 
-        public async Task<string> DeleteAsync(Guid id)
+        public async Task<string> DeleteAsync(Guid id, string userId)
         {
             if (id == Guid.Empty) throw new ArgumentException("Invalid patient ID.");
+            var doctorId = await GetDoctorIdByUserIdAsync(userId);
+            var patient = await _unitOfWork.ClinicPatient.GetAllQueryableTracking()
+                .FirstOrDefaultAsync(p => p.Id == id && p.DoctorId == doctorId);
 
-            var patient = await _unitOfWork.ClinicPatient.GetByIdAsync(id);
-            if (patient == null) throw new KeyNotFoundException("Patient does not exist.");
+            if (patient == null)
+                throw new KeyNotFoundException("Patient record does not exist or you do not have permission to delete it."); // 🔥 ظبطنا الكلمة هنا لـ delete
 
             await _unitOfWork.ClinicPatient.DeleteAsync(id);
             await _unitOfWork.CompleteAsync();
 
             _logger.LogInformation("Hard deleted patient with ID: {PatientId}", id);
             return "Patient deleted successfully from the system.";
+        }
+
+        private async Task<Guid> GetDoctorIdByUserIdAsync(string userId)
+        {
+            var doctorProfile = await _unitOfWork.DoctorProfile.GetAllQueryableNoTracking()
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctorProfile == null)
+            {
+                _logger.LogWarning("Operation failed: No doctor profile found for User ID {UserId}", userId);
+                throw new KeyNotFoundException("Doctor profile not found in the system. Please ensure your profile is complete.");
+            }
+
+            return doctorProfile.Id;
         }
     }
 }

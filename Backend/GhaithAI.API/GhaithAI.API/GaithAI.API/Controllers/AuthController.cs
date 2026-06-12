@@ -57,5 +57,15 @@ namespace GhaithAI.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPost("register-clinician")]
+        public async Task<IActionResult>RegisterClinician([FromForm] RegisterClinicianDTO dto)
+        {
+            var result =
+                await _authService
+                    .RegisterClinicianAsync(dto);
+
+            return Ok(result);
+        }
     }
 }

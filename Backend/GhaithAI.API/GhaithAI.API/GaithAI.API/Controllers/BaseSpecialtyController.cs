@@ -1,5 +1,6 @@
 using GhaithAI.GaithAI.Application.DTOs.Specialty;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,14 +15,12 @@ namespace GhaithAI.GaithAI.API.Controllers
         {
             _specialtyService = specialtyService;
         }
-
-        [HttpGet("DetAll/dropDown")]
+        [HttpGet("getAll/dropDown")]
         public async Task<IActionResult> GetAll()
         {
             var specialties = await _specialtyService.GetAllAsync();
             return Ok(specialties);
         }
-
         [HttpGet("GetById/{id:guid}")]
         public async Task<IActionResult> GetById([FromRoute]Guid id)
         {
@@ -39,6 +38,7 @@ namespace GhaithAI.GaithAI.API.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("Create_Specialty")]
         public async Task<IActionResult> Create([FromBody] CreateSpecialtyDto dto)
@@ -60,6 +60,7 @@ namespace GhaithAI.GaithAI.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPut("Update_Specialty")]
         public async Task<IActionResult> Update([FromBody] UpdateSpecialtyDto dto)
@@ -85,6 +86,7 @@ namespace GhaithAI.GaithAI.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpDelete("Delete_Specialty/{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)

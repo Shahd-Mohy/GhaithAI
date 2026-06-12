@@ -56,5 +56,7 @@ namespace GhaithAI.API.Models
         public string? GoogleId { get; set; }
 
         public bool IsGoogleAccount { get; set; } = false;
+
+        public Gender Gender { get; set; }
     }
 }

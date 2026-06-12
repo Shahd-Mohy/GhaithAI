@@ -1,97 +1,71 @@
 import { Routes } from '@angular/router';
-
-import { LoginComponent }
-  from './auth/pages/login/login';
-
-import { RegisterComponent }
-  from './auth/pages/register/register';
-
-// import { ProfileComponent }
-// from './auth/pages/profile/profile';
-
-
-import { DashboardComponent }
-  from './auth/pages/dashboard/dashboard';
-
-import { authGuard }
-  from './guards/auth-guard';
-
-import { LandingComponent }
-  from '../app/landing/landing';
+import { LandingComponent } from '../app/landing/landing';
+import { authGuard } from './guards/auth-guard';
+import { adminGuard } from './guards/admin-guard';
 import { ExerciseDetailsComponent } from './selfHelp/exercise-details-component/exercise-details-component';
 
 export const routes: Routes = [
 
-  {
-    path: '',
-    component: LandingComponent
-  },
+  { path: '', component: LandingComponent },
 
   {
     path: 'login',
-    loadComponent: () =>
-      import('./auth/pages/login/login')
-        .then(m => m.LoginComponent)
+    loadComponent: () => import('./auth/pages/login/login').then(m => m.LoginComponent)
+  },
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./auth/pages/admin-dashboard/admin-dashboard')
+      .then(m => m.AdminDashboardComponent),
+    children: [
+      {
+        path: 'self-help',
+        loadComponent: () => import('./features/AdminSelfHelp/components/self-help-dashboard/self-help-dashboard')
+          .then(m => m.SelfHelpDashboardComponent)
+      },
+      {
+        path: 'dashboard-home',
+        loadComponent: () => import('./features/admin-dashboard-home/admin-dashboard-home')
+          .then(m => m.AdminDashboardHome)
+      }
+    ]
   },
 
   {
     path: 'register',
-    loadComponent: () =>
-      import('./auth/pages/register/register')
-        .then(m => m.RegisterComponent)
+    loadComponent: () => import('./auth/pages/register/register').then(m => m.RegisterComponent)
   },
 
-  // {
-  //   path:'profile',
-  //   canActivate:[authGuard],
-  //   loadComponent:() =>
-  //     import('./auth/pages/profile/profile')
-  //     .then(m => m.ProfileComponent)
-  // },
-
+  // ✅ Clinician Register
+  {
+    path: 'register-clinician',
+    loadComponent: () =>
+      import('./auth/pages/register-clinician/register-clinician')
+        .then(m => m.RegisterClinicianComponent)
+  },
 
   {
     path: 'dashboard',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./auth/pages/dashboard/dashboard')
-        .then(m => m.DashboardComponent)
+    loadComponent: () => import('./auth/pages/dashboard/dashboard').then(m => m.DashboardComponent)
   },
+
   {
     path: 'dashboard/self-help/exercise/:id',
     component: ExerciseDetailsComponent
   },
-  // ── [CHAT TEAM] — Support shell + chat routes ─────────────────────────────
+
   {
     path: 'support',
-    loadComponent: () =>
-      import('./support/layout').then((m) => m.SupportLayout),
+    loadComponent: () => import('./support/layout').then(m => m.SupportLayout),
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'chat', pathMatch: 'full' },
-      {
-        path: 'chat',
-        loadComponent: () =>
-          import('./support/chat/page').then((m) => m.ChatPage),
-        title: 'Chat — GhaithAI',
-      },
-      {
-        path: 'chatsession',
-        loadComponent: () =>
-          import('./support/chatsession/page').then((m) => m.ChatSessionPage),
-        title: 'Sessions — GhaithAI',
-      },
-      {
-        path: 'crisis',
-        loadComponent: () =>
-          import('./support/emergency/page').then((m) => m.EmergencyPage),
-        title: 'Crisis Support — GhaithAI',
-      }
-    ],
+      { path: 'chat', loadComponent: () => import('./support/chat/page').then(m => m.ChatPage) },
+      { path: 'chatsession', loadComponent: () => import('./support/chatsession/page').then(m => m.ChatSessionPage) },
+      { path: 'crisis', loadComponent: () => import('./support/emergency/page').then(m => m.EmergencyPage) }
+    ]
   },
 
-  {
-    path: '**',
-    redirectTo: ''
-  }
+  { path: '**', redirectTo: '' }
 ];

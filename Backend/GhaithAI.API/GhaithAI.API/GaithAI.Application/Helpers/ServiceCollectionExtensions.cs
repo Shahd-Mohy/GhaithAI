@@ -29,6 +29,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IBaseSpecialtyRepository, BaseSpecialtyRepository>();
             services.AddScoped<IBaseLanguageRepository, BaseLanguageRepository>();
             services.AddScoped<IClinicPatientRepository , ClinicPatientRepository>();
+            services.AddScoped<IExerciseTipsRepository, ExerciseTipsRepository>();
+            services.AddScoped<IBookingRepository, BookingRepository>();
             return services;
         }
 
@@ -48,6 +50,9 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IBaseSpecialtyService, BaseSpecialtyService>();
             services.AddScoped<IBaseLanguageService, BaseLanguageService>();
             services.AddScoped<IClinicPatientService, ClinicPatientService>();
+            services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IAdminDashboardStatsService, AdminDashboardStatsService>();
+            services.AddScoped<IBookingService, BookingService>();
 
             return services;
         }
