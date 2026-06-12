@@ -18,11 +18,10 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             // services.AddScoped<IUnitOfWork, UnitOfWork>();
             // services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-            // Mood
             services.AddScoped<IMoodRepository, MoodRepository>();
-            // Journal
             services.AddScoped<IJournalRepository, JournalRepository>();
             services.AddScoped<IInsightRepository, InsightRepository>();
+            services.AddScoped<IDoctorProfileRepository, DoctorProfileRepository>();
             //services.AddScoped<IChatRepository, ChatRepository>();
             //services.AddScoped<ISessionRepository, SessionRepository>();
             services.AddScoped<IRiskRepository, RiskRepository>();
@@ -40,12 +39,10 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
 
             // Services Registration
             services.AddScoped<IChatService, ChatService>();
-            // Mood
             services.AddScoped<IMoodService, MoodService>();
-            // Journal 
             services.AddScoped<IJournalService, JournalService>();
-            //home..insghts
             services.AddScoped<IInsightService, InsightService>();
+            services.AddScoped<IDoctorClinicProfileService, DoctorClinicProfileService>();
             services.AddScoped<ISelfHelpAdminService, SelfHelpAdminService>();
             services.AddScoped<ISelfHelpUserService, SelfHelpUserService>();
             services.AddScoped<IBaseSpecialtyService, BaseSpecialtyService>();
