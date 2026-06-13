@@ -12,20 +12,12 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./auth/pages/login/login').then(m => m.LoginComponent)
   },
-  {
-  path: 'admin',
-  canActivate: [adminGuard],
-  loadComponent: () =>
-    import('./auth/pages/admin-dashboard/admin-dashboard')
-      .then(m => m.AdminDashboardComponent)
-},
 
   {
     path: 'register',
     loadComponent: () => import('./auth/pages/register/register').then(m => m.RegisterComponent)
   },
 
-  // ✅ Clinician Register
   {
     path: 'register-clinician',
     loadComponent: () =>
@@ -42,6 +34,23 @@ export const routes: Routes = [
   {
     path: 'dashboard/self-help/exercise/:id',
     component: ExerciseDetailsComponent
+  },
+
+  // ✅ Admin routes
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./auth/pages/admin-dashboard/admin-dashboard')
+        .then(m => m.AdminDashboardComponent)
+  },
+
+  {
+    path: 'admin/doctor/:id',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./auth/pages/doctor-detail/doctor-detail')
+        .then(m => m.DoctorDetailComponent)
   },
 
   {

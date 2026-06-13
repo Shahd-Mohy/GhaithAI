@@ -6,25 +6,23 @@ import { environment } from '../../environments/environment';
 export interface DoctorProfile {
   id: string;
   fullName: string;
-  doctorType: number;
+  doctorType: string;        // ✅ string مش number
   specialization: string;
   bio: string;
   yearsOfExperience: number;
   documentsPdfUrl: string;
-  approvalStatus: number;
+  approvalStatus: string;    // ✅ string مش number
   rejectionReason?: string;
   averageRating: number;
-  user: {
-    email: string;
-    phoneNumber: string;
-    profilePicture?: string;
-  };
+  email: string;             // ✅ مباشرة مش جوا user
+  phoneNumber: string;       // ✅ مباشرة مش جوا user
+  profilePicture?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
 
-  private readonly baseUrl = `${environment.apiUrl}/api/admin`;
+  private readonly baseUrl = `${environment.apiUrl}/admin`;
 
   constructor(private http: HttpClient) {}
 

@@ -25,20 +25,10 @@ export class AdminDashboardComponent implements OnInit {
   loading = false;
   actionLoading: string | null = null;
 
-  // Reject modal
-  showRejectModal = false;
-  rejectTargetId = '';
+  // ✅ Inline reject بدل modal
+  rejectOpenId: string | null = null;
   rejectReason = '';
   rejectError = '';
-
-  // Details modal
-  showDetailsModal = false;
-  selectedDoctor: DoctorProfile | null = null;
-
-  doctorTypeLabels = [
-    'Psychiatrist', 'Psychologist',
-    'Therapist / Counselor', 'Social Worker', 'Other'
-  ];
 
   constructor(
     private adminService: AdminService,
@@ -84,74 +74,54 @@ export class AdminDashboardComponent implements OnInit {
 
   setTab(tab: Tab): void {
     this.activeTab = tab;
+    this.rejectOpenId = null;
   }
 
-  // ─── Approve ──────────────────────────────────────────
   approve(id: string): void {
     this.actionLoading = id;
     this.adminService.approveDoctor(id).subscribe({
-      next: () => {
-        this.actionLoading = null;
-        this.loadAll();
-      },
+      next: () => { this.actionLoading = null; this.loadAll(); },
       error: () => { this.actionLoading = null; }
     });
   }
 
-  // ─── Reject Modal ─────────────────────────────────────
-  openRejectModal(id: string): void {
-    this.rejectTargetId = id;
+  // ✅ Inline reject
+  openReject(id: string): void {
+    this.rejectOpenId = this.rejectOpenId === id ? null : id;
     this.rejectReason = '';
     this.rejectError = '';
-    this.showRejectModal = true;
   }
 
-  closeRejectModal(): void {
-    this.showRejectModal = false;
-    this.rejectTargetId = '';
+  cancelReject(): void {
+    this.rejectOpenId = null;
     this.rejectReason = '';
+    this.rejectError = '';
   }
 
-  confirmReject(): void {
+  confirmReject(id: string): void {
     if (!this.rejectReason.trim()) {
       this.rejectError = 'Please provide a rejection reason';
       return;
     }
-    this.actionLoading = this.rejectTargetId;
-    this.adminService.rejectDoctor(this.rejectTargetId, this.rejectReason).subscribe({
+    this.actionLoading = id;
+    this.adminService.rejectDoctor(id, this.rejectReason).subscribe({
       next: () => {
         this.actionLoading = null;
-        this.closeRejectModal();
+        this.rejectOpenId = null;
+        this.rejectReason = '';
         this.loadAll();
       },
       error: () => { this.actionLoading = null; }
     });
   }
 
-  // ─── Details Modal ────────────────────────────────────
-  openDetails(doctor: DoctorProfile): void {
-    this.selectedDoctor = doctor;
-    this.showDetailsModal = true;
+  // ✅ بدل details modal - روح لصفحة منفصلة
+  viewDetails(id: string): void {
+    this.router.navigate(['/admin/doctor', id]);
   }
 
-  closeDetails(): void {
-    this.showDetailsModal = false;
-    this.selectedDoctor = null;
-  }
-
-  // ─── Logout ───────────────────────────────────────────
   logout(): void {
     this.tokenService.removeToken();
     this.router.navigate(['/login']);
-  }
-
-  getStatusLabel(status: number): string {
-    if (status === 0) return 'Pending';
-    if (status === 1) return 'Approved';
-    return 'Rejected';
-  }
-
-  getDoctorTypeLabel(type: number): string {
-    return this.doctorTypeLabels[type] || 'Other';
   }
 }

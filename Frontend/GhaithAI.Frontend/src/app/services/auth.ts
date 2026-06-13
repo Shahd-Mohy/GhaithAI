@@ -12,7 +12,7 @@ import { RegisterClinicianRequest } from '../models/auth/register-clinician-requ
 })
 export class AuthService {
 
-  private readonly baseUrl = `${environment.apiUrl}/api/auth`;
+  private readonly baseUrl = `${environment.apiUrl}/auth`;
 
   constructor(private http: HttpClient) {}
 
@@ -28,23 +28,40 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.baseUrl}/google-login`, { idToken });
   }
 
-  registerClinician(payload: RegisterClinicianRequest | any): Observable<AuthResponse> {
+  registerClinician(payload: any): Observable<AuthResponse> {
     const formData = new FormData();
+
     formData.append('fullName', payload.fullName);
     formData.append('email', payload.email);
     formData.append('password', payload.password);
     formData.append('phoneNumber', payload.phoneNumber);
     formData.append('countryCode', payload.countryCode);
     formData.append('preferredLanguage', payload.preferredLanguage);
-    formData.append('gender', payload.gender.toString());
-    formData.append('doctorType', payload.doctorType.toString());
+
+    // ✅ Gender: Male=1, Female=2
+    const genderMap: Record<number, string> = { 1: 'Male', 2: 'Female' };
+    formData.append('gender', genderMap[payload.gender] ?? 'Male');
+
+    // ✅ DoctorType: Psychiatrist=0, Therapist=1, Counselor=2
+    const doctorTypeMap: Record<number, string> = {
+      0: 'Psychiatrist',
+      1: 'Therapist',
+      2: 'Counselor'
+    };
+    formData.append('doctorType', doctorTypeMap[payload.doctorType] ?? 'Psychiatrist');
+
     formData.append('specialization', payload.specialization);
     formData.append('bio', payload.bio);
     formData.append('yearsOfExperience', payload.yearsOfExperience.toString());
+
     if (payload.documentsPdf) {
       formData.append('documentsPdf', payload.documentsPdf);
     }
-    return this.http.post<AuthResponse>(`${this.baseUrl}/register-clinician`, formData);
+
+    return this.http.post<AuthResponse>(
+      `${this.baseUrl}/register-clinician`,
+      formData
+    );
   }
 
   saveSession(response: AuthResponse): void {

@@ -1,14 +1,11 @@
-﻿using GhaithAI.API.Constants;
-using GhaithAI.GaithAI.Application.DTOs.Admin;
+﻿using GhaithAI.GaithAI.Application.DTOs.Admin;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GhaithAI.GaithAI.API.Controllers
 {
     [ApiController]
     [Route("api/admin")]
-     [Authorize(Roles = Roles.Admin)]
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
@@ -18,7 +15,6 @@ namespace GhaithAI.GaithAI.API.Controllers
             _adminService = adminService;
         }
 
-        // ─── GET Lists ────────────────────────────────────
         [HttpGet("doctors/pending")]
         public async Task<IActionResult> GetPending()
         {
@@ -61,15 +57,12 @@ namespace GhaithAI.GaithAI.API.Controllers
             }
         }
 
-        // ─── GET Details ──────────────────────────────────
         [HttpGet("doctors/{id}")]
         public async Task<IActionResult> Details(Guid id)
         {
             try
             {
                 var result = await _adminService.GetDoctorDetailsAsync(id);
-                if (result == null)
-                    return NotFound(new { message = "Doctor not found" });
                 return Ok(result);
             }
             catch (Exception ex)
@@ -78,7 +71,6 @@ namespace GhaithAI.GaithAI.API.Controllers
             }
         }
 
-        // ─── Approve ──────────────────────────────────────
         [HttpPost("doctors/{id}/approve")]
         public async Task<IActionResult> Approve(Guid id)
         {
@@ -93,7 +85,6 @@ namespace GhaithAI.GaithAI.API.Controllers
             }
         }
 
-        // ─── Reject ───────────────────────────────────────
         [HttpPost("doctors/{id}/reject")]
         public async Task<IActionResult> Reject(Guid id, [FromBody] RejectDoctorDTO dto)
         {
