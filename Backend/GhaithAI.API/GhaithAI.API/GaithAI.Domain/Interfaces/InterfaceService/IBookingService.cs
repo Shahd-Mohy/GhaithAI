@@ -9,5 +9,7 @@ namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
               string? timeFilter,
               int pageIndex = 0,
               int pageSize = 10);
+
+        Task<Guid> CreateClinicBookingAsync(string userId, CreateClinicBookingDto dto);
     }
 }
