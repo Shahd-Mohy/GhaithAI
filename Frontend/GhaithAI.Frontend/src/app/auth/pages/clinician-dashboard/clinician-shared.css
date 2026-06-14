@@ -1,0 +1,342 @@
+/* ═══════════════════════════════════════════════════════════════
+   GhaithAI — Clinician Shared CSS
+   Design tokens, layout primitives, and component base styles
+   shared across all clinician-side pages.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Design Tokens ─── */
+:root {
+  --c-primary:        #0B8FAC;
+  --c-primary-dark:   #076E86;
+  --c-primary-soft:   rgba(11, 143, 172, 0.08);
+  --c-primary-light:  rgba(11, 143, 172, 0.12);
+
+  --c-ink:            #0D1B3E;
+  --c-ink-60:         #4A5568;
+  --c-ink-40:         #64748B;
+  --c-ink-20:         #94A3B8;
+
+  --c-surface:        #fff;
+  --c-bg:             #F4F9FB;
+  --c-border:         #E2ECF0;
+
+  --c-green:          #059669;
+  --c-amber:          #D97706;
+  --c-red:            #E11D48;
+  --c-red-dark:       #B91C1C;
+
+  --radius-sm:        8px;
+  --radius-md:        12px;
+  --radius-lg:        16px;
+  --radius-xl:        20px;
+
+  --shadow-sm:  0 2px 8px  rgba(13, 27, 62, 0.05);
+  --shadow-md:  0 4px 16px rgba(13, 27, 62, 0.08);
+  --shadow-lg:  0 8px 32px rgba(13, 27, 62, 0.12);
+
+  --font: 'Sora', sans-serif;
+
+  --sidebar-w: 240px;
+  --topbar-h:  72px;
+}
+
+/* ─── Reset / Base ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── Skeleton shimmer animation ─── */
+@keyframes cl-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+.cl-skeleton {
+  background: linear-gradient(90deg, var(--c-border) 25%, #EEF4F7 50%, var(--c-border) 75%);
+  background-size: 600px 100%;
+  animation: cl-shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
+
+/* ─── Scroll-area ─── */
+.cl-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 32px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.cl-scroll::-webkit-scrollbar          { width: 5px; }
+.cl-scroll::-webkit-scrollbar-track    { background: transparent; }
+.cl-scroll::-webkit-scrollbar-thumb    { background: var(--c-border); border-radius: 10px; }
+.cl-scroll::-webkit-scrollbar-thumb:hover { background: #CBD5E0; }
+
+/* ─── Card ─── */
+.cl-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  transition: box-shadow .2s;
+}
+.cl-card:hover { box-shadow: var(--shadow-md); }
+
+/* ─── Card header ─── */
+.cl-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.cl-card-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--c-primary-soft);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cl-card-icon svg { width: 20px; height: 20px; fill: var(--c-primary); }
+.cl-card-title   { font-size: 15px; font-weight: 700; color: var(--c-ink); line-height: 1.2; }
+.cl-card-sub     { font-size: 12px; color: var(--c-ink-40); margin-top: 2px; }
+
+/* ─── Section divider ─── */
+.cl-divider { height: 1px; background: var(--c-border); margin: 0 -28px; }
+
+/* ─── Form elements ─── */
+.cl-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-ink-60);
+  margin-bottom: 6px;
+  display: block;
+}
+.cl-input, .cl-textarea, .cl-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--c-ink);
+  background: var(--c-surface);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.cl-input:focus, .cl-textarea:focus, .cl-select:focus {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(11, 143, 172, 0.12);
+}
+.cl-textarea { resize: vertical; min-height: 90px; }
+
+.cl-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ─── Tag / chip ─── */
+.cl-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  background: var(--c-primary-soft);
+  color: var(--c-primary-dark);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font);
+}
+.cl-tag button {
+  background: none; border: none; cursor: pointer;
+  color: inherit; font-size: 13px; line-height: 1;
+  opacity: .6; padding: 0; display: flex; align-items: center;
+}
+.cl-tag button:hover { opacity: 1; }
+
+/* ─── Tag row (chips + add input) ─── */
+.cl-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.cl-tag-add-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.cl-tag-add-row .cl-input { flex: 1; }
+
+/* ─── Toggle switch ─── */
+.cl-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px; height: 24px;
+  flex-shrink: 0;
+}
+.cl-toggle input { opacity: 0; width: 0; height: 0; }
+.cl-toggle-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: var(--c-border);
+  transition: background .2s;
+  cursor: pointer;
+}
+.cl-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  left: 3px; top: 3px;
+  transition: transform .2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.18);
+}
+.cl-toggle input:checked + .cl-toggle-slider { background: var(--c-primary); }
+.cl-toggle input:checked + .cl-toggle-slider::before { transform: translateX(20px); }
+
+/* ─── Session type chip (selectable) ─── */
+.cl-session-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-ink-60);
+  background: var(--c-surface);
+  cursor: pointer;
+  transition: border-color .2s, color .2s, background .2s;
+  font-family: var(--font);
+  user-select: none;
+}
+.cl-session-chip svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; flex-shrink: 0; }
+.cl-session-chip.active {
+  border-color: var(--c-primary);
+  color: var(--c-primary-dark);
+  background: var(--c-primary-soft);
+}
+
+/* ─── Availability row ─── */
+.cl-avail-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--c-border);
+}
+.cl-avail-row:last-child { border-bottom: none; }
+.cl-avail-day {
+  width: 96px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-ink);
+  flex-shrink: 0;
+}
+.cl-avail-unavailable { font-size: 12px; color: var(--c-ink-40); font-style: italic; }
+.cl-time-input {
+  padding: 7px 10px;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--c-ink);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  width: 110px;
+}
+.cl-time-input:focus {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(11, 143, 172, 0.12);
+}
+.cl-avail-to { font-size: 12px; color: var(--c-ink-40); flex-shrink: 0; }
+
+/* ─── Primary button ─── */
+.cl-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  background: linear-gradient(135deg, var(--c-primary), var(--c-primary-dark));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity .2s, transform .15s;
+  white-space: nowrap;
+}
+.cl-btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+
+/* ─── Secondary / ghost button ─── */
+.cl-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  background: none;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  color: var(--c-ink-60);
+  cursor: pointer;
+  transition: border-color .2s, color .2s, background .2s;
+  white-space: nowrap;
+}
+.cl-btn-ghost:hover { border-color: var(--c-primary); color: var(--c-primary); background: var(--c-primary-soft); }
+.cl-btn-ghost svg   { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
+
+/* ─── Page header row (title + actions) ─── */
+.cl-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.cl-page-title   { font-size: 22px; font-weight: 800; color: var(--c-ink); letter-spacing: -.4px; line-height: 1.2; }
+.cl-page-sub     { font-size: 13px; color: var(--c-ink-40); margin-top: 3px; }
+.cl-page-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+/* ─── Notice / banner card ─── */
+.cl-notice {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(11,143,172,.06), rgba(7,110,134,.04));
+  border: 1px solid rgba(11, 143, 172, 0.2);
+}
+.cl-notice-icon {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  background: rgba(11,143,172,.1);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cl-notice-icon svg { width: 22px; height: 22px; fill: var(--c-primary); }
+.cl-notice-text  { flex: 1; }
+.cl-notice-title { font-size: 14px; font-weight: 700; color: var(--c-ink); }
+.cl-notice-sub   { font-size: 12px; color: var(--c-ink-40); margin-top: 2px; }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .cl-scroll { padding: 16px 14px 36px; gap: 16px; }
+  .cl-card   { padding: 18px; }
+  .cl-field-row { grid-template-columns: 1fr; }
+  .cl-page-header { flex-direction: column; gap: 10px; }
+  .cl-avail-row   { flex-wrap: wrap; gap: 8px; }
+  .cl-avail-day   { width: auto; }
+  .cl-page-actions { width: 100%; justify-content: flex-end; }
+}
+@media (max-width: 480px) {
+  .cl-divider { margin: 0 -18px; }
+  .cl-time-input { width: 90px; }
+}
