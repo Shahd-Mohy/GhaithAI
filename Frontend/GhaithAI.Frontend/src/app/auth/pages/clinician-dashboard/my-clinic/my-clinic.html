@@ -1,0 +1,327 @@
+<div class="mc-page-wrapper">
+
+  <!-- ══ SUCCESS TOAST ══ -->
+  <div class="mc-success-toast" *ngIf="saveSuccess">
+    <svg viewBox="0 0 24 24" class="toast-icon">
+      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+    </svg>
+    <span>Clinic profile saved successfully!</span>
+  </div>
+
+  <!-- ══ PAGE HEADER ══ -->
+  <div class="mc-page-header">
+    <div class="mc-page-header-left">
+      <h1 class="mc-page-title">My Clinic</h1>
+      <p class="mc-page-subtitle">Manage your clinic profile so patients can find and book with you</p>
+    </div>
+    <div class="mc-page-header-actions">
+      <button class="mc-btn-preview" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        Preview
+      </button>
+      <button class="mc-btn-save" type="button" (click)="saveChanges()" [disabled]="!hasChanges || isSaving">
+        <span class="mc-spin sm" *ngIf="isSaving"></span>
+        {{ isSaving ? 'Saving...' : 'Save Changes' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="mc-scroll">
+
+    <!-- ══ PUBLIC LISTING ══ -->
+    <div class="mc-card">
+      <div class="mc-public-listing-row">
+        <div class="mc-card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            <path d="M2 12h20"/>
+          </svg>
+        </div>
+        <div class="mc-public-listing-text">
+          <div class="mc-section-title">Public Listing</div>
+          <div class="mc-section-sub">Show your clinic in the "Find a Professional" directory</div>
+        </div>
+        <label class="mc-toggle">
+          <input type="checkbox" [(ngModel)]="publicListing" (ngModelChange)="markChanged()">
+          <span class="mc-toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ══ PRACTICE MODE (Online vs In-Person) ══ -->
+    <div class="mc-card">
+      <div class="mc-card-header">
+        <div class="mc-card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div>
+          <div class="mc-section-title">Practice Mode</div>
+          <div class="mc-section-sub">Select how you consult with your patients</div>
+        </div>
+      </div>
+      <div class="mc-practice-grid">
+        <div class="mc-practice-card" [class.active]="practiceType === 'online'" (click)="setPracticeType('online')">
+          <div class="mc-practice-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              <path d="M2 12h20"/>
+            </svg>
+          </div>
+          <div class="mc-practice-content">
+            <div class="mc-practice-title">Online Practice</div>
+            <div class="mc-practice-desc">Provide virtual care. No physical clinic address or city info required. You will only enter Sessions &amp; Fees and Availability.</div>
+          </div>
+          <div class="mc-practice-check" *ngIf="practiceType === 'online'">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+        </div>
+        <div class="mc-practice-card" [class.active]="practiceType === 'inperson'" (click)="setPracticeType('inperson')">
+          <div class="mc-practice-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
+          <div class="mc-practice-content">
+            <div class="mc-practice-title">In-Person &amp; Clinic</div>
+            <div class="mc-practice-desc">Provide physical or hybrid care. Requires clinic address, location details, specialties, fees, and availability.</div>
+          </div>
+          <div class="mc-practice-check" *ngIf="practiceType === 'inperson'">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CLINIC INFORMATION (hidden for online) ══ -->
+    <div class="mc-card" *ngIf="practiceType !== 'online'">
+      <div class="mc-card-header">
+        <div class="mc-card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <div>
+          <div class="mc-section-title">Clinic Information</div>
+          <div class="mc-section-sub">Basic details about your practice</div>
+        </div>
+      </div>
+
+      <div class="mc-field-row">
+        <div class="mc-field">
+          <label class="mc-label" for="f-clinic-name">Clinic / Practice Name</label>
+          <input id="f-clinic-name" class="mc-input" type="text" [(ngModel)]="clinicName" (ngModelChange)="markChanged()" placeholder="e.g. Serenity Mental Health Clinic">
+        </div>
+        <div class="mc-field">
+          <label class="mc-label" for="f-display-name">Your Display Name</label>
+          <input id="f-display-name" class="mc-input" type="text" [(ngModel)]="displayName" (ngModelChange)="markChanged()" placeholder="Dr. First Last">
+        </div>
+      </div>
+
+      <div class="mc-field-row">
+        <div class="mc-field">
+          <label class="mc-label" for="f-title">Professional Title</label>
+          <input id="f-title" class="mc-input" type="text" [(ngModel)]="title" (ngModelChange)="markChanged()" placeholder="e.g. Psychiatrist">
+        </div>
+        <div class="mc-field">
+          <label class="mc-label" for="f-years">Years of Experience</label>
+          <input id="f-years" class="mc-input" type="number" min="0" [(ngModel)]="yearsExp" (ngModelChange)="markChanged()" placeholder="12">
+        </div>
+      </div>
+
+      <div class="mc-field">
+        <label class="mc-label" for="f-bio">About / Bio</label>
+        <textarea id="f-bio" class="mc-textarea" [(ngModel)]="bio" (ngModelChange)="markChanged()" rows="4" placeholder="Describe your background, clinical approach, and what makes your practice unique…"></textarea>
+      </div>
+    </div>
+
+    <!-- ══ CONTACT & LOCATION (hidden for online) ══ -->
+    <div class="mc-card" *ngIf="practiceType !== 'online'">
+      <div class="mc-card-header">
+        <div class="mc-card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="mc-section-title">Contact &amp; Location</div>
+          <div class="mc-section-sub">How patients can reach you</div>
+        </div>
+      </div>
+
+      <div class="mc-field">
+        <label class="mc-label" for="f-address">Clinic Address</label>
+        <input id="f-address" class="mc-input" type="text" [(ngModel)]="address" (ngModelChange)="markChanged()" placeholder="Street address, building, suite…">
+      </div>
+
+      <div class="mc-field-row">
+        <div class="mc-field">
+          <label class="mc-label" for="f-city">City</label>
+          <input id="f-city" class="mc-input" type="text" [(ngModel)]="city" (ngModelChange)="markChanged()" placeholder="City">
+        </div>
+        <div class="mc-field">
+          <label class="mc-label" for="f-country">Country</label>
+          <input id="f-country" class="mc-input" type="text" [(ngModel)]="country" (ngModelChange)="markChanged()" placeholder="Country">
+        </div>
+      </div>
+
+      <div class="mc-field-row">
+        <div class="mc-field">
+          <label class="mc-label" for="f-phone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mc-label-icon">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.74a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            Phone
+          </label>
+          <input id="f-phone" class="mc-input" type="tel" [(ngModel)]="phone" (ngModelChange)="markChanged()" placeholder="+971 XX XXX XXXX">
+        </div>
+        <div class="mc-field">
+          <label class="mc-label" for="f-email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mc-label-icon">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Email
+          </label>
+          <input id="f-email" class="mc-input" type="email" [(ngModel)]="email" (ngModelChange)="markChanged()" placeholder="clinic@email.com">
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SPECIALTIES & LANGUAGES (hidden for online) ══ -->
+    <div class="mc-card" *ngIf="practiceType !== 'online'">
+      <div class="mc-card-header">
+        <div class="mc-card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.74a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="mc-section-title">Specialties &amp; Languages</div>
+          <div class="mc-section-sub">Help patients find the right match</div>
+        </div>
+      </div>
+
+      <div class="mc-field">
+        <label class="mc-label">Specialties</label>
+        <div class="mc-tag-row">
+          <span class="mc-tag" *ngFor="let s of specialties">
+            {{ s }}
+            <button type="button" class="mc-tag-remove" (click)="removeSpecialty(s)" aria-label="Remove specialty">×</button>
+          </span>
+        </div>
+        <div class="mc-tag-add-row">
+          <input class="mc-input mc-tag-input" type="text" [(ngModel)]="newSpecialty" (keydown)="onSpecialtyKey($event)" placeholder="Add a specialty...">
+          <button class="mc-btn-add" type="button" (click)="addSpecialty()" [disabled]="!newSpecialty.trim()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add
+          </button>
+        </div>
+      </div>
+
+      <div class="mc-field" style="margin-top: 24px;">
+        <label class="mc-label">Languages Spoken</label>
+        <div class="mc-tag-row">
+          <span class="mc-tag" *ngFor="let l of languages">
+            {{ l }}
+            <button type="button" class="mc-tag-remove" (click)="removeLanguage(l)" aria-label="Remove language">×</button>
+          </span>
+        </div>
+        <div class="mc-tag-add-row">
+          <input class="mc-input mc-tag-input" type="text" [(ngModel)]="newLanguage" (keydown)="onLanguageKey($event)" placeholder="Add a language...">
+          <button class="mc-btn-add" type="button" (click)="addLanguage()" [disabled]="!newLanguage.trim()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SESSIONS & FEES ══ -->
+    <div class="mc-card">
+      <div class="mc-card-header">
+        <div class="mc-card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div>
+          <div class="mc-section-title">Sessions &amp; Fees</div>
+          <div class="mc-section-sub">How and what you charge for appointments</div>
+        </div>
+      </div>
+
+      <div class="mc-field-row">
+        <div class="mc-field">
+          <label class="mc-label" for="f-fee">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mc-label-icon">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            Fee per Session
+          </label>
+          <input id="f-fee" class="mc-input" type="number" min="0" [(ngModel)]="feePerSession" (ngModelChange)="markChanged()" placeholder="180">
+        </div>
+        <div class="mc-field">
+          <label class="mc-label" for="f-duration">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mc-label-icon">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Session Duration (minutes)
+          </label>
+          <input id="f-duration" class="mc-input" type="number" min="15" step="5" [(ngModel)]="sessionDuration" (ngModelChange)="markChanged()" placeholder="50">
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ WEEKLY AVAILABILITY ══ -->
+    <div class="mc-card">
+      <div class="mc-card-header">
+        <div class="mc-card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div>
+          <div class="mc-section-title">Weekly Availability</div>
+          <div class="mc-section-sub">Set the hours patients can book with you</div>
+        </div>
+      </div>
+
+      <div class="mc-schedule-grid">
+        <div class="mc-avail-row" *ngFor="let day of schedule" [class.day-on]="day.enabled">
+          <label class="mc-toggle">
+            <input type="checkbox" [(ngModel)]="day.enabled" (ngModelChange)="markChanged()">
+            <span class="mc-toggle-slider"></span>
+          </label>
+
+          <div class="mc-day-name" [class.dim]="!day.enabled">{{ day.name }}</div>
+
+          <div class="mc-day-times" *ngIf="day.enabled">
+            <input class="mc-time-input" type="time" [(ngModel)]="day.from" (ngModelChange)="markChanged()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mc-time-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="mc-avail-to">to</span>
+            <input class="mc-time-input" type="time" [(ngModel)]="day.to" (ngModelChange)="markChanged()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mc-time-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+
+          <div class="mc-unavailable" *ngIf="!day.enabled">Unavailable</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 40px;"></div>
+  </div>
+</div>
