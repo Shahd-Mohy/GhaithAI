@@ -63,10 +63,13 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
   sidebarOpen = false;   // ← controls off-canvas drawer on mobile
 
   clinician: ClinicianInfo = {
-    name: 'Dr. Sarah Ahmed',
-    specialty: 'Psychiatrist',
-    initial: 'S'
+    name: 'Clinician',
+    specialty: 'Doctor',
+    initial: 'C'
   };
+
+  /** Email shown in the sidebar user area */
+  clinicianEmail = '';
 
   // ── computed getters ─────────────────────────────────────────────
   get greeting(): string {
@@ -109,10 +112,42 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
       if (params['page']) this.activePage = params['page'];
     });
 
+    // ── Load real user data from the login response ──────────────
+    this.loadClinicianProfile();
+
     setTimeout(() => {
       this.isLoading = false;
       this.cdr.detectChanges();
     }, 800);
+  }
+
+  // ── Populate clinician info from stored session ───────────────────
+  private loadClinicianProfile(): void {
+    const user = this.authService.getUser();
+    if (!user) return;
+
+    const fullName = user.fullName?.trim() || 'Clinician';
+
+    // Derive the display specialty:
+    // 1. Prefer `specialization` (e.g. "Child & Adolescent Psychiatry") if present
+    // 2. Fall back to `doctorType` (e.g. "Psychiatrist")
+    // 3. Default to role name
+    const specialty =
+      user.specialization?.trim() ||
+      user.doctorType?.trim() ||
+      user.role ||
+      'Doctor';
+
+    // Build initials from the first letter of the first and last name word
+    const nameParts = fullName.split(/\s+/).filter(Boolean);
+    let initial = nameParts[0]?.[0]?.toUpperCase() ?? 'C';
+    if (nameParts.length > 1) {
+      initial += (nameParts[nameParts.length - 1]?.[0]?.toUpperCase() ?? '');
+    }
+
+    this.clinician = { name: fullName, specialty, initial };
+    this.clinicianEmail = user.email || '';
+    this.cdr.detectChanges();
   }
 
   ngOnDestroy(): void {

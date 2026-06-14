@@ -172,7 +172,8 @@
   font-size: 13px; font-weight: 600; color: #0D1B3E;
   line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.user-plan { font-size: 11px; color: #0B8FAC; }
+.user-plan  { font-size: 11px; color: #0B8FAC; }
+.user-email { font-size: 10px; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
 
 .user-chevron {
   width: 18px; height: 18px; fill: #64748B; flex-shrink: 0;

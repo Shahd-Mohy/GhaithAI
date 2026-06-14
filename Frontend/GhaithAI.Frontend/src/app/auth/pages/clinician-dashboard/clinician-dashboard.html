@@ -80,6 +80,7 @@
         <div class="user-info">
           <div class="user-name">{{ clinician.name }}</div>
           <div class="user-plan">{{ clinician.specialty }}</div>
+          <div class="user-email" *ngIf="clinicianEmail">{{ clinicianEmail }}</div>
         </div>
         <svg class="user-chevron" [class.rotated]="showUserMenu" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
       </div>
