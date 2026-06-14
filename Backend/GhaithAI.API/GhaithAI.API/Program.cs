@@ -101,6 +101,18 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // ✅ يحل الـ circular reference
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+
+        // ✅ enum كـ string
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+
 // إعدادات الـ CORS عشان فرونت الـ Angular يربط بسلام
 builder.Services.AddCors(options =>
 {

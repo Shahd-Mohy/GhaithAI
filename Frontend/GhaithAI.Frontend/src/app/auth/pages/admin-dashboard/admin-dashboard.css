@@ -1,5 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:host {
+  display: block;
+  font-family: 'Sora', sans-serif;
+  position: relative;
+  z-index: 0;
+}
 * {
   box-sizing: border-box;
   margin: 0;
@@ -16,6 +23,7 @@
   display: grid;
   grid-template-columns: 220px 1fr;
   min-height: 100vh;
+  position: relative; /* ✅ أضيف دي */
 }
 
 /* ─── SIDEBAR ─── */
@@ -25,9 +33,10 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  position: sticky;
-  top: 0;
   height: 100vh;
+  position: relative; /* ✅ بدل sticky */
+  z-index: 1;
+
 }
 
 .sidebar-logo {
@@ -445,15 +454,18 @@
 }
 
 /* ─── MODAL ─── */
+/* ─── تأكد إن دول موجودين وصح ─── */
 .modal-overlay {
   position: fixed;
   inset: 0;
+
   background: rgba(13, 27, 62, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;        /* ✅ رقم كبير */
+
   padding: 20px;
 }
 
@@ -463,7 +475,12 @@
   padding: 28px;
   width: 100%;
   max-width: 480px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  position: relative;   /* ✅ مهم */
+  z-index: 10000;       /* ✅ فوق الـ overlay */
+  max-height: 90vh;
+  overflow-y: auto;
+ 
 }
 
 .modal-lg {
@@ -643,4 +660,102 @@ a.nav-item.active {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+}
+.detail-item { display: flex; flex-direction: column; gap: 3px; }
+.detail-label { font-size: 11px; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; }
+.detail-item span:last-child { font-size: 13px; color: #0D1B3E; font-weight: 500; }
+.detail-bio { margin-bottom: 16px; }
+.detail-bio p { font-size: 13px; color: #4A5568; line-height: 1.65; margin-top: 6px; }
+/* ─── INLINE REJECT FORM ─── */
+.reject-form {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reject-form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #DC2626;
+  font-family: 'Sora', sans-serif;
+}
+
+.reject-form textarea {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-family: 'Sora', sans-serif;
+  color: #0D1B3E;
+  background: white;
+  border: 1.5px solid #FECACA;
+  border-radius: 7px;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s;
+}
+
+.reject-form textarea:focus {
+  border-color: #DC2626;
+}
+
+.reject-form textarea.is-error {
+  border-color: #DC2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.reject-form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn-cancel-sm {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Sora', sans-serif;
+  background: white;
+  color: #64748B;
+  border: 1px solid #E2ECF0;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel-sm:hover { background: #F1F5F9; }
+
+.btn-confirm-reject-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Sora', sans-serif;
+  background: #DC2626;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-confirm-reject-sm:hover { background: #B91C1C; }
+.btn-confirm-reject-sm:disabled { background: #FCA5A5; cursor: not-allowed; }
+
+/* ✅ Reject btn لما يكون active */
+.btn-reject.active {
+  background: #FEF2F2;
+  border-color: #DC2626;
 }

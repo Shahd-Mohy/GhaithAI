@@ -7,47 +7,51 @@ namespace GhaithAI.GaithAI.Application.Services.Class
     {
         private readonly ApplicationDbContext _context;
 
-        public AdminService(
-            ApplicationDbContext context)
+        public AdminService(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public async Task<List<DoctorsProfile>>GetPendingDoctorsAsync()
+        public async Task<List<DoctorProfileDTO>> GetPendingDoctorsAsync()
         {
-            return await _context.DoctorsProfiles
+            var doctors = await _context.DoctorsProfiles
                 .Include(x => x.User)
-                .Where(x =>
-                    x.ApprovalStatus ==
-                    ApprovalStatus.Pending)
+                .Where(x => x.ApprovalStatus == ApprovalStatus.Pending)
                 .ToListAsync();
+
+            return doctors.Select(MapToDTO).ToList();
         }
 
-        public async Task<List<DoctorsProfile>>GetApprovedDoctorsAsync()
+        public async Task<List<DoctorProfileDTO>> GetApprovedDoctorsAsync()
         {
-            return await _context.DoctorsProfiles
+            var doctors = await _context.DoctorsProfiles
                 .Include(x => x.User)
-                .Where(x =>
-                    x.ApprovalStatus ==
-                    ApprovalStatus.Approved)
+                .Where(x => x.ApprovalStatus == ApprovalStatus.Approved)
                 .ToListAsync();
+
+            return doctors.Select(MapToDTO).ToList();
         }
 
-        public async Task<List<DoctorsProfile>>GetRejectedDoctorsAsync()
+        public async Task<List<DoctorProfileDTO>> GetRejectedDoctorsAsync()
         {
-            return await _context.DoctorsProfiles
+            var doctors = await _context.DoctorsProfiles
                 .Include(x => x.User)
-                .Where(x =>
-                    x.ApprovalStatus ==
-                    ApprovalStatus.Rejected)
+                .Where(x => x.ApprovalStatus == ApprovalStatus.Rejected)
                 .ToListAsync();
+
+            return doctors.Select(MapToDTO).ToList();
         }
 
-        public async Task<DoctorsProfile>GetDoctorDetailsAsync(Guid id)
+        public async Task<DoctorProfileDTO> GetDoctorDetailsAsync(Guid id)
         {
-            return await _context.DoctorsProfiles
+            var doctor = await _context.DoctorsProfiles
                 .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (doctor == null)
+                throw new Exception("Doctor not found");
+
+            return MapToDTO(doctor);
         }
 
         public async Task ApproveDoctorAsync(Guid id)
@@ -62,7 +66,6 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             doctor.ApprovalStatus = ApprovalStatus.Approved;
             doctor.RejectionReason = null;
 
-            // ✅ تفعيل الـ user account
             if (doctor.User != null)
                 doctor.User.IsActive = true;
 
@@ -72,7 +75,6 @@ namespace GhaithAI.GaithAI.Application.Services.Class
         public async Task RejectDoctorAsync(Guid id, string reason)
         {
             var doctor = await _context.DoctorsProfiles
-                .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (doctor == null)
@@ -83,5 +85,22 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             await _context.SaveChangesAsync();
         }
+
+        private DoctorProfileDTO MapToDTO(DoctorsProfile d) => new DoctorProfileDTO
+        {
+            Id = d.Id,
+            FullName = d.FullName,
+            DoctorType = d.DoctorType.ToString(),
+            Specialization = d.Specialization,
+            Bio = d.Bio,
+            YearsOfExperience = d.YearsOfExperience,
+            DocumentsPdfUrl = d.DocumentsPdfUrl,
+            ApprovalStatus = d.ApprovalStatus.ToString(),
+            RejectionReason = d.RejectionReason,
+            AverageRating = d.AverageRating,
+            Email = d.User?.Email ?? "",
+            PhoneNumber = d.User?.PhoneNumber ?? "",
+            ProfilePicture = d.User?.ProfilePicture
+        };
     }
 }
