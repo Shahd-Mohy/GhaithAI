@@ -7,7 +7,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../services/auth';
-
+import { DoctorScheduleComponent } from './components/doctor-schedule/doctor-schedule'
 // ── Interfaces ─────────────────────────────────────────────────────────────
 
 interface ClinicianInfo {
@@ -44,7 +44,7 @@ interface RiskAlert {
 @Component({
   selector: 'app-clinician-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DoctorScheduleComponent],
   templateUrl: './clinician-dashboard.html',
   styleUrls: ['./clinician-dashboard.css']
 })
@@ -87,23 +87,23 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
 
   // ── static UI data ─────────────────────────────────────────────
   statCards: StatCard[] = [
-    { label: 'Total Patients', value: 48, sub: '+3 this week',  icon: 'patients', color: 'teal'  },
-    { label: 'Sessions Today', value: 6,  sub: '2 remaining',   icon: 'sessions', color: 'green' },
-    { label: 'Notes Pending',  value: 4,  sub: 'Review needed', icon: 'notes',    color: 'amber' },
-    { label: 'Risk Alerts',    value: 2,  sub: 'High priority', icon: 'risk',     color: 'red'   },
+    { label: 'Total Patients', value: 48, sub: '+3 this week', icon: 'patients', color: 'teal' },
+    { label: 'Sessions Today', value: 6, sub: '2 remaining', icon: 'sessions', color: 'green' },
+    { label: 'Notes Pending', value: 4, sub: 'Review needed', icon: 'notes', color: 'amber' },
+    { label: 'Risk Alerts', value: 2, sub: 'High priority', icon: 'risk', color: 'red' },
   ];
 
   todaySchedule: ScheduleSession[] = [
-    { initials: 'AH', name: 'Ahmed Hassan',    type: 'Follow-up',           time: '10:00 AM', color: '#0B8FAC' },
-    { initials: 'FK', name: 'Fatima Khaled',   type: 'Initial Assessment',  time: '11:30 AM', color: '#7C3AED' },
-    { initials: 'OY', name: 'Omar Youssef',    type: 'Therapy Session',     time: '2:00 PM',  color: '#059669' },
-    { initials: 'LI', name: 'Layla Ibrahim',   type: 'Follow-up',           time: '3:30 PM',  color: '#D97706' },
-    { initials: 'MS', name: 'Mohammed Salem',  type: 'Group Session',       time: '5:00 PM',  color: '#E11D48' },
+    { initials: 'AH', name: 'Ahmed Hassan', type: 'Follow-up', time: '10:00 AM', color: '#0B8FAC' },
+    { initials: 'FK', name: 'Fatima Khaled', type: 'Initial Assessment', time: '11:30 AM', color: '#7C3AED' },
+    { initials: 'OY', name: 'Omar Youssef', type: 'Therapy Session', time: '2:00 PM', color: '#059669' },
+    { initials: 'LI', name: 'Layla Ibrahim', type: 'Follow-up', time: '3:30 PM', color: '#D97706' },
+    { initials: 'MS', name: 'Mohammed Salem', type: 'Group Session', time: '5:00 PM', color: '#E11D48' },
   ];
 
   riskAlerts: RiskAlert[] = [
-    { name: 'Ahmed Hassan',  level: 'High',   description: 'Suicidal ideation expressed',      timeAgo: '2 hours ago' },
-    { name: 'Fatima Khaled', level: 'Medium', description: 'Increased hopelessness language',  timeAgo: 'Yesterday'   },
+    { name: 'Ahmed Hassan', level: 'High', description: 'Suicidal ideation expressed', timeAgo: '2 hours ago' },
+    { name: 'Fatima Khaled', level: 'Medium', description: 'Increased hopelessness language', timeAgo: 'Yesterday' },
   ];
 
   // ── lifecycle ─────────────────────────────────────────────────────
@@ -156,7 +156,7 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
   }
 
   // ── Sidebar (responsive) ──────────────────────────────────────────
-  openSidebar(): void  { this.sidebarOpen = true;  }
+  openSidebar(): void { this.sidebarOpen = true; }
   closeSidebar(): void { this.sidebarOpen = false; this.showUserMenu = false; }
 
   /** Close sidebar when window is resized back to desktop width */
