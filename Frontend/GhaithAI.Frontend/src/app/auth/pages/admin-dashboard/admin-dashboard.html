@@ -17,6 +17,7 @@
         Pending
         <span class="badge pending" *ngIf="pending.length > 0">{{ pending.length }}</span>
       </button>
+
       <button class="nav-item" [class.active]="activeTab === 'approved'" (click)="setTab('approved')">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
@@ -25,6 +26,7 @@
         Approved
         <span class="badge approved" *ngIf="approved.length > 0">{{ approved.length }}</span>
       </button>
+
       <button class="nav-item" [class.active]="activeTab === 'rejected'" (click)="setTab('rejected')">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10"/>
@@ -124,14 +126,13 @@
           <span>{{ doc.rejectionReason }}</span>
         </div>
 
-        <!-- ✅ Inline Reject Form -->
+        <!-- Inline Reject Form -->
         <div class="reject-form" *ngIf="rejectOpenId === doc.id">
           <p class="reject-form-label">Reason for rejection</p>
-          <textarea
-            [(ngModel)]="rejectReason"
-            placeholder="e.g. Missing license certificate, incomplete information..."
-            rows="3"
-            [class.is-error]="rejectError">
+          <textarea [(ngModel)]="rejectReason"
+                    placeholder="e.g. Missing license certificate, incomplete information..."
+                    rows="3"
+                    [class.is-error]="rejectError">
           </textarea>
           <div class="error-msg" *ngIf="rejectError">{{ rejectError }}</div>
           <div class="reject-form-actions">

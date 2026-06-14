@@ -9,10 +9,12 @@ namespace GhaithAI.GaithAI.API.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
+        private readonly IAdminDashboardStatsService _adminDashboardStatsService;
 
-        public AdminController(IAdminService adminService)
+        public AdminController(IAdminService adminService , IAdminDashboardStatsService adminDashboardStatsService)
         {
             _adminService = adminService;
+            _adminDashboardStatsService = adminDashboardStatsService;
         }
 
         [HttpGet("doctors/pending")]
@@ -96,6 +98,29 @@ namespace GhaithAI.GaithAI.API.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("Dashboard_Stats")]
+        public async Task<IActionResult> GetDashboardStats()
+        {
+            try
+            {
+                var stats = await _adminDashboardStatsService.GetDashboardStatsAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = stats
+                });
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
         }
     }

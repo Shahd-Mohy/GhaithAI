@@ -1,6 +1,7 @@
 global using AutoMapper;
 global using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceService;
 global using GhaithAI.API.Repositories.UnitWork;
+using GhaithAI.GaithAI.Application.DTOs.SelfHelp;
 
 namespace GhaithAI.API.GaithAI.Application.Services.Class
 {
@@ -16,30 +17,33 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             _logger=logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<AdminSelfHelpResponseDto>> GetAllContentAsync()
+        public async Task<(IEnumerable<AdminSelfHelpGetAllDto> Items, int TotalCount)> GetAllContentAsync(int pageNumber, int pageSize)
         {
             try
             {
                 if (_unitOfWork.SelfHelp == null)
                 {
                     _logger.LogError("Admin Service: SelfHelp Repository is null.");
-                    return Enumerable.Empty<AdminSelfHelpResponseDto>();
+                    return (Enumerable.Empty<AdminSelfHelpGetAllDto>(), 0);
                 }
 
-                var contents = await _unitOfWork.SelfHelp.GetAllAsync();
-                if (contents == null)
-                    return Enumerable.Empty<AdminSelfHelpResponseDto>();
+                var (contents, totalCount) = await _unitOfWork.SelfHelp.GetPagedAsync(pageNumber, pageSize);
 
-                return _mapper.Map<IEnumerable<AdminSelfHelpResponseDto>>(contents);
+                if (contents == null)
+                    return (Enumerable.Empty<AdminSelfHelpGetAllDto>(), 0);
+
+                var mappedItems = _mapper.Map<IEnumerable<AdminSelfHelpGetAllDto>>(contents);
+
+                return (mappedItems, totalCount);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Admin Service: Error occurred while fetching all content.");
-                throw new ApplicationException(" system error occurred while fetching data to the control panel.", ex);
+                _logger.LogError(ex, "Admin Service: Error occurred while fetching all content with repository pagination.");
+                throw new ApplicationException("A system error occurred while fetching data to the control panel.", ex);
             }
         }
 
-        public async Task<AdminSelfHelpResponseDto> GetContentByIdAsync(Guid id)
+        public async Task<AdminSelfHelpDetailsDTO> GetContentByIdAsync(Guid id)
         {
             if (id == Guid.Empty)
             {
@@ -51,10 +55,14 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                 if (_unitOfWork.SelfHelp == null)
                     return null!;
 
-                var content = await _unitOfWork.SelfHelp.GetByIdAsync(id);
+                var content = await _unitOfWork.SelfHelp.GetAllQueryableNoTracking()
+                    .Include(c=>c.ExerciseTips)
+                    .FirstOrDefaultAsync(c => c.Id == id);
+
+
                 if (content == null) return null!;
 
-                return _mapper.Map<AdminSelfHelpResponseDto>(content);
+                return _mapper.Map<AdminSelfHelpDetailsDTO>(content);
             }
             catch (Exception ex)
             {
@@ -63,31 +71,46 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             }
         }
 
-        public async Task<AdminSelfHelpResponseDto> CreateContentAsync(AdminSelfHelpSaveDto dto, string adminId)
+        public async Task<AdminSelfHelpGetAllDto> CreateContentAsync(AdminSelfHelpSaveDto dto, string adminId)
         {
-            if (dto == null) 
+            if (dto == null)
                 throw new ArgumentNullException(nameof(dto), "New content data cannot be empty.");
+
             if (string.IsNullOrWhiteSpace(adminId))
             {
                 _logger.LogCritical("Security Warning: Attempted to create content without a valid Admin Identity.");
                 throw new ArgumentException("The Admin ID is invalid or missing.");
             }
+
             try
             {
                 if (_unitOfWork.SelfHelp == null)
                     throw new InvalidOperationException("SelfHelp Repository is unavailable.");
+
                 var contentEntity = _mapper.Map<SelfHelpContent>(dto);
+
                 contentEntity.Id = Guid.NewGuid();
                 contentEntity.CreatedAt = DateTime.UtcNow;
-                contentEntity.IsDeleted = false;
-                contentEntity.DeletedAt = null;
-                contentEntity.UpdatedAt = null;
-                contentEntity.UpdatedBy = null;
+                contentEntity.UpdatedBy = adminId; 
+                contentEntity.IsActive = dto.IsActive;
+
+                if (contentEntity.ExerciseTips != null && contentEntity.ExerciseTips.Any())
+                {
+                    foreach (var tip in contentEntity.ExerciseTips)
+                    {
+                        tip.Id = Guid.NewGuid();
+                        tip.CreatedAt = DateTime.UtcNow;
+                        tip.UpdatedBy = adminId;
+                    }
+                }
+
                 await _unitOfWork.SelfHelp.AddAsync(contentEntity);
                 await _unitOfWork.CompleteAsync();
-                _logger.LogInformation("Admin {AdminId} successfully created SelfHelpContent with ID: {ContentId}", adminId, contentEntity.Id);
-                return _mapper.Map<AdminSelfHelpResponseDto>(contentEntity);
 
+                _logger.LogInformation("Admin {AdminId} successfully created SelfHelpContent with ID: {ContentId} alongside {TipCount} tips.",
+                    adminId, contentEntity.Id, contentEntity.ExerciseTips?.Count ?? 0);
+
+                return _mapper.Map<AdminSelfHelpGetAllDto>(contentEntity);
             }
             catch (Exception ex)
             {
@@ -96,80 +119,73 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             }
         }
 
-        public async Task<AdminSelfHelpResponseDto> UpdateContentAsync(Guid id, AdminSelfHelpSaveDto dto, string adminId)
+        public async Task<bool> UpdateContentAsync(AdminSelfHelpUpdateDto dto, string adminId)
         {
-            if (id == Guid.Empty || dto == null || string.IsNullOrWhiteSpace(adminId))
-            {
-                _logger.LogWarning("Admin Service: Update called with invalid arguments. ID: {Id}, Admin: {AdminId}", id, adminId);
-                return null!;
-            }
-
             try
             {
-                if (_unitOfWork.SelfHelp == null)
-                    return null!;
+                var content = await _unitOfWork.SelfHelp.GetAllQueryableTracking()
+                    .Include(c => c.ExerciseTips)
+                    .FirstOrDefaultAsync(c => c.Id == dto.Id);
 
-                var contentEntity = await _unitOfWork.SelfHelp.GetByIdAsync(id);
+                if (content == null)
+                    throw new KeyNotFoundException("Self-help content record not found.");
 
-                if (contentEntity == null || contentEntity.IsDeleted)
+                content.Title = dto.Title;
+                content.Type = dto.Type;
+                content.Description = dto.Description;
+                content.ContentUrl = dto.ContentUrl;
+                content.DurationMinutes = dto.DurationMinutes;
+                content.DifficultyLevel = dto.DifficultyLevel;
+                content.IsActive = dto.IsActive;
+                content.UpdatedAt = DateTime.UtcNow;
+                content.UpdatedBy = adminId;
+
+                if (dto.ExerciseTips != null && content.ExerciseTips != null)
                 {
-                    _logger.LogWarning("Admin {AdminId} tried to update a non-existent or soft-deleted record with ID: {ContentId}", adminId, id);
-                    return null!;
+                    foreach (var incomingTip in dto.ExerciseTips)
+                    {
+                        if (incomingTip.Id.HasValue && incomingTip.Id != Guid.Empty)
+                        {
+                            var existingTip = content.ExerciseTips.FirstOrDefault(t => t.Id == incomingTip.Id.Value);
+                            if (existingTip != null)
+                            {
+                                existingTip.Text = incomingTip.Text;
+                                existingTip.UpdatedAt = DateTime.UtcNow;
+                                existingTip.UpdatedBy = adminId;
+                            }
+                        }
+                    }
                 }
 
-                _mapper.Map(dto, contentEntity);
-
-                contentEntity.UpdatedAt = DateTime.UtcNow;
-                contentEntity.UpdatedBy = adminId.Trim();
-
-                await _unitOfWork.CompleteAsync();
-                _logger.LogInformation("Admin {AdminId} successfully updated content ID: {ContentId}", adminId, id);
-
-                return _mapper.Map<AdminSelfHelpResponseDto>(contentEntity);
+                return await _unitOfWork.CompleteAsync() > 0;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Admin Service: Failed to update content ID: {ContentId} by Admin: {AdminId}", id, adminId);
-                throw new ApplicationException("An error occurred while saving changes to the content.", ex);
+                _logger.LogError(ex, "Admin Service: Error updating content with ID: {ContentId}", dto.Id);
+                throw new ApplicationException("System failed to update the content record.", ex);
             }
         }
-
-        public async Task<bool> SoftDeleteContentAsync(Guid id, string adminId)
+        public async Task<bool> DeleteContentAsync(Guid id, string adminId)
         {
-            if (id == Guid.Empty || string.IsNullOrWhiteSpace(adminId))
-            {
-                _logger.LogWarning("Admin Service: Delete called with invalid identifiers. ID: {Id}, Admin: {AdminId}", id, adminId);
-                return false;
-            }
-
             try
             {
-                if (_unitOfWork.SelfHelp == null)
-                    return false;
+                var content = await _unitOfWork.SelfHelp.GetByIdAsync(id);
+                if (content == null) throw new KeyNotFoundException("Content record not found.");
 
-                var contentEntity = await _unitOfWork.SelfHelp.GetByIdAsync(id);
+                content.IsDeleted = true;
+                content.DeletedAt = DateTime.UtcNow;
+                content.UpdatedBy = adminId;
+                content.IsActive = false; 
 
-                if (contentEntity == null || contentEntity.IsDeleted)
-                {
-                    _logger.LogWarning("Admin {AdminId} attempted to delete an already deleted or missing record ID: {ContentId}", adminId, id);
-                    return false;
-                }
-
-                contentEntity.IsDeleted = true;
-                contentEntity.DeletedAt = DateTime.UtcNow;
-                contentEntity.UpdatedAt = DateTime.UtcNow; 
-                contentEntity.UpdatedBy = adminId.Trim();
-
-                await _unitOfWork.CompleteAsync();
-                _logger.LogWarning("Admin {AdminId} SOFT-DELETED content ID: {ContentId}", adminId, id);
-
-                return true;
+                _unitOfWork.SelfHelp.Update(content);
+                return await _unitOfWork.CompleteAsync() > 0;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Admin Service: Exception thrown during soft delete of ID: {ContentId} by Admin: {AdminId}", id, adminId);
-                throw new ApplicationException("The system failed to complete the soft delete operation.", ex);
+                _logger.LogError(ex, "Admin Service: Error while soft deleting content ID: {ContentId}", id);
+                throw new ApplicationException("System failed to delete the content record.", ex);
             }
         }
+ 
     }
 }

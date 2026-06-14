@@ -1,6 +1,6 @@
-namespace GhaithAI.API.GaithAI.Application.DTOs.SelfHelp
+namespace GhaithAI.GaithAI.Application.DTOs.SelfHelp
 {
-    public class AdminSelfHelpResponseDto
+    public class AdminSelfHelpDetailsDTO
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
@@ -11,10 +11,11 @@ namespace GhaithAI.API.GaithAI.Application.DTOs.SelfHelp
         public string DifficultyLevel { get; set; }
         public bool IsActive { get; set; }
 
-        //  ›«’Ì· «·‹ Audit «·„Â„… ··‹ Admin
-        public DateTime CreatedAt { get; set; }
-        public string? CreatedBy { get; set; }
-        public DateTime? LastModifiedAt { get; set; }
-        public string? LastModifiedBy { get; set; }
+        public List<ExerciseTipDto> ExerciseTips { get; set; } = new();
+    }
+    public class ExerciseTipDto
+    {
+        public Guid Id { get; set; }
+        public string Text { get; set; }
     }
 }

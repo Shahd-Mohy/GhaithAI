@@ -13,7 +13,8 @@ namespace GhaithAI.API.Repositories.UnitWork
         private IBaseLanguageRepository _baseLanguage;
         private IClinicPatientRepository _clinicPatient;
         private IDoctorProfileRepository _doctorProfile;
-
+        private IExerciseTipsRepository _exerciseTips;
+        private IBookingRepository _booking;
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context),
@@ -33,6 +34,8 @@ namespace GhaithAI.API.Repositories.UnitWork
         public IClinicPatientRepository ClinicPatient => _clinicPatient ??= new ClinicPatientRepository(_context);
         public IDoctorProfileRepository DoctorProfile => _doctorProfile ??= new DoctorProfileRepository(_context);
 
+        public IExerciseTipsRepository ExerciseTips => _exerciseTips ??= new ExerciseTipsRepository(_context);
+        public IBookingRepository Booking => _booking ??= new BookingRepository(_context);
         public async Task<int> CompleteAsync()
         {
             try
