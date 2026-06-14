@@ -1,3 +1,4 @@
+using GhaithAI.API.Constants;
 using GhaithAI.GaithAI.Application.DTOs.ClinicPatient;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +10,8 @@ namespace GhaithAI.GaithAI.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Therapist")]
+    [Authorize(Roles = Roles.Clinician)]
+
     public class ClinicPatientController : ControllerBase
     {
         private readonly IClinicPatientService _patientService;

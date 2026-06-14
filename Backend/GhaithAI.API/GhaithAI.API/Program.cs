@@ -134,25 +134,26 @@ app.MapControllers();
 
 app.MapHub<ChatHub>("/hubs/chat");
 
-// الـ Seeder لتجهيز الـ Roles أوتوماتيك أول ما المشروع يقوم
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await RoleSeeder.SeedAsync(roleManager);
-}
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager =
-        scope.ServiceProvider
-            .GetRequiredService<RoleManager<IdentityRole>>();
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-    await RoleSeeder.SeedAsync(roleManager);
+        await CountrySeeder.SeedAsync(context);
 
-    var userManager =
-        scope.ServiceProvider
-            .GetRequiredService<UserManager<ApplicationUser>>();
+        await RoleSeeder.SeedAsync(roleManager);
 
-    await AdminSeeder.SeedAsync(userManager);
+        await AdminSeeder.SeedAsync(userManager);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
 }
 
 app.Run();
