@@ -68,28 +68,43 @@ function buildFallback(displayName: string): DashboardViewModel {
 
 /** Read the user's first name from localStorage or JWT token claims */
 function resolveDisplayName(): string {
-  try {
-    for (const key of ['user', 'currentUser', 'authUser', 'profile']) {
+  // ── 1. Try JSON user objects ────────────────────────────────────────────
+  for (const key of ['user', 'currentUser', 'authUser', 'profile']) {
+    try {
       const raw = localStorage.getItem(key) || sessionStorage.getItem(key);
-      if (raw) {
-        const p = JSON.parse(raw);
-        const name = p?.fullName || p?.name || p?.firstName || p?.displayName || p?.email;
-        if (name) return name.split(' ')[0];
-      }
+      if (!raw) continue;
+      const p = JSON.parse(raw);
+      const name = p?.fullName || p?.name || p?.firstName || p?.displayName || p?.email;
+      if (name) return String(name).split(' ')[0];
+    } catch {
+      // Corrupt entry — remove it so it never crashes again
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
     }
-    for (const key of ['token', 'access_token', 'authToken', 'jwt']) {
+  }
+
+  // ── 2. Try JWT token payload ────────────────────────────────────────────
+  for (const key of ['token', 'access_token', 'authToken', 'jwt']) {
+    try {
       const token = localStorage.getItem(key) || sessionStorage.getItem(key);
-      if (token && token.includes('.')) {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const name = payload?.given_name || payload?.name || payload?.unique_name || payload?.email ||
-          payload?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] ||
-          payload?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
-        if (name) return name.split(' ')[0];
-      }
-    }
-  } catch { /* ignore */ }
+      // A valid JWT has exactly 3 dot-separated base64 segments
+      if (!token) continue;
+      const parts = token.split('.');
+      if (parts.length !== 3) continue;
+      const payload = JSON.parse(atob(parts[1]));
+      const name =
+        payload?.given_name ||
+        payload?.name ||
+        payload?.unique_name ||
+        payload?.email ||
+        payload?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] ||
+        payload?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
+      if (name) return String(name).split(' ')[0];
+    } catch { /* ignore bad token */ }
+  }
+
   return 'there';
 }
+
 
 // ── Service ───────────────────────────────────────────────────────────────────
 

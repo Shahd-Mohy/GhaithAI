@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LandingComponent } from '../app/landing/landing';
 import { authGuard } from './guards/auth-guard';
 import { adminGuard } from './guards/admin-guard';
+import { clinicianGuard } from './guards/clinician-guard';
 import { ExerciseDetailsComponent } from './selfHelp/exercise-details-component/exercise-details-component';
 
 export const routes: Routes = [
@@ -48,6 +49,13 @@ export const routes: Routes = [
     path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () => import('./auth/pages/dashboard/dashboard').then(m => m.DashboardComponent)
+  },
+
+  {
+    path: 'clinician-dashboard',
+    canActivate: [clinicianGuard],
+    loadComponent: () => import('./auth/pages/clinician-dashboard/clinician-dashboard')
+      .then(m => m.ClinicianDashboardComponent)
   },
 
   {

@@ -22,7 +22,7 @@ namespace GhaithAI.GaithAI.API.Controllers
 
         // DOCTOR SIDE
         [HttpGet("my-clinic")]
-        [Authorize(Roles = "Therapist")]
+        [Authorize(Roles = "Clinician")]
         public async Task<IActionResult> GetMyClinic()
         {
             try
@@ -38,7 +38,7 @@ namespace GhaithAI.GaithAI.API.Controllers
 
         // PUT api/DoctorClinicProfile/my-clinic
         [HttpPut("my-clinic")]
-        [Authorize(Roles = "Therapist")]
+        [Authorize(Roles = "Clinician")]
         public async Task<IActionResult> UpdateMyClinic([FromBody] UpdateDoctorClinicProfileDto dto)
         {
             if (!ModelState.IsValid)

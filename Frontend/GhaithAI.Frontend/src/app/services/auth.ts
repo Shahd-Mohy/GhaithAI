@@ -75,7 +75,15 @@ export class AuthService {
 
   getUser(): AuthResponse | null {
     const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    if (!user) return null;
+    try {
+      return JSON.parse(user);
+    } catch {
+      // Corrupted value — wipe it so it doesn't crash on every reload
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      return null;
+    }
   }
 
   isLoggedIn(): boolean {

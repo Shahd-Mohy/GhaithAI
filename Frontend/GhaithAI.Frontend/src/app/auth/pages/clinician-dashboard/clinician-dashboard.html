@@ -1,0 +1,338 @@
+<div class="app" [class.sidebar-open]="sidebarOpen">
+
+  <!-- ── SIDEBAR OVERLAY (mobile) ── -->
+  <div class="sidebar-overlay" (click)="closeSidebar()"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+
+    <!-- Mobile close button -->
+    <button class="sidebar-close-btn" type="button" (click)="closeSidebar()" aria-label="Close menu">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
+
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="white">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+        </svg>
+      </div>
+      <div>
+        <div class="logo-name">GhaithAI</div>
+        <div class="logo-sub">Doctor Assist</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+
+      <a class="nav-item" [class.active]="isActive('dashboard')" (click)="navigate('dashboard')">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" [class.active]="isActive('patients')" (click)="navigate('patients')">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        Patients
+      </a>
+      <a class="nav-item" [class.active]="isActive('sessions')" (click)="navigate('sessions')">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+        Sessions
+      </a>
+      <a class="nav-item" [class.active]="isActive('notes')" (click)="navigate('notes')">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+        Clinical Notes
+      </a>
+      <a class="nav-item" [class.active]="isActive('assessments')" (click)="navigate('assessments')">
+        <svg viewBox="0 0 24 24"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+        Assessments
+      </a>
+      <a class="nav-item" [class.active]="isActive('risk')" (click)="navigate('risk')">
+        <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+        Risk Alerts
+      </a>
+
+      <div class="nav-section-label" style="margin-top:16px">Manage</div>
+
+      <a class="nav-item" [class.active]="isActive('schedule')" (click)="navigate('schedule')">
+        <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+        Schedule
+      </a>
+      <a class="nav-item" [class.active]="isActive('clinic')" (click)="navigate('clinic')">
+        <svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+        My Clinic
+      </a>
+
+      <div class="nav-section-label" style="margin-top:16px">Quick Actions</div>
+      <a class="nav-item action-item" (click)="navigate('sessions')">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        New Session
+      </a>
+      <a class="nav-item action-item" (click)="navigate('patients')">
+        <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V8H4v2H2v2h2v2h2v-2h2v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        Add Patient
+      </a>
+    </nav>
+
+    <!-- ── SIDEBAR USER + LOGOUT ── -->
+    <div class="sidebar-footer">
+      <div class="sidebar-user" (click)="toggleUserMenu()">
+        <div class="user-avatar">{{ clinician.initial }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ clinician.name }}</div>
+          <div class="user-plan">{{ clinician.specialty }}</div>
+        </div>
+        <svg class="user-chevron" [class.rotated]="showUserMenu" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+      </div>
+
+      <!-- User dropdown -->
+      @if (showUserMenu) {
+        <div class="user-dropdown">
+          <button class="dropdown-item logout-item" type="button" (click)="logout()">
+            <svg viewBox="0 0 24 24">
+              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+            </svg>
+            Sign Out
+          </button>
+        </div>
+      }
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+
+      <!-- Hamburger (mobile only) -->
+      <button class="hamburger-btn" type="button" (click)="openSidebar()" aria-label="Open menu">
+        <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+      </button>
+
+      <div class="topbar-left">
+        @if (isLoading) {
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-sub"></div>
+        } @else {
+          <h1 class="page-title">{{ greeting }}, <span class="title-name">{{ clinician.name }}</span></h1>
+          <p class="page-sub">Here's your clinical overview for today</p>
+        }
+      </div>
+
+      <div class="topbar-right">
+        <div class="date-badge">
+          <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+          <span class="date-text">{{ todayLabel }}</span>
+        </div>
+        <button class="start-session-btn" type="button" (click)="navigate('sessions')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="10 8 16 12 10 16 10 8"/>
+          </svg>
+          <span class="btn-text">Start Session</span>
+        </button>
+        <!-- Mobile logout shortcut -->
+        <button class="logout-icon-btn" type="button" (click)="logout()" title="Sign Out">
+          <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── DASHBOARD PAGE ── -->
+    @if (activePage === 'dashboard') {
+    <div class="scroll-area">
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid">
+        @if (isLoading) {
+          @for (i of [1,2,3,4]; track i) {
+            <div class="stat-card skeleton-card">
+              <div class="skeleton skeleton-stat-value"></div>
+              <div class="skeleton skeleton-stat-label"></div>
+            </div>
+          }
+        } @else {
+          @for (card of statCards; track card.label) {
+            <div class="stat-card" [ngClass]="'stat-' + card.color">
+              <div class="stat-content">
+                <div class="stat-label">{{ card.label }}</div>
+                <div class="stat-value">{{ card.value }}</div>
+                <div class="stat-sub">{{ card.sub }}</div>
+              </div>
+              <div class="stat-icon" [ngClass]="'icon-' + card.color">
+                @if (card.icon === 'patients') {
+                  <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                }
+                @if (card.icon === 'sessions') {
+                  <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+                }
+                @if (card.icon === 'notes') {
+                  <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                }
+                @if (card.icon === 'risk') {
+                  <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                }
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- SCHEDULE + RISK ALERTS ROW -->
+      <div class="two-col">
+
+        <!-- TODAY'S SCHEDULE -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0B8FAC" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <div>
+                <div class="card-title">Today's Schedule</div>
+                <div class="card-sub">Your upcoming sessions for today</div>
+              </div>
+            </div>
+            <button class="view-all-btn" type="button" (click)="navigate('schedule')">View All →</button>
+          </div>
+
+          @if (isLoading) {
+            <div class="schedule-list">
+              @for (i of [1,2,3]; track i) {
+                <div class="schedule-item skeleton-schedule">
+                  <div class="skeleton skeleton-avatar"></div>
+                  <div style="flex:1"><div class="skeleton" style="height:14px;width:60%;margin-bottom:6px"></div><div class="skeleton" style="height:11px;width:40%"></div></div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="schedule-list">
+              @for (session of todaySchedule; track session.name) {
+                <div class="schedule-item">
+                  <div class="patient-avatar" [style.background]="session.color + '22'" [style.color]="session.color">
+                    {{ session.initials }}
+                  </div>
+                  <div class="session-info">
+                    <div class="session-name">{{ session.name }}</div>
+                    <div class="session-type">{{ session.type }}</div>
+                  </div>
+                  <div class="session-meta">
+                    <div class="session-time">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      {{ session.time }}
+                    </div>
+                    <button class="start-btn" type="button" (click)="startSession(session)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                      Start
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- RISK ALERTS -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#E11D48" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <div>
+                <div class="card-title risk-title">Risk Alerts</div>
+                <div class="card-sub">Patients requiring attention</div>
+              </div>
+            </div>
+            <button class="view-all-btn" type="button" (click)="navigate('risk')">View All →</button>
+          </div>
+
+          @if (isLoading) {
+            <div style="display:flex;flex-direction:column;gap:10px">
+              @for (i of [1,2]; track i) {
+                <div class="skeleton" style="height:80px;border-radius:12px"></div>
+              }
+            </div>
+          } @else {
+            <div class="alerts-list">
+              @for (alert of riskAlerts; track alert.name) {
+                <div class="alert-card" [ngClass]="'alert-' + alert.level.toLowerCase()">
+                  <div class="alert-header">
+                    <span class="alert-name">{{ alert.name }}</span>
+                    <span class="alert-badge" [ngClass]="'badge-' + alert.level.toLowerCase()">{{ alert.level }}</span>
+                  </div>
+                  <div class="alert-desc">{{ alert.description }}</div>
+                  <div class="alert-time">{{ alert.timeAgo }}</div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <p class="footer-note">
+        For clinical emergencies, contact your supervising authority or call emergency services immediately.
+      </p>
+
+    </div>
+    }
+
+    <!-- PLACEHOLDER PAGES -->
+    @if (activePage === 'patients') {
+      <div class="scroll-area coming-soon">
+        <div class="coming-soon-icon">👥</div>
+        <h2>Patients</h2>
+        <p>Patient management panel coming soon.</p>
+      </div>
+    }
+    @if (activePage === 'sessions') {
+      <div class="scroll-area coming-soon">
+        <div class="coming-soon-icon">🎙️</div>
+        <h2>Sessions</h2>
+        <p>Session management coming soon.</p>
+      </div>
+    }
+    @if (activePage === 'notes') {
+      <div class="scroll-area coming-soon">
+        <div class="coming-soon-icon">📋</div>
+        <h2>Clinical Notes</h2>
+        <p>Clinical notes editor coming soon.</p>
+      </div>
+    }
+    @if (activePage === 'assessments') {
+      <div class="scroll-area coming-soon">
+        <div class="coming-soon-icon">📊</div>
+        <h2>Assessments</h2>
+        <p>Assessment tools coming soon.</p>
+      </div>
+    }
+    @if (activePage === 'risk') {
+      <div class="scroll-area coming-soon">
+        <div class="coming-soon-icon">⚠️</div>
+        <h2>Risk Alerts</h2>
+        <p>Risk monitoring panel coming soon.</p>
+      </div>
+    }
+    @if (activePage === 'schedule') {
+      <div class="scroll-area coming-soon">
+        <div class="coming-soon-icon">🗓️</div>
+        <h2>Schedule</h2>
+        <p>Schedule management coming soon.</p>
+      </div>
+    }
+    @if (activePage === 'clinic') {
+      <div class="scroll-area coming-soon">
+        <div class="coming-soon-icon">🏥</div>
+        <h2>My Clinic</h2>
+        <p>Clinic settings coming soon.</p>
+      </div>
+    }
+
+  </main>
+</div>
