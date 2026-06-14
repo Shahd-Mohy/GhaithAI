@@ -103,8 +103,8 @@
   <!-- ── MAIN ── -->
   <main class="main">
 
-    <!-- TOP BAR -->
-    <header class="topbar">
+    <!-- TOP BAR (hidden on clinic page – clinic component has its own header) -->
+    <header class="topbar" [class.topbar-hidden]="activePage === 'clinic'">
 
       <!-- Hamburger (mobile only) -->
       <button class="hamburger-btn" type="button" (click)="openSidebar()" aria-label="Open menu">
@@ -328,11 +328,7 @@
       </div>
     }
     @if (activePage === 'clinic') {
-      <div class="scroll-area coming-soon">
-        <div class="coming-soon-icon">🏥</div>
-        <h2>My Clinic</h2>
-        <p>Clinic settings coming soon.</p>
-      </div>
+      <app-my-clinic></app-my-clinic>
     }
 
   </main>

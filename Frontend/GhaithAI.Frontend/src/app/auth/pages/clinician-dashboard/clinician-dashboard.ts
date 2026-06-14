@@ -7,6 +7,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../services/auth';
+import { MyClinicComponent } from './my-clinic/my-clinic';
 
 // ── Interfaces ─────────────────────────────────────────────────────────────
 
@@ -44,7 +45,7 @@ interface RiskAlert {
 @Component({
   selector: 'app-clinician-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MyClinicComponent],
   templateUrl: './clinician-dashboard.html',
   styleUrls: ['./clinician-dashboard.css']
 })

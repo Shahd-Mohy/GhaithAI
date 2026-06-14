@@ -234,6 +234,10 @@
   flex-shrink: 0;
 }
 
+.topbar-hidden {
+  display: none;
+}
+
 /* Hamburger (hidden on desktop) */
 .hamburger-btn {
   display: none;
@@ -494,6 +498,15 @@
 .coming-soon-icon { font-size: 48px; margin-bottom: 16px; }
 .coming-soon h2 { font-size: 20px; font-weight: 700; color: #0D1B3E; margin-bottom: 8px; }
 .coming-soon p  { font-size: 14px; color: #64748B; }
+
+/* ─── MY CLINIC child component ─── */
+app-my-clinic {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
 
 /* ─── FOOTER ─── */
 .footer-note { font-size: 12px; color: #64748B; text-align: center; padding: 8px 0; }
