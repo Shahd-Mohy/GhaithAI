@@ -1,0 +1,369 @@
+:host {
+  display: block;
+  width: 100%;
+  font-family: 'Sora', sans-serif;
+  color: #0D1B3E;
+}
+
+/* ─── Container ─────────────────────────────────── */
+.dashboard-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ─── Header ─────────────────────────────────────── */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.header-title h2 {
+  margin: 0 0 4px 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: #0D1B3E;
+  letter-spacing: -0.4px;
+}
+
+.header-title p {
+  margin: 0;
+  font-size: 12.5px;
+  color: #64748B;
+}
+
+/* ─── Card ───────────────────────────────────────── */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #E2ECF0;
+  box-shadow: 0 4px 20px rgba(13, 27, 62, 0.02);
+  position: relative;
+  overflow: hidden;
+}
+
+.table-card {
+  padding: 0;
+}
+
+/* ─── Table Architecture & No-Scroll Optimization ── */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  /* يسمح بالاسكرول فقط في شاشات التليفزيون الصغير / الموبايل */
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  /* يُجبر الـ Browser على احترام نِسَب الأعمدة المحددة بالأسفل */
+}
+
+/* ضبط عروض الـ Columns بدقة لمنع الـ Scroll وإظهار الـ Notes مرتاحة */
+.custom-table th:nth-child(1) {
+  width: 13%;
+}
+
+/* Time / Date */
+.custom-table th:nth-child(2) {
+  width: 14%;
+}
+
+/* Patient Name */
+.custom-table th:nth-child(3) {
+  width: 11%;
+}
+
+/* Phone Number */
+.custom-table th:nth-child(4) {
+  width: 11%;
+}
+
+/* Session Type */
+.custom-table th:nth-child(5) {
+  width: 8%;
+}
+
+/* Source */
+.custom-table th:nth-child(6) {
+  width: 11%;
+}
+
+/* Status */
+.custom-table th:nth-child(7) {
+  width: 32%;
+}
+
+/* Notes / Objective (المساحة الأكبر) */
+
+.custom-table th {
+  background: #F4F9FB;
+  padding: 12px 14px;
+  /* تقليل البادينج الداخلي لتوفير مساحة عرضية */
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #E2ECF0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.custom-table td {
+  padding: 12px 14px;
+  /* مسافات داخلية أصغر وأرشق */
+  font-size: 13px;
+  color: #0D1B3E;
+  border-bottom: 1px solid #E2ECF0;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* يضع ثلاث نقاط إذا كان الكلام أكبر من الخلية */
+  white-space: nowrap;
+}
+
+.custom-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #F4F9FB;
+  transition: background 0.12s;
+}
+
+/* خلايا مخصصة */
+.title-cell {
+  font-weight: 700;
+}
+
+.patient-name-cell {
+  font-weight: 700;
+  color: #0D1B3E;
+}
+
+.phone-cell {
+  color: #64748B;
+  font-weight: 500;
+}
+
+.source-cell {
+  font-weight: 500;
+  color: #4A5568;
+}
+
+/* خلية النوت الذكية تسمح بمرور جزء أكبر وتتعامل مع الإطالة */
+.notes-cell {
+  color: #64748B;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* ─── Badges ─────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.badge-therapy {
+  background: rgba(11, 143, 172, 0.10);
+  color: #0B8FAC;
+}
+
+.badge-initial {
+  background: rgba(124, 58, 237, 0.10);
+  color: #7C3AED;
+}
+
+/* ─── Status Indicator ───────────────────────────── */
+.diff-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.diff-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #94A3B8;
+}
+
+/* تطابق حالات السيستم والباك إند بالكامل */
+.diff-indicator.confirmed .diff-dot,
+.diff-indicator.active .diff-dot {
+  background: #059669;
+}
+
+.diff-indicator.completed .diff-dot {
+  background: #0B8FAC;
+}
+
+.diff-indicator.booked .diff-dot {
+  background: #D97706;
+}
+
+.diff-indicator.cancelled .diff-dot,
+.diff-indicator.blocked .diff-dot {
+  background: #E11D48;
+}
+
+.diff-indicator.confirmed,
+.diff-indicator.active {
+  color: #059669;
+}
+
+.diff-indicator.completed {
+  color: #0B8FAC;
+}
+
+.diff-indicator.booked {
+  color: #D97706;
+}
+
+.diff-indicator.cancelled,
+.diff-indicator.blocked {
+  color: #E11D48;
+}
+
+/* ─── Buttons ────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Sora', sans-serif;
+  transition: all 0.15s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0B8FAC, #076E86);
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.93;
+  transform: translateY(-0.5px);
+}
+
+.btn-light {
+  background: #F4F9FB;
+  color: #4A5568;
+  border: 1px solid #E2ECF0;
+}
+
+.btn-light:hover {
+  background: #EEF6F8;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 11px;
+  border-radius: 7px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Empty State ────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #94A3B8;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+/* ─── Spinners ───────────────────────────────────── */
+.spinner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E2ECF0;
+  border-top-color: #0B8FAC;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── Pagination ─────────────────────────────────── */
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #E2ECF0;
+  background: #ffffff;
+}
+
+.page-btn {
+  background-color: #ffffff;
+  color: #0B8FAC;
+  border: 1.5px solid #0B8FAC;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: 'Sora', sans-serif;
+  transition: all 0.15s ease-in-out;
+}
+
+.page-btn:not([disabled]):hover {
+  background-color: #0B8FAC;
+  color: #ffffff;
+}
+
+.page-btn[disabled] {
+  color: #cbd5e1;
+  border-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 600;
+  background-color: #F4F9FB;
+  padding: 5px 12px;
+  border-radius: 16px;
+  border: 1px solid #E2ECF0;
+}
