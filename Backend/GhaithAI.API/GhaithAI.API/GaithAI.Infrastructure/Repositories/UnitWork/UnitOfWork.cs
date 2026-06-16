@@ -15,6 +15,8 @@ namespace GhaithAI.API.Repositories.UnitWork
         private IDoctorProfileRepository _doctorProfile;
         private IExerciseTipsRepository _exerciseTips;
         private IBookingRepository _booking;
+        private IDoctorCustomScheduleRepository _doctorCustomSchedule;
+        private IDoctorDefaultScheduleRepository _doctorDefaultSchedule;
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context),
@@ -36,6 +38,9 @@ namespace GhaithAI.API.Repositories.UnitWork
 
         public IExerciseTipsRepository ExerciseTips => _exerciseTips ??= new ExerciseTipsRepository(_context);
         public IBookingRepository Booking => _booking ??= new BookingRepository(_context);
+
+        public IDoctorCustomScheduleRepository DoctorCustomSchedule => _doctorCustomSchedule ??= new DoctorCustomScheduleRepository(_context);
+        public IDoctorDefaultScheduleRepository DoctorDefaultSchedule => _doctorDefaultSchedule ??= new DoctorDefaultScheduleRepository(_context);
         public async Task<int> CompleteAsync()
         {
             try

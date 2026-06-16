@@ -1,9 +1,13 @@
 global using Microsoft.AspNetCore.Mvc;
+using GhaithAI.API.Constants;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GhaithAI.API.GaithAI.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class SelfHelpController : ControllerBase
     {
         private readonly ISelfHelpUserService _userService;

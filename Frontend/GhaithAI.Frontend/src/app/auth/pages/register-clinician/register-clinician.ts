@@ -68,7 +68,7 @@ export class RegisterClinicianComponent {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   // ─── Helpers ──────────────────────────────────────────
   isStepActive(step: number) { return this.currentStep === step; }

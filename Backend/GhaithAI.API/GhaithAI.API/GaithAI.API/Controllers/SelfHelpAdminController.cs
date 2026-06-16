@@ -1,4 +1,5 @@
 
+using GhaithAI.API.Constants;
 using GhaithAI.GaithAI.Application.DTOs.SelfHelp;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
@@ -7,7 +8,7 @@ namespace GhaithAI.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public class SelfHelpAdminController : ControllerBase
     {
         private readonly ISelfHelpAdminService _adminService;

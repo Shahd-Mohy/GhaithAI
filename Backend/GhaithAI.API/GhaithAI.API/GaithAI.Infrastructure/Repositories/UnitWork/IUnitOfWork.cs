@@ -16,6 +16,10 @@ namespace GhaithAI.API.Repositories.UnitWork
         IExerciseTipsRepository ExerciseTips { get; }
 
         IBookingRepository Booking {  get; }
+
+
+        IDoctorCustomScheduleRepository DoctorCustomSchedule { get; }
+        IDoctorDefaultScheduleRepository DoctorDefaultSchedule { get; }
         Task<int> CompleteAsync();
         int Complete();
     }
