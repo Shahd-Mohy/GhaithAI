@@ -1,4 +1,4 @@
-using GhaithAI.GaithAI.Application.DTOs.Booking;
+﻿using GhaithAI.GaithAI.Application.DTOs.Booking;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.EntityFrameworkCore;
 using GhaithAI.GaithAI.Domain.Entities;
@@ -62,6 +62,9 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
 
 
+        public async Task<Guid> CreateClinicBookingAsync(string userId, CreateClinicBookingDto dto)
+        {
+            var doctorId = await GetDoctorIdByUserIdAsync(userId);
             bool isSlotBusy = await _unitOfWork.Booking.GetAllQueryableNoTracking()
                 .AnyAsync(b => b.DoctorId == doctorId &&
                                b.SlotTime == dto.SlotTime &&
@@ -349,5 +352,6 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             return slots;
         }
+       
     }
 }

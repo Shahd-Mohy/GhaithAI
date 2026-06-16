@@ -69,11 +69,6 @@ namespace GhaithAI.GaithAI.Infrastructure.Repositories.Class
                     .ThenInclude(ds => ds.BaseSpecialty)
                 .Include(d => d.DoctorLanguages)
                     .ThenInclude(dl => dl.BaseLanguage)
-                .Include(d => d.Reviews)
-                .AsQueryable();
-        }
-
-
                 .Include(d => d.Reviews);
         }
     }
