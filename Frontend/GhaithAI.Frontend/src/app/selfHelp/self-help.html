@@ -1,0 +1,154 @@
+<div class="tools-container">
+
+  <div class="header-section">
+    <h1 class="page-title">Self-Help Tools</h1>
+    <p class="page-sub">Evidence-based techniques for your wellbeing</p>
+  </div>
+
+  <div class="quick-relief-section">
+    <h2 class="section-title">Quick Relief</h2>
+
+    @if (isLoading) {
+    <div class="loading-quick-text">
+      Loading quick tools...
+    </div>
+    } @else {
+    <div class="quick-grid">
+      @for (tool of quickTools; track tool.title) {
+      <div class="quick-card" (click)="goToExercise(tool.id)">
+        <div class="icon-wrapper" [innerHTML]="getSafeIcon(tool.icon)"></div>
+        <h3 class="card-title">{{ tool.title }}</h3>
+        <p class="card-desc">{{ tool.description }}</p>
+        <span class="card-duration">⏱ {{ tool.duration }}</span>
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <div class="browse-categories-section">
+    <h2 class="section-title">Browse by Category</h2>
+
+    @if (isLoading) {
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <p class="spinner-text">Connecting to database...</p>
+    </div>
+    } @else {
+    <div class="category-list">
+
+      @if (categoriesList && categoriesList.length > 0) {
+      @for (cat of categoriesList; track cat.name) {
+      <div class="category-card-wrapper">
+
+        <div class="category-row" (click)="toggleCategory(cat.name)">
+          <div class="category-left">
+            <div class="category-icon" [ngClass]="cat.bgClass" [innerHTML]="getSafeIcon(cat.icon)"></div>
+            <div>
+              <h3 class="cat-title">
+                {{ cat.name }}
+                <span class="cat-items-count">({{ cat.count }} items)</span>
+              </h3>
+              <p class="cat-desc">{{ cat.description }}</p>
+            </div>
+          </div>
+          <div class="arrow-icon"
+            [style.transform]="activeCategoryName === cat.name ? 'rotate(90deg)' : 'rotate(0deg)'">➔</div>
+        </div>
+
+        @if (activeCategoryName === cat.name) {
+        <div class="sub-exercises-container">
+
+          <div class="sub-exercises-grid">
+            @for (subEx of cat.subExercises; track subEx.id; let i = $index) {
+            @if (i >= (cat.currentPage - 1) * cat.pageSize && i < cat.currentPage * cat.pageSize) { <div
+              class="sub-exercise-card" (click)="goToExercise(subEx.id)">
+              <div class="sub-ex-header">
+                <h4 class="sub-ex-title">{{ subEx.title }}</h4>
+                <div class="sub-ex-play-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="6 3 20 12 6 21 6 3" />
+                  </svg>
+                </div>
+              </div>
+              <p class="sub-ex-desc">{{ subEx.description }}</p>
+              <div class="sub-ex-meta">
+                <span>⏱ {{ subEx.durationMinutes }} min</span>
+                <span>⭐ {{ subEx.difficultyLevel }}</span>
+              </div>
+          </div>
+          }
+          } @empty {
+          <div class="empty-category-message">
+            ✨ No exercises available in this category yet.
+          </div>
+          }
+        </div>
+
+        @if (cat.subExercises.length > cat.pageSize) {
+        <div class="pagination-container">
+          <button class="pagination-btn" (click)="changePage(cat, -1)" [disabled]="cat.currentPage === 1"
+            [style.opacity]="cat.currentPage === 1 ? '0.4' : '1'"
+            [style.cursor]="cat.currentPage === 1 ? 'not-allowed' : 'pointer'">
+            ←
+          </button>
+
+          <span class="pagination-indicator">
+            Page {{ cat.currentPage }} of {{ Math.ceil(cat.subExercises.length / cat.pageSize) }}
+          </span>
+
+          <button class="pagination-btn" (click)="changePage(cat, 1)"
+            [disabled]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize)"
+            [style.opacity]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize) ? '0.4' : '1'"
+            [style.cursor]="cat.currentPage === Math.ceil(cat.subExercises.length / cat.pageSize) ? 'not-allowed' : 'pointer'">
+            →
+          </button>
+        </div>
+        }
+
+      </div>
+      }
+
+    </div>
+    }
+    } @else {
+    <div class="category-row">
+      <div class="category-left">
+        <div class="category-icon breathing-bg">💨</div>
+        <div>
+          <h3 class="cat-title">Breathing Exercises <span class="demo-tag">(Demo Mode)</span></h3>
+          <p class="cat-desc">Calm your mind with guided breathing techniques</p>
+        </div>
+      </div>
+      <div class="arrow-icon">➔</div>
+    </div>
+
+    <div class="category-row">
+      <div class="category-left">
+        <div class="category-icon mindfulness-bg">🧠</div>
+        <div>
+          <h3 class="cat-title">Mindfulness <span class="demo-tag">(Demo Mode)</span></h3>
+          <p class="cat-desc">Practice being present in the moment</p>
+        </div>
+      </div>
+      <div class="arrow-icon">➔</div>
+    </div>
+
+    <div class="category-row">
+      <div class="category-left">
+        <div class="category-icon relaxation-bg">🌙</div>
+        <div>
+          <h3 class="cat-title">Relaxation <span class="demo-tag">(Demo Mode)</span></h3>
+          <p class="cat-desc">Techniques to help you unwind and de-stress</p>
+        </div>
+      </div>
+      <div class="arrow-icon">➔</div>
+    </div>
+    }
+
+  </div>
+  }
+</div>
+
+</div>

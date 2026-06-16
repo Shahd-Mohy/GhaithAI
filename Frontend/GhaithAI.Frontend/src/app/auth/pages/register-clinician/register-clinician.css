@@ -1,0 +1,317 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+:host { display: block; font-family: 'Sora', sans-serif; font-size: 14px; }
+
+.page { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+
+/* ─── LEFT ─── */
+.left {
+  background: #7C3AED;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.left::before {
+  content: '';
+  position: absolute;
+  bottom: -100px; right: -80px;
+  width: 320px; height: 320px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+}
+
+.left::after {
+  content: '';
+  position: absolute;
+  top: -60px; left: -60px;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 50%;
+}
+
+.left-logo {
+  display: flex; align-items: center; gap: 9px;
+  text-decoration: none; position: relative; z-index: 1;
+}
+
+.logo-icon {
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.logo-icon svg { width: 18px; height: 18px; fill: white; }
+.logo-txt { font-size: 17px; font-weight: 700; color: white; }
+
+.left-content {
+  position: relative; z-index: 1;
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center; padding: 20px 0;
+}
+
+.left-content h2 {
+  font-size: clamp(22px, 2.5vw, 30px);
+  font-weight: 800; color: white;
+  line-height: 1.2; margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.left-content p {
+  font-size: 14px; color: rgba(255,255,255,0.75);
+  line-height: 1.65; margin-bottom: 36px;
+}
+
+.left-feats { display: flex; flex-direction: column; gap: 12px; }
+
+.feat-item {
+  display: flex; align-items: center; gap: 11px;
+  font-size: 13px; color: rgba(255,255,255,0.85);
+}
+
+.feat-ic {
+  width: 26px; height: 26px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.feat-ic svg { width: 13px; height: 13px; fill: white; }
+.left-foot { font-size: 11px; color: rgba(255,255,255,0.4); position: relative; z-index: 1; }
+
+/* ─── RIGHT ─── */
+.right {
+  background: white; overflow-y: auto;
+  display: flex; align-items: flex-start;
+  justify-content: center; padding: 40px 36px; min-height: 100vh;
+}
+
+.form-box { width: 100%; max-width: 440px; }
+
+/* ─── PROGRESS ─── */
+.progress { display: flex; gap: 6px; margin-bottom: 22px; }
+.prog-step { height: 4px; flex: 1; border-radius: 100px; background: #E2ECF0; transition: background 0.35s; }
+.prog-step.active { background: #7C3AED; }
+.prog-step.done { background: #7C3AED; }
+
+/* ─── STEP HEADER ─── */
+.step-header { margin-bottom: 22px; }
+.step-header h1 { font-size: 22px; font-weight: 800; color: #0D1B3E; margin-bottom: 5px; letter-spacing: -0.5px; }
+.step-header p { font-size: 13px; color: #64748B; }
+
+/* ─── CLINICIAN BADGE ─── */
+.clinician-badge {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 9px; padding: 9px 13px;
+  font-size: 13px; font-weight: 500; color: #6D28D9;
+  margin-bottom: 18px;
+}
+
+.clinician-badge svg { width: 15px; height: 15px; stroke: #6D28D9; }
+
+/* ─── BACK BTN ─── */
+.back-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: #64748B; background: none;
+  border: none; cursor: pointer; padding: 0; margin-bottom: 14px;
+  transition: color 0.2s;
+}
+.back-btn:hover { color: #0D1B3E; }
+.back-btn svg { width: 13px; height: 13px; }
+
+/* ─── FORM ELEMENTS ─── */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group { margin-bottom: 14px; }
+
+.form-group label {
+  display: block; font-size: 12px; font-weight: 500;
+  color: #0D1B3E; margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%; padding: 10px 13px;
+  font-size: 13px; font-family: 'Sora', sans-serif;
+  color: #0D1B3E; background: white;
+  border: 1.5px solid #E2ECF0; border-radius: 8px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none; -webkit-appearance: none;
+}
+
+.form-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 12px) center;
+  padding-right: 32px;
+}
+
+.form-group textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.form-group input.is-error,
+.form-group select.is-error,
+.form-group textarea.is-error { border-color: #DC2626; }
+
+.error-msg { font-size: 11px; color: #DC2626; margin-top: 3px; }
+
+.char-count { font-size: 11px; color: #94A3B8; margin-top: 4px; text-align: right; }
+.char-count.low { color: #DC2626; }
+
+.hint { font-size: 11px; color: #64748B; margin-top: 4px; }
+.label-note { font-size: 11px; color: #64748B; font-weight: 400; }
+
+/* ─── PASSWORD ─── */
+.input-wrap { position: relative; }
+.input-wrap input { padding-right: 40px; }
+.eye-btn {
+  position: absolute; right: 11px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: #64748B; padding: 3px;
+  display: flex; align-items: center;
+}
+.eye-btn svg { width: 16px; height: 16px; }
+
+/* ─── UPLOAD AREA ─── */
+.upload-area {
+  border: 2px dashed #E2ECF0;
+  border-radius: 11px; padding: 30px 20px;
+  text-align: center; margin-bottom: 14px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.upload-area:hover { border-color: #7C3AED; background: rgba(124,58,237,0.02); }
+.upload-area.has-file { border-style: solid; border-color: #7C3AED; background: rgba(124,58,237,0.04); }
+.upload-area.is-error { border-color: #DC2626; }
+
+.upload-label { cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+.upload-icon {
+  width: 48px; height: 48px;
+  background: rgba(124,58,237,0.08);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.upload-icon svg { width: 22px; height: 22px; stroke: #7C3AED; }
+.upload-title { font-size: 14px; font-weight: 600; color: #7C3AED; }
+.upload-sub { font-size: 12px; color: #94A3B8; }
+
+.file-preview {
+  display: flex; align-items: center; gap: 12px;
+  text-align: left;
+}
+
+.file-icon {
+  width: 40px; height: 40px;
+  background: rgba(124,58,237,0.1);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.file-icon svg { width: 20px; height: 20px; stroke: #7C3AED; }
+.file-info { flex: 1; overflow: hidden; }
+.file-name { display: block; font-size: 13px; font-weight: 500; color: #0D1B3E; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-size { font-size: 11px; color: #64748B; }
+
+.file-remove {
+  background: none; border: none; cursor: pointer;
+  color: #DC2626; padding: 4px;
+  display: flex; align-items: center;
+}
+.file-remove svg { width: 16px; height: 16px; }
+
+/* ─── INFO NOTE ─── */
+.info-note {
+  display: flex; gap: 9px; align-items: flex-start;
+  font-size: 12px; color: #64748B; line-height: 1.55;
+  margin-bottom: 18px; padding: 9px 13px;
+  background: #F4F9FB; border-radius: 7px;
+}
+.info-note svg { width: 15px; height: 15px; stroke: #0B8FAC; flex-shrink: 0; margin-top: 1px; }
+
+/* ─── API ERROR ─── */
+.api-error {
+  display: flex; align-items: center; gap: 8px;
+  background: #FEF2F2; border: 1px solid #FECACA;
+  border-radius: 9px; padding: 10px 13px;
+  font-size: 12px; color: #DC2626; margin-bottom: 14px;
+}
+.api-error svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ─── CHECKBOX ─── */
+.checkbox-row {
+  display: flex; align-items: flex-start; gap: 9px; margin-bottom: 16px;
+}
+.checkbox-row input[type="checkbox"] {
+  width: 15px; height: 15px; margin-top: 2px;
+  accent-color: #7C3AED; cursor: pointer; flex-shrink: 0;
+}
+.checkbox-row label { font-size: 12px; color: #4A5568; line-height: 1.5; }
+.checkbox-row a { color: #7C3AED; text-decoration: none; }
+.checkbox-row a:hover { text-decoration: underline; }
+
+/* ─── SUBMIT ─── */
+.btn-submit {
+  width: 100%; padding: 12px;
+  font-size: 14px; font-weight: 600; font-family: 'Sora', sans-serif;
+  color: white; background: #7C3AED; border: none;
+  cursor: pointer; border-radius: 9px;
+  transition: background 0.2s, transform 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.btn-submit:hover { background: #6D28D9; transform: translateY(-1px); }
+.btn-submit:disabled { background: #C4B5FD; cursor: not-allowed; transform: none; }
+.btn-submit svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ─── SIGNIN LINK ─── */
+.signin-link { text-align: center; margin-top: 14px; font-size: 12px; color: #64748B; }
+.signin-link a { color: #7C3AED; text-decoration: none; font-weight: 500; }
+.signin-link a:hover { text-decoration: underline; }
+
+/* ─── SUCCESS ─── */
+.success-panel { text-align: center; padding: 40px 20px; }
+.success-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+}
+.success-icon.pending { background: rgba(245,158,11,0.1); }
+.success-icon.pending svg { width: 32px; height: 32px; stroke: #D97706; }
+.success-panel h2 { font-size: 22px; font-weight: 800; color: #0D1B3E; margin-bottom: 9px; }
+.success-panel p { font-size: 14px; color: #4A5568; line-height: 1.65; margin-bottom: 26px; }
+
+.btn-go {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 12px 28px; font-size: 14px; font-weight: 600;
+  font-family: 'Sora', sans-serif; color: white;
+  background: #7C3AED; border: none; cursor: pointer;
+  border-radius: 9px; text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-go:hover { background: #6D28D9; transform: translateY(-1px); color: white; }
+.btn-go svg { width: 14px; height: 14px; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .page { grid-template-columns: 1fr; }
+  .left { min-height: 200px; padding: 28px; }
+  .left-content { display: none; }
+  .right { padding: 28px 20px; min-height: auto; }
+  .form-row { grid-template-columns: 1fr; }
+}

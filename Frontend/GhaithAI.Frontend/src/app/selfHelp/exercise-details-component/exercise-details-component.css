@@ -1,0 +1,328 @@
+.exercise-page-container {
+  padding: 24px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+  background-color: #fff;
+}
+
+/* Header - back link فوق التايتل على الشمال */
+.exercise-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  gap: 8px;
+}
+
+.back-link {
+  text-decoration: none;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: #0B8FAC;
+}
+
+.main-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: #0f172a;
+}
+
+.sub-title {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+}
+
+.exercise-vertical-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* الكروت العامة */
+.sidebar-card,
+.tips-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+}
+
+/* التايمر في بوردر لوحده */
+.center-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 40px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+}
+
+/* الأزرار في بوردر لوحدها */
+.control-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.techniques-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.technique-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.technique-item.active {
+  border-color: #0B8FAC;
+  background-color: rgba(11, 143, 172, 0.08);
+}
+
+.technique-item.active .tech-title {
+  color: #0B8FAC;
+}
+
+.tech-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.tech-desc {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* التايمر الدائري */
+.breathing-circle-wrapper {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.breathing-circle-core {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  box-shadow: 0 4px 20px rgba(11, 143, 172, 0.15);
+  /* شادو ناعم متناسق */
+  transition: background 0.3s ease;
+}
+
+.breathing-ring-middle {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(11, 143, 172, 0.3);
+  /* متناسق مع اللون الرئيسي */
+  z-index: 2;
+  animation: pulseRing 4s infinite ease-in-out;
+  -webkit-animation: pulseRing 4s infinite ease-in-out;
+}
+
+.breathing-ring-outer {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(11, 143, 172, 0.1);
+  /* تدرج أفتح للخارج */
+  z-index: 1;
+}
+
+.timer-display {
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+}
+
+/* قسم الكونترول */
+.control-section {
+  text-align: center;
+}
+
+.active-exercise-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.exercise-sub-meta {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 20px 0;
+}
+
+.buttons-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.buttons-group button {
+  border: none;
+  padding: 10px 28px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-start {
+  background: #0B8FAC;
+  color: white;
+  border: 2px solid transparent;
+}
+
+.btn-start:hover {
+  background: #09748c;
+}
+
+.btn-reset {
+  background: #0B8FAC;
+  color: #ffffff;
+  border: 2px solid #0B8FAC;
+}
+
+.btn-reset:hover {
+  color: white;
+}
+
+/* Reset - يفضل تغيير لون الـ Reset عن الـ Start لعدم تشتيت المستخدم */
+.btn-pause {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 2px solid transparent;
+}
+
+.btn-pause:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* النصائح - من الشمال */
+.tips-section-container {
+  width: 100%;
+}
+
+.tips-heading {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  text-align: left;
+}
+
+.db-description {
+  font-size: 16px;
+  color: #475569;
+  line-height: 1.6;
+  background: rgba(11, 143, 172, 0.03);
+  /* خلفية خفيفة جداً من لون الهوية */
+  padding: 14px;
+  border-radius: 8px;
+  border-left: 4px solid #0B8FAC;
+  margin-bottom: 16px;
+  text-align: left;
+  direction: ltr;
+}
+
+.static-tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.static-tips-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  color: #475569;
+  text-align: left;
+  direction: ltr;
+}
+
+.static-tips-list li span {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  background: rgba(11, 143, 172, 0.15);
+  /* خلفية متناسقة وهادئة */
+  color: #0B8FAC;
+  /* لون الخط الرئيسي */
+  font-weight: 600;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* أنيميشن */
+@keyframes pulseRing {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.loading-container {
+  text-align: center;
+  padding: 100px 0;
+  color: #64748b;
+}

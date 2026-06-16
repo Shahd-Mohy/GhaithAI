@@ -1,0 +1,668 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+:host {
+  display: block;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+}
+
+/* ─── LAYOUT ─── */
+.page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+/* ─── LEFT PANEL ─── */
+.left {
+  background: #0B8FAC;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.left::before {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  right: -80px;
+  width: 320px;
+  height: 320px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+}
+
+.left::after {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: -60px;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 50%;
+}
+
+.left-logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  position: relative;
+  z-index: 1;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
+
+.logo-txt {
+  font-size: 17px;
+  font-weight: 700;
+  color: white;
+  font-family: 'Sora', sans-serif;
+}
+
+.left-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.left-content h2 {
+  font-size: clamp(22px, 2.5vw, 30px);
+  font-weight: 800;
+  color: white;
+  line-height: 1.2;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+  font-family: 'Sora', sans-serif;
+}
+
+.left-content p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.65;
+  margin-bottom: 36px;
+  font-family: 'Sora', sans-serif;
+}
+
+.left-feats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feat-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: 'Sora', sans-serif;
+}
+
+.feat-ic {
+  width: 26px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.feat-ic svg {
+  width: 13px;
+  height: 13px;
+  fill: white;
+}
+
+.left-foot {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  position: relative;
+  z-index: 1;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ─── RIGHT PANEL ─── */
+.right {
+  background: white;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 36px;
+  min-height: 100vh;
+}
+
+.form-box {
+  width: 100%;
+  max-width: 440px;
+}
+
+/* ─── PROGRESS BAR ─── */
+.progress {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 22px;
+}
+
+.prog-step {
+  height: 4px;
+  flex: 1;
+  border-radius: 100px;
+  background: #E2ECF0;
+  transition: background 0.35s;
+}
+
+.prog-step.active { background: #0B8FAC; }
+.prog-step.done   { background: #0B8FAC; }
+
+/* ─── STEP HEADER ─── */
+.step-header {
+  margin-bottom: 22px;
+}
+
+.step-header h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0D1B3E;
+  margin-bottom: 5px;
+  letter-spacing: -0.5px;
+  font-family: 'Sora', sans-serif;
+}
+
+.step-header p {
+  font-size: 13px;
+  color: #64748B;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ─── BACK BUTTON ─── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #64748B;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 14px;
+  font-family: 'Sora', sans-serif;
+  transition: color 0.2s;
+}
+
+.back-btn:hover { color: #0D1B3E; }
+
+.back-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ─── TYPE BADGE ─── */
+.type-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(11, 143, 172, 0.08);
+  border: 1px solid rgba(11, 143, 172, 0.2);
+  border-radius: 9px;
+  padding: 9px 13px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #076E86;
+  margin-bottom: 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'Sora', sans-serif;
+}
+
+.type-badge:hover { background: rgba(11, 143, 172, 0.12); }
+
+.type-badge svg {
+  width: 15px;
+  height: 15px;
+  stroke: #076E86;
+  fill: none;
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+
+/* ─── FORM ELEMENTS ─── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #0D1B3E;
+  margin-bottom: 5px;
+  font-family: 'Sora', sans-serif;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 13px;
+  font-size: 13px;
+  font-family: 'Sora', sans-serif;
+  color: #0D1B3E;
+  background: white;
+  border: 1.5px solid #E2ECF0;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.form-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 12px) center;
+  padding-right: 32px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #0B8FAC;
+  box-shadow: 0 0 0 3px rgba(11, 143, 172, 0.1);
+}
+
+.form-group input.is-error {
+  border-color: #DC2626;
+}
+
+.error-msg {
+  font-size: 11px;
+  color: #DC2626;
+  margin-top: 3px;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ─── PASSWORD FIELD ─── */
+.input-wrap {
+  position: relative;
+}
+
+.input-wrap input {
+  padding-right: 40px;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748B;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+}
+
+.eye-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.hint {
+  font-size: 11px;
+  color: #64748B;
+  margin-top: 4px;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ─── CHECKBOX ─── */
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-bottom: 16px;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  accent-color: #0B8FAC;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkbox-row label {
+  font-size: 12px;
+  color: #4A5568;
+  line-height: 1.5;
+  font-family: 'Sora', sans-serif;
+}
+
+.checkbox-row a {
+  color: #0B8FAC;
+  text-decoration: none;
+}
+
+.checkbox-row a:hover { text-decoration: underline; }
+
+/* ─── SUBMIT BUTTON ─── */
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Sora', sans-serif;
+  color: #ffffff;
+  background: #0B8FAC;
+  border: none;
+  cursor: pointer;
+  border-radius: 9px;
+  transition: background 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.btn-submit:hover { background: #076E86; transform: translateY(-1px); }
+.btn-submit:disabled { background: #93C5D4; cursor: not-allowed; transform: none; }
+
+.btn-submit svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ─── SIGN IN LINK ─── */
+.signin-link {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #64748B;
+  font-family: 'Sora', sans-serif;
+}
+
+.signin-link a {
+  color: #0B8FAC;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signin-link a:hover { text-decoration: underline; }
+
+/* ─── WARNING BOX ─── */
+.warning-box {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: 9px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+
+.warning-box svg {
+  width: 16px;
+  height: 16px;
+  fill: #D97706;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.warning-box-text {
+  font-size: 12px;
+  color: #92400E;
+  line-height: 1.55;
+  font-family: 'Sora', sans-serif;
+}
+
+.warning-box-text strong {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+/* ─── CONTACT CARD ─── */
+.contact-card {
+  border: 1px solid #E2ECF0;
+  border-radius: 11px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.contact-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.contact-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0D1B3E;
+  font-family: 'Sora', sans-serif;
+}
+
+.contact-badge {
+  font-size: 10px;
+  font-weight: 500;
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-family: 'Sora', sans-serif;
+}
+
+.contact-optional {
+  font-size: 11px;
+  color: #64748B;
+  font-family: 'Sora', sans-serif;
+}
+
+.no-margin-bottom { margin-bottom: 0; }
+
+/* ─── CHIP SELECTOR ─── */
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.chip {
+  padding: 6px 13px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Sora', sans-serif;
+  color: #4A5568;
+  background: white;
+  border: 1.5px solid #E2ECF0;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.chip:hover {
+  border-color: #0B8FAC;
+  color: #076E86;
+}
+
+.chip.selected {
+  background: rgba(11, 143, 172, 0.1);
+  border-color: #0B8FAC;
+  color: #076E86;
+}
+
+/* ─── STEP 3 INFO NOTE ─── */
+.info-note {
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.55;
+  margin-bottom: 18px;
+  padding: 9px 13px;
+  background: #F4F9FB;
+  border-radius: 7px;
+  font-family: 'Sora', sans-serif;
+}
+
+.label-note {
+  font-size: 11px;
+  color: #64748B;
+  font-weight: 400;
+}
+
+/* ─── SUCCESS PANEL ─── */
+.success-panel {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.success-icon {
+  width: 64px;
+  height: 64px;
+  background: rgba(5, 150, 105, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.success-icon svg {
+  width: 32px;
+  height: 32px;
+  fill: #059669;
+}
+
+.success-panel h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0D1B3E;
+  margin-bottom: 9px;
+  font-family: 'Sora', sans-serif;
+}
+
+.success-panel p {
+  font-size: 14px;
+  color: #4A5568;
+  line-height: 1.65;
+  margin-bottom: 26px;
+  font-family: 'Sora', sans-serif;
+}
+
+.btn-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Sora', sans-serif;
+  color: #ffffff;
+  background: #0B8FAC;
+  border: none;
+  cursor: pointer;
+  border-radius: 9px;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.btn-go:hover { background: #076E86; transform: translateY(-1px); color: white; }
+.btn-go svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .page { grid-template-columns: 1fr; }
+  .left { min-height: 200px; padding: 28px; }
+  .left-content { display: none; }
+  .right { padding: 28px 20px; min-height: auto; }
+}
+
+/* ─── ADD / REMOVE CONTACT BUTTONS ─── */
+.btn-add-contact {
+  width: 100%;
+  padding: 11px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Sora', sans-serif;
+  color: #0B8FAC;
+  background: rgba(11, 143, 172, 0.05);
+  border: 1.5px dashed rgba(11, 143, 172, 0.35);
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-add-contact:hover {
+  background: rgba(11, 143, 172, 0.1);
+  border-color: #0B8FAC;
+}
+
+.btn-add-contact svg {
+  width: 15px;
+  height: 15px;
+}
+
+.btn-remove-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'Sora', sans-serif;
+  color: #DC2626;
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 6px;
+  padding: 3px 9px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-remove-contact:hover {
+  background: rgba(220, 38, 38, 0.12);
+}
+
+.btn-remove-contact svg {
+  width: 12px;
+  height: 12px;
+}

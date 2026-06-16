@@ -1,0 +1,281 @@
+// ============================================================
+// GhaithAI — Global Design System
+// Modern Glassmorphism & Deep Kinetic Teal
+// ============================================================
+@use '@angular/material' as mat;
+
+// ── Google Fonts Import ───────────────────────────────────────
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap');
+
+// ── Angular Material Theming ──────────────────────────────────
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+// ── Enterprise Design Token System ───────────────────────────
+:root {
+  // Primary Palette — Radiant Teal
+  --chat-primary: #0d9488;
+  --chat-primary-glow: rgba(13, 148, 136, 0.15);
+  --chat-primary-dark: #0f766e;
+  --chat-primary-subtle: rgba(13, 148, 136, 0.08);
+
+  // Layout Backgrounds
+  --sidebar-bg: #f8fafc;
+  --workspace-bg: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.75);
+  --bg-glass-dark: rgba(248, 250, 252, 0.85);
+
+  // Typography
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+
+  // Borders
+  --border-subtle: rgba(226, 232, 240, 0.8);
+  --border-light: #e2e8f0;
+  --border-focus: rgba(13, 148, 136, 0.4);
+
+  // Chat Bubbles
+  --chat-bubble-ai: #f0fdfa;
+  --chat-bubble-ai-border: rgba(13, 148, 136, 0.12);
+  --chat-bubble-user: #0d9488;
+
+  // Elevation & Shadows
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
+  --shadow-premium: 0 10px 25px -5px rgba(13, 148, 136, 0.05), 0 8px 10px -6px rgba(13, 148, 136, 0.05);
+  --shadow-teal-glow: 0 0 0 3px rgba(13, 148, 136, 0.15), 0 4px 12px rgba(13, 148, 136, 0.15);
+
+  // Destructive
+  --destructive: #dc2626;
+  --destructive-subtle: rgba(220, 38, 38, 0.08);
+  --destructive-glow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+
+  // Motion
+  --ease-premium: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s var(--ease-premium);
+  --transition-base: all 0.25s var(--ease-premium);
+  --transition-slow: all 0.35s var(--ease-premium);
+
+  // Radius
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  // Legacy compat aliases (used by sub-components)
+  --chat-primary-hover: var(--chat-primary-dark);
+  --background: var(--workspace-bg);
+  --foreground: var(--text-main);
+  --muted: #f1f5f9;
+  --muted-foreground: var(--text-muted);
+  --border: var(--border-light);
+  --chat-secondary: var(--chat-bubble-ai);
+}
+
+// ── Base Reset & Body ─────────────────────────────────────────
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  color-scheme: light;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-main);
+  background-color: var(--workspace-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// ── Premium Typography ────────────────────────────────────────
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--text-main);
+  margin: 0;
+}
+
+h1 { font-size: 1.75rem; }
+h2 { font-size: 1.375rem; }
+h3 { font-size: 1.125rem; }
+h4 { font-size: 1rem; }
+
+p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+// ── Global Custom Scrollbars ──────────────────────────────────
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(13, 148, 136, 0.2);
+  border-radius: 100px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(13, 148, 136, 0.5);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+// Firefox
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(13, 148, 136, 0.2) transparent;
+}
+
+// ── Glassmorphism Utility Classes ─────────────────────────────
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--border-subtle);
+}
+
+.glass-dark {
+  background: var(--bg-glass-dark);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid var(--border-subtle);
+}
+
+// ── Premium Transition Utility ────────────────────────────────
+.transition-premium {
+  transition: var(--transition-base);
+}
+
+// ── Premium Focus Ring ────────────────────────────────────────
+:focus-visible {
+  outline: 2px solid var(--chat-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+// ── Link Reset ────────────────────────────────────────────────
+a {
+  color: var(--chat-primary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+
+  &:hover {
+    color: var(--chat-primary-dark);
+  }
+}
+
+// ── Bootstrap Overrides ───────────────────────────────────────
+// Button global base
+.btn {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: var(--transition-base);
+  border-radius: var(--radius-md);
+
+  &:focus-visible {
+    box-shadow: var(--shadow-teal-glow);
+  }
+}
+
+.btn-sm {
+  font-size: 0.8125rem;
+}
+
+// Form controls
+.form-control {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  border-color: var(--border-light);
+  border-radius: var(--radius-md);
+  transition: var(--transition-base);
+
+  &:focus {
+    border-color: var(--chat-primary);
+    box-shadow: 0 0 0 3px var(--chat-primary-glow);
+  }
+}
+
+// Badge
+.badge {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+// ── Keyframe Library ──────────────────────────────────────────
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2); }
+  50%       { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+}
+
+@keyframes teal-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.15); }
+  50%       { box-shadow: 0 0 0 6px rgba(13, 148, 136, 0); }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+// ── Skeleton Loader ───────────────────────────────────────────
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}

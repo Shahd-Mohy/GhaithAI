@@ -1,0 +1,65 @@
+/* Stats Grid Layout */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    padding: 20px;
+    text-align: center;
+}
+
+.stat-card h3 {
+    font-size: 11px;
+    color: #64748B;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.stat-card p {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0D1B3E;
+    margin: 0;
+}
+
+/* Risk Badges (نفس الوانك) */
+.badge-high {
+    background: rgba(225, 29, 72, 0.1);
+    color: #E11D48;
+}
+
+.badge-medium {
+    background: rgba(217, 119, 6, 0.1);
+    color: #D97706;
+}
+
+.badge-low {
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+}
+
+/* تنسيق الـ Controls */
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+.controls input,
+.controls select {
+    padding: 8px 12px;
+    border: 1px solid #E2ECF0;
+    border-radius: 8px;
+    font-family: 'Sora', sans-serif;
+}
+
+/* التزمنا بنفس كلاسات الـ custom-table اللي إنت باعتها */
+.text-red {
+    color: #E11D48;
+}
+
+.text-orange {
+    color: #D97706;
+}

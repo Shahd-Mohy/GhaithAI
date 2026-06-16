@@ -1,0 +1,99 @@
+@if (isLoading) {
+<div class="loading-container">
+  <div class="spinner"></div>
+  <p>loading..</p>
+</div>
+} @else if (exercise) {
+<div class="exercise-page-container">
+
+  <div class="exercise-header">
+    <a routerLink="/dashboard" [queryParams]="{ page: 'tools' }" class="back-link">
+      ← Back to Tools
+    </a>
+    <div class="header-titles">
+      <h1 class="main-title">{{ exercise.type }}</h1>
+      <p class="sub-title">Take a moment to calm your mind</p>
+    </div>
+  </div>
+
+  <div class="exercise-vertical-stack">
+
+    <div class="sidebar-card">
+      <div class="techniques-list">
+        <div class="technique-item active">
+          <h3 class="tech-title">{{ exercise.title }}</h3>
+          <p class="tech-desc">Calming technique based on your wellbeing need</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="center-card">
+      <div class="breathing-circle-wrapper">
+        <div class="breathing-ring-outer"></div>
+        <div class="breathing-ring-middle"></div>
+        <div class="breathing-circle-core" [style.background]="isCompleted ? '#10b981' : '#0B8FAC'">
+          @if (isCompleted) {
+          <span class="timer-display"
+            style="font-size: 20px; color: white; font-weight: 800; text-align: center; animation: fadeIn 0.5s ease-in-out;">
+            Great Job!
+          </span>
+          } @else {
+          <span class="timer-display">{{ formattedTime }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="control-card">
+      <div class="control-section">
+        <h2 class="active-exercise-title">{{ exercise.title }}</h2>
+        <p class="exercise-sub-meta">Level: {{ exercise.difficultyLevel }}</p>
+
+        <div class="buttons-group">
+          @if (isCompleted) {
+          <button (click)="resetTimer()" class="btn-start">
+            Repeat Exercise
+          </button>
+          } @else {
+          @if (!isRunning) {
+          <button (click)="startTimer()" class="btn-start">
+            Start exercise
+          </button>
+          } @else {
+          <button (click)="pauseTimer()" class="btn-pause">
+            Pause
+          </button>
+          <button (click)="resetTimer()" class="btn-reset">
+            Reset
+          </button>
+          }
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="tips-section-container">
+      <div class="tips-card">
+        <h3 class="tips-heading">Tips for Better Wellbeing:</h3>
+        <div class="tips-content">
+          <p class="db-description">{{ exercise.description }}</p>
+          <ul class="static-tips-list">
+            @for (tip of exercise.exerciseTips; track tip; let i = $index) {
+            <li>
+              <span>{{ i + 1 }}</span>
+              {{ tip }}
+            </li>
+            } @empty {
+            <li>
+              <span>!</span>
+              Stay calm and relax before starting the exercise.
+            </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+}

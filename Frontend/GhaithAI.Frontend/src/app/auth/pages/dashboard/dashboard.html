@@ -1,0 +1,372 @@
+<div class="app">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="white">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+        </svg>
+      </div>
+      <div>
+        <div class="logo-name">GhaithAI</div>
+        <div class="logo-sub">Personal Support</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Your Space</div>
+
+      <a class="nav-item" [class.active]="isActive('home')" (click)="navigate('home')">
+        <svg viewBox="0 0 24 24">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+        </svg>
+        Home
+      </a>
+      <a class="nav-item" [class.active]="isActive('chat')" (click)="navigate('chat')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
+        </svg>
+        Talk to AI
+      </a>
+      <a class="nav-item" [class.active]="isActive('mood')" (click)="navigate('mood')">
+        <svg viewBox="0 0 24 24">
+          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
+        </svg>
+        Mood Tracker
+      </a>
+      <a class="nav-item" [class.active]="isActive('journal')" (click)="navigate('journal')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M18 2h-3a5 5 0 0 0-10 0H2v20h20V2h-4zm-5 0a3 3 0 0 1 3 3H8a3 3 0 0 1 3-3h2zm7 18H4V4h3v3h10V4h3v16z" />
+        </svg>
+        Journal
+      </a>
+      <a class="nav-item" [class.active]="isActive('tools')" (click)="navigate('tools')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />
+        </svg>
+        Self-Help
+      </a>
+      <a class="nav-item" [class.active]="isActive('learn')" (click)="navigate('learn')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M12 3L1 9l4 2.18V17h2v-4.82l2 1.09V17c0 2.76 2.24 5 5 5s5-2.24 5-5v-3.73l2-1.09L23 9l-11-6zm6.18 7L12 13.72 5.82 10 12 6.28 18.18 10zM17 17c0 1.66-1.34 3-3 3s-3-1.34-3-3v-2.46l3 1.63 3-1.63V17z" />
+        </svg>
+        Learn
+      </a>
+
+      <div class="nav-section-label" style="margin-top:24px">Get Help</div>
+
+      <a class="nav-item" [class.active]="isActive('professionals')" (click)="navigate('professionals')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+        </svg>
+        Find a Professional
+      </a>
+      <a class="nav-item" [class.active]="isActive('crisis')" (click)="navigate('crisis')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+        </svg>
+        Crisis Support
+      </a>
+    </nav>
+
+    <button class="crisis-btn" type="button" (click)="navigate('crisis')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path
+          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+      I need help now
+    </button>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">
+        {{ vm ? vm.displayName.charAt(0).toUpperCase() : 'W' }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ vm ? vm.displayName.split(' ')[0] : 'Welcome' }}</div>
+        <div class="user-plan">Free Plan</div>
+      </div>
+      <svg class="user-chevron" viewBox="0 0 24 24">
+        <path d="M7 10l5 5 5-5z" />
+      </svg>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div>
+        <!-- Skeleton for title while loading -->
+        @if (isLoading) {
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-sub"></div>
+        } @else {
+        <h1 class="page-title">{{ pageTitle }}</h1>
+        <p class="page-sub">How are you feeling today?</p>
+        }
+      </div>
+      <div class="topbar-right">
+        <div class="date-badge">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+          </svg>
+          {{ todayLabel }}
+        </div>
+      </div>
+    </header>
+
+    <!-- ── HOME PAGE ── -->
+    @if (activePage === 'home') {
+    <div class="scroll-area">
+
+      <!-- ERROR STATE -->
+      @if (hasError) {
+      <div class="error-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        Unable to load your dashboard data. Please refresh the page.
+      </div>
+      }
+
+      <!-- MOOD CHECK-IN -->
+      <section class="mood-checkin card">
+        <div class="checkin-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0B8FAC" stroke-width="2">
+            <path
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </div>
+        <h2 class="checkin-title">How are you feeling right now?</h2>
+        <p class="checkin-sub">Take a moment to check in with yourself</p>
+        <div class="mood-row">
+          @for (mood of moods; track mood.key) {
+          <button type="button" class="mood-btn" [class.selected]="selectedMood === mood.key"
+            (click)="selectMood(mood.key); navigateToMoodLog(null, mood.key)">
+            <span class="mood-emoji">{{ mood.emoji }}</span>
+            <span class="mood-label">{{ mood.label }}</span>
+          </button>
+          }
+        </div>
+      </section>
+
+      <!-- QUICK ACTIONS -->
+      <section class="quick-section">
+        <h3 class="section-title">What would you like to do?</h3>
+        <div class="quick-grid">
+          @for (action of quickActions; track action.name) {
+          <div class="quick-card" (click)="navigate(action.page)">
+            <div class="quick-icon" [ngClass]="action.colorClass">
+              @if (action.icon === 'chat') {
+              <svg viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+              </svg>
+              }
+              @if (action.icon === 'breath') {
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+              </svg>
+              }
+              @if (action.icon === 'journal') {
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M18 2h-3a5 5 0 0 0-10 0H2v20h20V2h-4zm-5 0a3 3 0 0 1 3 3H8a3 3 0 0 1 3-3h2zm7 18H4V4h3v3h10V4h3v16z" />
+              </svg>
+              }
+              @if (action.icon === 'learn') {
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3L1 9l4 2.18V17h2v-4.82l2 1.09V17c0 2.76 2.24 5 5 5s5-2.24 5-5v-3.73l2-1.09L23 9l-11-6z" />
+              </svg>
+              }
+            </div>
+            <div class="quick-name">{{ action.name }}</div>
+            <div class="quick-desc">{{ action.desc }}</div>
+          </div>
+          }
+        </div>
+      </section>
+
+      <!-- WEEK + INSIGHTS ROW -->
+      <div class="two-col">
+
+        <!-- YOUR WEEK -->
+        <div class="card week-card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0B8FAC" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
+              </svg>
+              <div>
+                <div class="card-title">Your Week</div>
+                <div class="card-sub">Mood trends and patterns</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart skeleton while loading -->
+          @if (isLoading) {
+          <div class="skeleton skeleton-chart"></div>
+          } @else {
+          <div class="chart-area" style="position:relative;">
+            <canvas #moodChart width="400" height="160"></canvas>
+            @if (chartTooltip) {
+            <div class="chart-tooltip" [style.left.px]="chartTooltip.x" [style.top.px]="chartTooltip.y - 64">
+              <span class="chart-tooltip-emoji">{{ chartTooltip.emoji }}</span>
+              <span class="chart-tooltip-mood-label" [style.color]="chartTooltip.moodColor">{{ chartTooltip.moodLabel
+                }}</span>
+              <span class="chart-tooltip-day">{{ chartTooltip.label }}</span>
+            </div>
+            }
+          </div>
+          }
+
+          <div class="week-stats">
+            <div class="week-stat-row">
+              <span class="stat-label">Avg mood (this week)</span>
+              @if (isLoading) {
+              <span class="skeleton skeleton-stat"></span>
+              } @else {
+              <span class="stat-value">{{ vm?.weeklySummary?.avgMoodLabel ?? '—' }}</span>
+              }
+            </div>
+            <div class="week-stat-row">
+              <span class="stat-label">Days logged (this week)</span>
+              @if (isLoading) {
+              <span class="skeleton skeleton-stat"></span>
+              } @else {
+              <span class="stat-value">{{ vm?.weeklySummary?.daysLoggedLabel ?? '—' }}</span>
+              }
+            </div>
+          </div>
+          <button class="outline-btn" type="button" (click)="navigate('mood')">View Full History →</button>
+        </div>
+
+        <!-- PERSONAL INSIGHTS -->
+        <div class="card insights-card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2">
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              <div>
+                <div class="card-title">Personal Insights</div>
+                <div class="card-sub">Patterns we've noticed about you</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skeleton insights -->
+          @if (isLoading) {
+          <div class="insights-list">
+            @for (i of [1,2,3]; track i) {
+            <div class="insight-item skeleton-insight">
+              <div class="skeleton skeleton-insight-text"></div>
+            </div>
+            }
+          </div>
+          } @else if (insights.length === 0) {
+          <div class="insights-empty">
+            <p>Keep logging your mood to unlock personal insights!</p>
+          </div>
+          } @else {
+          <div class="insights-list">
+            @for (insight of insights; track insight) {
+            <div class="insight-item">
+              <div class="insight-icon">💛</div>
+              <div class="insight-text">{{ insight }}</div>
+            </div>
+            }
+          </div>
+          }
+
+          <button class="outline-btn" type="button" (click)="navigate('learn')">See All Insights →</button>
+        </div>
+      </div>
+
+      <!-- TODAY'S SUGGESTION -->
+      @if (isLoading) {
+      <div class="card suggestion-card skeleton-suggestion-card">
+        <div class="skeleton skeleton-suggestion-icon"></div>
+        <div class="suggestion-body">
+          <div class="skeleton skeleton-label"></div>
+          <div class="skeleton skeleton-suggestion-text"></div>
+          <div class="skeleton skeleton-btn"></div>
+        </div>
+      </div>
+      } @else if (vm?.todaysSuggestion; as s) {
+      <div class="card suggestion-card">
+        <div class="suggestion-icon">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+          </svg>
+        </div>
+        <div class="suggestion-body">
+          <div class="suggestion-label">{{ s.title }}</div>
+          <div class="suggestion-text">{{ s.text }}</div>
+          @if (s.actionLabel && s.actionRoute) {
+          <button class="teal-btn" type="button" (click)="navigate(s.actionRoute!)">
+            {{ s.actionLabel }} →
+          </button>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- FOOTER -->
+      <p class="footer-note">
+        If you're in crisis or need immediate help, please
+        <a class="footer-link" (click)="navigate('crisis')">reach out for support</a>
+        or call your local emergency services.
+      </p>
+
+    </div>
+    }
+
+    @if (activePage === 'tools' || activePage === 'breathing') {
+    <app-self-help-dashboard></app-self-help-dashboard>
+    }
+    @if (activePage === 'mood') {
+    <div class="scroll-area"><app-mood-tracker [openConfig]="moodOpenConfig"></app-mood-tracker></div>
+    }
+    @if (activePage === 'journal') {
+    <div class="scroll-area"><app-journal></app-journal></div>
+    }
+    @if (activePage === 'chat') {
+    <div class="scroll-area" style="padding: 24px; color: #0B8FAC;">
+      <h2>Talk to AI Page Coming Soon...</h2>
+    </div>
+    }
+    @if (activePage === 'learn') {
+    <div class="scroll-area" style="padding: 24px; color: #0B8FAC;">
+      <h2>Psychoeducation & Learn Page Coming Soon...</h2>
+    </div>
+    }
+    @if (activePage === 'professionals') {
+    <div class="scroll-area" style="padding: 24px; color: #0B8FAC;">
+      <h2>Find a Professional Page Coming Soon...</h2>
+    </div>
+    }
+    @if (activePage === 'crisis') {
+    <div class="scroll-area" style="padding: 24px; color: #DC2626;">
+      <h2>Crisis Support Page Coming Soon...</h2>
+      <p>If you are in immediate danger, please call your local emergency services.</p>
+    </div>
+    }
+
+  </main>
+</div>

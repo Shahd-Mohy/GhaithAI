@@ -1,0 +1,340 @@
+<div class="page">
+
+  <!-- ── LEFT PANEL ── -->
+  <div class="left">
+    <a routerLink="/" class="left-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      </div>
+      <span class="logo-txt">GhaithAI</span>
+    </a>
+
+    <div class="left-content">
+      <h2>Join GhaithAI as a Mental Health Professional.</h2>
+      <p>Help thousands of patients find the support they need. Our AI-powered platform handles the admin so you can focus on what matters.</p>
+      <div class="left-feats">
+        <div class="feat-item">
+          <div class="feat-ic">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+          </div>
+          Auto-generated SOAP &amp; DAP notes
+        </div>
+        <div class="feat-item">
+          <div class="feat-ic">
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          </div>
+          Manage patients &amp; bookings easily
+        </div>
+        <div class="feat-item">
+          <div class="feat-ic">
+            <svg viewBox="0 0 24 24"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm-2 13l-4-4 1.41-1.41L10 12.17l6.59-6.59L18 7l-9 9z"/></svg>
+          </div>
+          HIPAA &amp; GDPR compliant platform
+        </div>
+        <div class="feat-item">
+          <div class="feat-ic">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z"/></svg>
+          </div>
+          Build your reputation with verified reviews
+        </div>
+      </div>
+    </div>
+
+    <div class="left-foot">HIPAA · GDPR · Egypt PDPL compliant</div>
+  </div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="right">
+    <div class="form-box">
+
+      <!-- ── SUCCESS STATE ── -->
+      <div class="success-panel" *ngIf="submitted">
+        <div class="success-icon pending">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h2>Application Submitted! ⏳</h2>
+        <p>Thank you for joining GhaithAI. Your application is under review. We'll notify you by email once approved — usually within 1–3 business days.</p>
+        <a routerLink="/login" class="btn-go">
+          Back to Login
+          <svg fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- ── FORM STATE ── -->
+      <ng-container *ngIf="!submitted">
+
+        <!-- PROGRESS -->
+        <div class="progress">
+          <div class="prog-step" [class.active]="isStepActive(1)" [class.done]="isStepDone(1)"></div>
+          <div class="prog-step" [class.active]="isStepActive(2)" [class.done]="isStepDone(2)"></div>
+          <div class="prog-step" [class.active]="isStepActive(3)" [class.done]="isStepDone(3)"></div>
+        </div>
+
+        <!-- ── STEP 1: Basic Info ── -->
+        <ng-container *ngIf="currentStep === 1">
+          <div class="step-header">
+            <h1>Clinician Registration</h1>
+            <p>Enter your basic account details</p>
+          </div>
+
+          <div class="clinician-badge">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            <span>Clinician Account</span>
+          </div>
+
+          <!-- Full Name -->
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" [(ngModel)]="fullName" placeholder="Dr. Ahmed Mohamed"
+                   [class.is-error]="errors['fullName']"
+                   (blur)="validateField('fullName')">
+            <div class="error-msg" *ngIf="errors['fullName']">{{ errorMessages['fullName'] }}</div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="email" placeholder="doctor@example.com"
+                   [class.is-error]="errors['email']"
+                   (blur)="validateField('email')">
+            <div class="error-msg" *ngIf="errors['email']">{{ errorMessages['email'] }}</div>
+          </div>
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" [(ngModel)]="phone" placeholder="01xxxxxxxxx"
+                   [class.is-error]="errors['phone']"
+                   (blur)="validateField('phone')">
+            <div class="error-msg" *ngIf="errors['phone']">{{ errorMessages['phone'] }}</div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label>Password</label>
+            <div class="input-wrap">
+              <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password"
+                     placeholder="Create a strong password"
+                     [class.is-error]="errors['password']"
+                     (blur)="validateField('password')">
+              <button class="eye-btn" type="button" (click)="togglePassword()">
+                <svg *ngIf="!showPassword" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg *ngIf="showPassword" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+            <div class="hint">At least 8 characters with a number and symbol</div>
+            <div class="error-msg" *ngIf="errors['password']">{{ errorMessages['password'] }}</div>
+          </div>
+
+          <!-- Gender + Language -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Gender</label>
+              <select [(ngModel)]="gender" [class.is-error]="errors['gender']">
+  <option value="">Select gender</option>
+  <option value="1">Male</option>
+  <option value="2">Female</option>
+</select>
+              <div class="error-msg" *ngIf="errors['gender']">{{ errorMessages['gender'] }}</div>
+            </div>
+            <div class="form-group">
+              <label>Preferred Language</label>
+              <select [(ngModel)]="preferredLanguage">
+                <option value="en">English</option>
+                <option value="ar">Arabic / العربية</option>
+                <option value="fr">French</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-submit" type="button" (click)="step1Next()">Continue</button>
+          <div class="signin-link">Already have an account? <a routerLink="/login">Sign In</a></div>
+        </ng-container>
+
+        <!-- ── STEP 2: Professional Info ── -->
+        <ng-container *ngIf="currentStep === 2">
+          <div class="step-header">
+            <h1>Clinician Registration</h1>
+            <p>Tell us about your professional background</p>
+          </div>
+
+          <button class="back-btn" type="button" (click)="goToStep(1)">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+
+          <!-- Doctor Type -->
+          <div class="form-group">
+            <label>Doctor Type</label>
+            <select [(ngModel)]="doctorType" [class.is-error]="errors['doctorType']">
+              <option value="">Select type</option>
+              <option *ngFor="let t of doctorTypes" [value]="t.value">{{ t.label }}</option>
+            </select>
+            <div class="error-msg" *ngIf="errors['doctorType']">{{ errorMessages['doctorType'] }}</div>
+          </div>
+
+          <!-- Specialization -->
+          <div class="form-group">
+            <label>Specialization</label>
+            <select [(ngModel)]="specialization" [class.is-error]="errors['specialization']">
+              <option value="">Select specialization</option>
+              <option *ngFor="let s of specializations" [value]="s">{{ s }}</option>
+            </select>
+            <div class="error-msg" *ngIf="errors['specialization']">{{ errorMessages['specialization'] }}</div>
+          </div>
+
+          <!-- Years of Experience -->
+          <div class="form-group">
+            <label>Years of Experience</label>
+            <input type="number" [(ngModel)]="yearsOfExperience" placeholder="e.g. 5"
+                   min="0" max="60"
+                   [class.is-error]="errors['yearsOfExperience']"
+                   (blur)="validateField('yearsOfExperience')">
+            <div class="error-msg" *ngIf="errors['yearsOfExperience']">{{ errorMessages['yearsOfExperience'] }}</div>
+          </div>
+
+          <!-- Bio -->
+          <div class="form-group">
+            <label>
+              Professional Bio
+              <span class="label-note">(min. 50 characters)</span>
+            </label>
+            <textarea [(ngModel)]="bio" placeholder="Tell patients about your background, approach, and what you specialize in..."
+                      rows="5"
+                      [class.is-error]="errors['bio']"
+                      (blur)="validateField('bio')"></textarea>
+            <div class="char-count" [class.low]="bio.length < 50">
+              {{ bio.length }} / 50 min
+            </div>
+            <div class="error-msg" *ngIf="errors['bio']">{{ errorMessages['bio'] }}</div>
+          </div>
+
+          <button class="btn-submit" type="button" (click)="step2Next()">Continue</button>
+        </ng-container>
+
+        <!-- ── STEP 3: Documents ── -->
+        <ng-container *ngIf="currentStep === 3">
+          <div class="step-header">
+            <h1>Clinician Registration</h1>
+            <p>Upload your credentials for verification</p>
+          </div>
+
+          <button class="back-btn" type="button" (click)="goToStep(2)">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+
+          <div class="info-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Please upload a single PDF containing your medical license, degree certificate, and any relevant certifications.
+          </div>
+
+          <!-- PDF Upload -->
+          <div class="upload-area" [class.has-file]="documentsPdf" [class.is-error]="errors['pdf']">
+            <input type="file" id="pdfUpload" accept=".pdf" (change)="onFileChange($event)" hidden>
+
+            <ng-container *ngIf="!documentsPdf">
+              <label for="pdfUpload" class="upload-label">
+                <div class="upload-icon">
+                  <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <span class="upload-title">Click to upload PDF</span>
+                <span class="upload-sub">PDF only · Max 10MB</span>
+              </label>
+            </ng-container>
+
+            <ng-container *ngIf="documentsPdf">
+              <div class="file-preview">
+                <div class="file-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                </div>
+                <div class="file-info">
+                  <span class="file-name">{{ fileName }}</span>
+                  <span class="file-size">{{ (documentsPdf.size / 1024 / 1024).toFixed(2) }} MB</span>
+                </div>
+                <button class="file-remove" type="button" (click)="removePdf()">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            </ng-container>
+          </div>
+          <div class="error-msg" *ngIf="errors['pdf']" style="margin-bottom:10px">{{ errorMessages['pdf'] }}</div>
+
+          <!-- Terms -->
+          <div class="checkbox-row">
+            <input type="checkbox" id="terms" [(ngModel)]="termsAccepted">
+            <label for="terms">
+              I confirm that all information provided is accurate and I agree to the
+              <a href="/terms" target="_blank">Terms of Service</a> and
+              <a href="/privacy" target="_blank">Privacy Policy</a>
+            </label>
+          </div>
+          <div class="error-msg" *ngIf="errors['terms']" style="margin-bottom:12px">
+            Please accept the terms to continue
+          </div>
+
+          <!-- API Error -->
+          <div class="api-error" *ngIf="apiError">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ apiError }}
+          </div>
+
+          <button class="btn-submit" type="button"
+                  [disabled]="submitting || !documentsPdf || !termsAccepted"
+                  (click)="submitForm()">
+            <svg *ngIf="submitting" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"
+                 style="animation:spin 1s linear infinite">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            <svg *ngIf="!submitting" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+            {{ submitting ? 'Submitting application...' : 'Submit Application' }}
+          </button>
+
+        </ng-container>
+
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>

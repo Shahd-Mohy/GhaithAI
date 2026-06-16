@@ -1,0 +1,107 @@
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background: #eef5f3;
+  border-right: 1px solid #dce7e4;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 15px;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.logo-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #0f8f86;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-section h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.logo-section span {
+  color: #666;
+  font-size: 13px;
+}
+
+.menu-title {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 12px;
+  margin-top: 10px;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 25px;
+}
+
+.menu li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: .3s;
+}
+
+.menu li:hover {
+  background: #dceeea;
+}
+
+.menu li.active {
+  background: #cfe8e2;
+  color: #0f8f86;
+  font-weight: 600;
+}
+
+.help-btn {
+  margin-top: auto;
+  border: 1px solid #ffb5b5;
+  background: #fff5f5;
+  color: #d93025;
+  padding: 14px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.user-box {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #0f8f86;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-box h4 {
+  margin: 0;
+}
+
+.user-box span {
+  color: #777;
+  font-size: 12px;
+}

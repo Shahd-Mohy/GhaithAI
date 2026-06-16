@@ -1,0 +1,16 @@
+﻿using GhaithAI.API.DTOs.Chat;
+
+namespace GhaithAI.API.GaithAI.Application.DTOs.Chat
+{
+    public class PaginatedSessionsDTO
+    {
+        public IEnumerable<SessionDTO> Items { get; set; }
+           = Enumerable.Empty<SessionDTO>();
+        public int TotalCount { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+        public bool HasNextPage => Page < TotalPages;
+        public bool HasPreviousPage => Page > 1;
+    }
+}
