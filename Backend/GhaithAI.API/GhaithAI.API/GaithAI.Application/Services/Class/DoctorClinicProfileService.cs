@@ -1,4 +1,3 @@
-
 using GhaithAI.API.Repositories.UnitWork;
 using GhaithAI.GaithAI.Application.DTOs.DoctorProfile;
 using GhaithAI.GaithAI.Domain.Entities;
@@ -11,6 +10,19 @@ namespace GhaithAI.GaithAI.Application.Services
     public class DoctorClinicProfileService : IDoctorClinicProfileService
     {
         private readonly IUnitOfWork _unitOfWork;
+
+        public DoctorClinicProfileService(IUnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
+
+        public async Task<DoctorClinicProfileDto> GetMyProfileAsync(string userId)
+        {
+            var doctor = await _unitOfWork.DoctorProfile.GetFullProfileByUserIdAsync(userId)
+                ?? throw new KeyNotFoundException("Doctor profile not found.");
+
+            return MapToProfileDto(doctor);
+        }
 
         public async Task<DoctorClinicProfileDto> UpdateMyProfileAsync(string userId, UpdateDoctorClinicProfileDto dto)
         {
@@ -438,7 +450,7 @@ namespace GhaithAI.GaithAI.Application.Services
                     var defaultSchedule = doctor.DefaultSchedules
                         .FirstOrDefault(s => s.DayOfWeek == dayOfWeek && s.IsActive);
 
-                    if (defaultSchedule != null) 
+                    if (defaultSchedule != null)
                         windows.Add((defaultSchedule.StartTime, defaultSchedule.EndTime));
                 }
 
