@@ -94,16 +94,16 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                           .FirstOrDefault()
                 });
 
+
                 if (!string.IsNullOrWhiteSpace(riskFilter))
                 {
                     riskFilter = riskFilter.Trim().ToLower();
-
                     if (riskFilter != "high" && riskFilter != "medium" && riskFilter != "low")
-                    {
-                        _logger.LogWarning("Unexpected Risk Filter value received: '{RiskFilter}' for DoctorId: {DoctorId}.", riskFilter, doctorId);
-                    }
-
-                    patientsProjectedQuery = patientsProjectedQuery.Where(p => p.LastChatRisk.ToLower() == riskFilter);
+                        {
+                            _logger.LogWarning("Unexpected Risk Filter value received: '{RiskFilter}' for DoctorId: {DoctorId}.", riskFilter, doctorId);
+                        }
+                        patientsProjectedQuery = patientsProjectedQuery
+                        .Where(p => (p.LastChatRisk ?? "low").ToLower() == riskFilter);
                 }
 
                 var totalFilteredPatients = await patientsProjectedQuery.CountAsync();
