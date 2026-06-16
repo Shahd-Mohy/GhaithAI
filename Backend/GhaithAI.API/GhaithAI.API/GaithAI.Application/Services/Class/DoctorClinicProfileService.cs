@@ -1,113 +1,275 @@
-﻿using GhaithAI.GaithAI.Application.DTOs.DoctorProfile;
-using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 
-namespace GhaithAI.GaithAI.Application.Services.Class
+using GhaithAI.API.Repositories.UnitWork;
+using GhaithAI.GaithAI.Application.DTOs.DoctorProfile;
+using GhaithAI.GaithAI.Domain.Entities;
+using GhaithAI.GaithAI.Domain.Enums;
+using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
+using Microsoft.EntityFrameworkCore;
+
+namespace GhaithAI.GaithAI.Application.Services
 {
     public class DoctorClinicProfileService : IDoctorClinicProfileService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<DoctorClinicProfileService> _logger;
-
-        public DoctorClinicProfileService(
-            IUnitOfWork unitOfWork,
-            ILogger<DoctorClinicProfileService> logger)
-        {
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        // DOCTOR SIDE — GET
-
-        public async Task<DoctorClinicProfileDto> GetMyProfileAsync(string userId)
-        {
-            _logger.LogInformation("Fetching clinic profile for user {UserId}", userId);
-
-            var profile = await _unitOfWork.DoctorProfile.GetFullProfileByUserIdAsync(userId)
-                ?? throw new KeyNotFoundException("Doctor profile not found.");
-
-            return MapToProfileDto(profile);
-        }
-
-        // DOCTOR SIDE — UPDATE  
 
         public async Task<DoctorClinicProfileDto> UpdateMyProfileAsync(string userId, UpdateDoctorClinicProfileDto dto)
         {
-            _logger.LogInformation("Updating clinic profile for user {UserId}", userId);
-
-            // Load tracked entities so EF can detect changes
-            var profile = await _unitOfWork.DoctorProfile
-                .GetAllQueryableTracking()
-                .Include(d => d.Clinic)
-                .Include(d => d.ServiceSetting)
-                .Include(d => d.DefaultSchedules)
-                .Include(d => d.DoctorSpecialties)
-                .Include(d => d.DoctorLanguages)
+            var doctor = await _unitOfWork.DoctorProfile
+                .GetProfileForUpdateQueryable()
                 .FirstOrDefaultAsync(d => d.UserId == userId)
                 ?? throw new KeyNotFoundException("Doctor profile not found.");
 
-            //1. DoctorsProfile
-            profile.Specialization = dto.ProfessionalTitle?.Trim() ?? profile.Specialization;
-            profile.Bio = dto.Bio?.Trim() ?? profile.Bio;
-            profile.YearsOfExperience = dto.YearsOfExperience;
+            doctor.FullName = dto.DisplayName;
+            doctor.Specialization = dto.ProfessionalTitle;
+            doctor.Bio = dto.Bio;
+            doctor.YearsOfExperience = dto.YearsOfExperience;
 
-            //  2. Clinic
-            if (profile.Clinic == null)
+            if (doctor.Clinic == null)
             {
-                profile.Clinic = new Clinic
-                {
-                    Id = Guid.NewGuid(),
-                    DoctorId = profile.Id
-                };
+                doctor.Clinic = new Clinic { DoctorId = doctor.Id };
+            }
+            doctor.Clinic.ClinicName = dto.ClinicName;
+            doctor.Clinic.Phone = dto.Phone;
+            doctor.Clinic.ContactEmail = dto.ContactEmail;
+            doctor.Clinic.IsPublicListed = dto.IsPublicListed;
+
+            if (dto.AvailableSessionType != SessionType.Online)
+            {
+                doctor.Clinic.ClinicAddress = dto.ClinicAddress;
+                doctor.Clinic.City = dto.City;
+                doctor.Clinic.CountryCode = dto.CountryCode;
             }
 
-            profile.Clinic.ClinicName = dto.ClinicName?.Trim() ?? profile.Clinic.ClinicName;
-            profile.Clinic.ClinicAddress = dto.ClinicAddress?.Trim() ?? profile.Clinic.ClinicAddress;
-            profile.Clinic.City = dto.City?.Trim() ?? profile.Clinic.City;
-            profile.Clinic.CountryCode = dto.CountryCode?.Trim() ?? profile.Clinic.CountryCode;
-            profile.Clinic.Phone = dto.Phone?.Trim() ?? profile.Clinic.Phone;
-            profile.Clinic.ContactEmail = dto.ContactEmail?.Trim() ?? profile.Clinic.ContactEmail;
-            profile.Clinic.IsPublicListed = dto.IsPublicListed;
-
-
-            profile.FullName = dto.DisplayName?.Trim() ?? profile.FullName;
-
-            if (profile.ServiceSetting == null)
+            if (doctor.ServiceSetting == null)
             {
-                profile.ServiceSetting = new DoctorServiceSetting
+                doctor.ServiceSetting = new DoctorServiceSetting { DoctorId = doctor.Id };
+            }
+            doctor.ServiceSetting.FeePerSession = dto.FeePerSession;
+            doctor.ServiceSetting.SessionDurationMinutes = dto.SessionDurationMinutes;
+            doctor.ServiceSetting.AvailableSessionType = dto.AvailableSessionType;
+
+            var existingSpecialtyNames = doctor.DoctorSpecialties
+                .Select(s => s.BaseSpecialty.SpecialtyName.ToLower())
+                .ToHashSet();
+
+            var requestedNames = dto.Specialties.Select(s => s.ToLower()).ToHashSet();
+
+            var toRemoveSpecialties = doctor.DoctorSpecialties
+                .Where(s => !requestedNames.Contains(s.BaseSpecialty.SpecialtyName.ToLower()))
+                .ToList();
+
+            foreach (var s in toRemoveSpecialties)
+                _unitOfWork.DoctorSpecialty.Delete(s);
+
+            foreach (var specialtyName in dto.Specialties)
+            {
+                if (!existingSpecialtyNames.Contains(specialtyName.ToLower()))
                 {
-                    Id = Guid.NewGuid(),
-                    DoctorId = profile.Id
-                };
+                    var baseSpecialty = await _unitOfWork.BaseSpecialty
+                        .GetAllQueryableNoTracking()
+                        .FirstOrDefaultAsync(b => b.SpecialtyName.ToLower() == specialtyName.ToLower());
+
+                    if (baseSpecialty != null)
+                    {
+                        await _unitOfWork.DoctorSpecialty.AddAsync(new DoctorSpecialty
+                        {
+                            DoctorId = doctor.Id,
+                            SpecialtyId = baseSpecialty.Id
+                        });
+                    }
+                }
             }
 
-            profile.ServiceSetting.FeePerSession = dto.FeePerSession;
-            profile.ServiceSetting.SessionDurationMinutes = dto.SessionDurationMinutes;
-            profile.ServiceSetting.AvailableSessionType = dto.AvailableSessionType;
+            var existingLanguageNames = doctor.DoctorLanguages
+                .Select(l => l.BaseLanguage.LanguageName.ToLower())
+                .ToHashSet();
 
-            UpdateSpecialties(profile, dto.SpecialtyIds);
+            var requestedLanguages = dto.Languages.Select(l => l.ToLower()).ToHashSet();
 
-            UpdateLanguages(profile, dto.LanguageIds);
+            var toRemoveLanguages = doctor.DoctorLanguages
+                .Where(l => !requestedLanguages.Contains(l.BaseLanguage.LanguageName.ToLower()))
+                .ToList();
 
-            UpdateDefaultSchedule(profile, dto.WeeklySchedule);
+            foreach (var l in toRemoveLanguages)
+                _unitOfWork.DoctorLanguage.Delete(l);
 
-            profile.UpdatedAt = DateTime.UtcNow;
-            profile.UpdatedBy = userId;
+            foreach (var languageName in dto.Languages)
+            {
+                if (!existingLanguageNames.Contains(languageName.ToLower()))
+                {
+                    var baseLang = await _unitOfWork.BaseLanguage
+                        .GetAllQueryableNoTracking()
+                        .FirstOrDefaultAsync(b => b.LanguageName.ToLower() == languageName.ToLower());
 
-            _unitOfWork.DoctorProfile.Update(profile);
+                    if (baseLang != null)
+                    {
+                        await _unitOfWork.DoctorLanguage.AddAsync(new DoctorLanguage
+                        {
+                            DoctorId = doctor.Id,
+                            BaseLanguageId = baseLang.Id
+                        });
+                    }
+                }
+            }
+
+            var existingSchedules = doctor.DefaultSchedules.ToList();
+            foreach (var existing in existingSchedules)
+                _unitOfWork.DoctorDefaultSchedule.Delete(existing);
+
+            foreach (var slot in dto.WeeklySchedule)
+            {
+                await _unitOfWork.DoctorDefaultSchedule.AddAsync(new DoctorDefaultSchedule
+                {
+                    DoctorId = doctor.Id,
+                    DayOfWeek = slot.DayOfWeek,
+                    StartTime = slot.StartTime,
+                    EndTime = slot.EndTime,
+                    IsActive = slot.IsActive
+                });
+            }
+
+            _unitOfWork.DoctorProfile.Update(doctor);
             await _unitOfWork.CompleteAsync();
 
-            _logger.LogInformation("Clinic profile updated for user {UserId}", userId);
-
-            var updated = await _unitOfWork.DoctorProfile.GetFullProfileByUserIdAsync(userId)!;
-            return MapToProfileDto(updated!);
+            return await GetMyProfileAsync(userId);
         }
 
-        // PATIENT SIDE —  listing
+        public async Task<DoctorClinicProfileDto> SetPublicListingAsync(string userId, bool isPublicListed)
+        {
+            var doctor = await _unitOfWork.DoctorProfile
+                .GetProfileForUpdateQueryable()
+                .FirstOrDefaultAsync(d => d.UserId == userId)
+                ?? throw new KeyNotFoundException("Doctor profile not found.");
 
-        public async Task<IEnumerable<PublicDoctorCardDto>> GetPublicDoctorsAsync(
+            if (doctor.Clinic == null)
+                throw new InvalidOperationException("Clinic profile not set up yet.");
+
+            doctor.Clinic.IsPublicListed = isPublicListed;
+            await _unitOfWork.CompleteAsync();
+
+            return await GetMyProfileAsync(userId);
+        }
+
+        public async Task<List<DefaultScheduleDto>> GetDefaultScheduleAsync(string userId)
+        {
+            var doctor = await _unitOfWork.DoctorProfile.GetFullProfileByUserIdAsync(userId)
+                ?? throw new KeyNotFoundException("Doctor profile not found.");
+
+            return doctor.DefaultSchedules
+                .OrderBy(s => s.DayOfWeek)
+                .Select(s => new DefaultScheduleDto
+                {
+                    Id = s.Id,
+                    DayOfWeek = s.DayOfWeek,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    IsActive = s.IsActive
+                })
+                .ToList();
+        }
+
+        public async Task<List<DefaultScheduleDto>> UpsertDefaultScheduleAsync(string userId, List<UpsertScheduleDto> slots)
+        {
+            var doctor = await _unitOfWork.DoctorProfile
+                .GetProfileForUpdateQueryable()
+                .FirstOrDefaultAsync(d => d.UserId == userId)
+                ?? throw new KeyNotFoundException("Doctor profile not found.");
+
+            var existing = doctor.DefaultSchedules.ToList();
+            foreach (var s in existing)
+                _unitOfWork.DoctorDefaultSchedule.Delete(s);
+
+            foreach (var slot in slots)
+            {
+                await _unitOfWork.DoctorDefaultSchedule.AddAsync(new DoctorDefaultSchedule
+                {
+                    DoctorId = doctor.Id,
+                    DayOfWeek = slot.DayOfWeek,
+                    StartTime = slot.StartTime,
+                    EndTime = slot.EndTime,
+                    IsActive = slot.IsActive
+                });
+            }
+
+            await _unitOfWork.CompleteAsync();
+
+            return await GetDefaultScheduleAsync(userId);
+        }
+
+        public async Task<List<CustomScheduleDto>> GetCustomSchedulesAsync(string userId, DateTime? from, DateTime? to)
+        {
+            var doctor = await _unitOfWork.DoctorProfile.GetFullProfileByUserIdAsync(userId)
+                ?? throw new KeyNotFoundException("Doctor profile not found.");
+
+            var schedules = await _unitOfWork.DoctorProfile
+                .GetCustomSchedulesAsync(doctor.Id, from, to);
+
+            return schedules.Select(MapToCustomScheduleDto).ToList();
+        }
+
+        public async Task<CustomScheduleDto> AddCustomScheduleAsync(string userId, UpsertCustomScheduleDto dto)
+        {
+            var doctor = await _unitOfWork.DoctorProfile.GetFullProfileByUserIdAsync(userId)
+                ?? throw new KeyNotFoundException("Doctor profile not found.");
+
+            var entity = new DoctorCustomSchedule
+            {
+                DoctorId = doctor.Id,
+                CustomDate = dto.CustomDate.Date,
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime,
+                IsOffDay = dto.IsOffDay
+            };
+
+            await _unitOfWork.CustomSchedule.AddAsync(entity);
+            await _unitOfWork.CompleteAsync();
+
+            return MapToCustomScheduleDto(entity);
+        }
+
+        public async Task<CustomScheduleDto> UpdateCustomScheduleAsync(string userId, Guid id, UpsertCustomScheduleDto dto)
+        {
+            var doctor = await _unitOfWork.DoctorProfile.GetFullProfileByUserIdAsync(userId)
+                ?? throw new KeyNotFoundException("Doctor profile not found.");
+
+            var entity = await _unitOfWork.CustomSchedule.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Custom schedule not found.");
+
+            if (entity.DoctorId != doctor.Id)
+                throw new UnauthorizedAccessException("Access denied.");
+
+            entity.CustomDate = dto.CustomDate.Date;
+            entity.StartTime = dto.StartTime;
+            entity.EndTime = dto.EndTime;
+            entity.IsOffDay = dto.IsOffDay;
+
+            _unitOfWork.CustomSchedule.Update(entity);
+            await _unitOfWork.CompleteAsync();
+
+            return MapToCustomScheduleDto(entity);
+        }
+
+        public async Task DeleteCustomScheduleAsync(string userId, Guid id)
+        {
+            var doctor = await _unitOfWork.DoctorProfile.GetFullProfileByUserIdAsync(userId)
+                ?? throw new KeyNotFoundException("Doctor profile not found.");
+
+            var entity = await _unitOfWork.CustomSchedule.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Custom schedule not found.");
+
+            if (entity.DoctorId != doctor.Id)
+                throw new UnauthorizedAccessException("Access denied.");
+
+            _unitOfWork.CustomSchedule.Delete(entity);
+            await _unitOfWork.CompleteAsync();
+        }
+
+        public async Task<PagedResult<PublicDoctorCardDto>> GetPublicDoctorsAsync(
             string? searchTerm,
             string? specialty,
             string? language,
+            string? sessionType,
+            string? city,
             int pageNumber = 1,
             int pageSize = 10)
         {
@@ -115,25 +277,43 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var term = searchTerm.Trim().ToLower();
+                var term = searchTerm.ToLower();
                 query = query.Where(d =>
                     d.FullName.ToLower().Contains(term) ||
-                    d.Specialization.ToLower().Contains(term));
+                    d.Specialization.ToLower().Contains(term) ||
+                    d.Bio.ToLower().Contains(term));
             }
 
             if (!string.IsNullOrWhiteSpace(specialty))
             {
+                var sp = specialty.ToLower();
                 query = query.Where(d =>
-                    d.DoctorSpecialties.Any(ds =>
-                        ds.BaseSpecialty.SpecialtyName.ToLower() == specialty.Trim().ToLower()));
+                    d.DoctorSpecialties.Any(s => s.BaseSpecialty.SpecialtyName.ToLower() == sp));
             }
 
             if (!string.IsNullOrWhiteSpace(language))
             {
+                var lang = language.ToLower();
                 query = query.Where(d =>
-                    d.DoctorLanguages.Any(dl =>
-                        dl.BaseLanguage.LanguageName.ToLower() == language.Trim().ToLower()));
+                    d.DoctorLanguages.Any(l => l.BaseLanguage.LanguageName.ToLower() == lang));
             }
+
+            if (!string.IsNullOrWhiteSpace(sessionType) &&
+                Enum.TryParse<SessionType>(sessionType, true, out var sessionTypeEnum))
+            {
+                query = query.Where(d =>
+                    d.ServiceSetting != null &&
+                    (d.ServiceSetting.AvailableSessionType == sessionTypeEnum ||
+                     d.ServiceSetting.AvailableSessionType == SessionType.both));
+            }
+
+            if (!string.IsNullOrWhiteSpace(city))
+            {
+                var c = city.ToLower();
+                query = query.Where(d => d.Clinic != null && d.Clinic.City.ToLower() == c);
+            }
+
+            var totalCount = await query.CountAsync();
 
             var doctors = await query
                 .OrderByDescending(d => d.AverageRating)
@@ -141,199 +321,225 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 .Take(pageSize)
                 .ToListAsync();
 
-            return doctors.Select(MapToCardDto);
-        }
+            var items = doctors.Select(d => new PublicDoctorCardDto
+            {
+                DoctorId = d.Id,
+                DisplayName = d.FullName,
+                ProfessionalTitle = d.Specialization,
+                AverageRating = d.AverageRating,
+                ReviewCount = d.Reviews?.Count ?? 0,
+                YearsOfExperience = d.YearsOfExperience,
+                City = d.Clinic?.City,
+                CountryCode = d.Clinic?.CountryCode,
+                Bio = d.Bio,
+                FeePerSession = d.ServiceSetting?.FeePerSession ?? 0,
+                AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? SessionType.both,
+                Specialties = d.DoctorSpecialties?.Select(s => s.BaseSpecialty.SpecialtyName).ToList() ?? new(),
+                Languages = d.DoctorLanguages?.Select(l => l.BaseLanguage.LanguageName).ToList() ?? new(),
+                NextAvailableSlot = GetNextAvailableSlot(d)
+            }).ToList();
 
-        // PATIENT SIDE — full profile
+            return new PagedResult<PublicDoctorCardDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
 
         public async Task<PublicDoctorProfileDto> GetPublicDoctorProfileAsync(Guid doctorId)
         {
-            var profile = await _unitOfWork.DoctorProfile.GetFullProfileByDoctorIdAsync(doctorId)
+            var doctor = await _unitOfWork.DoctorProfile.GetFullProfileByDoctorIdAsync(doctorId)
                 ?? throw new KeyNotFoundException("Doctor not found.");
 
-            if (profile.Clinic == null || !profile.Clinic.IsPublicListed)
-                throw new UnauthorizedAccessException("This doctor's profile is not publicly listed.");
+            if (doctor.Clinic == null || !doctor.Clinic.IsPublicListed)
+                throw new KeyNotFoundException("Doctor not found.");
 
-            return MapToFullPublicDto(profile);
+            return new PublicDoctorProfileDto
+            {
+                DoctorId = doctor.Id,
+                DisplayName = doctor.FullName,
+                ProfessionalTitle = doctor.Specialization,
+                AverageRating = doctor.AverageRating,
+                ReviewCount = doctor.Reviews?.Count ?? 0,
+                YearsOfExperience = doctor.YearsOfExperience,
+                City = doctor.Clinic?.City,
+                CountryCode = doctor.Clinic?.CountryCode,
+                Bio = doctor.Bio,
+                FeePerSession = doctor.ServiceSetting?.FeePerSession ?? 0,
+                AvailableSessionType = doctor.ServiceSetting?.AvailableSessionType ?? SessionType.both,
+                Specialties = doctor.DoctorSpecialties?.Select(s => s.BaseSpecialty.SpecialtyName).ToList() ?? new(),
+                Languages = doctor.DoctorLanguages?.Select(l => l.BaseLanguage.LanguageName).ToList() ?? new(),
+                NextAvailableSlot = GetNextAvailableSlot(doctor),
+                WeeklySchedule = doctor.DefaultSchedules?
+                    .Where(s => s.IsActive)
+                    .OrderBy(s => s.DayOfWeek)
+                    .Select(s => new DefaultScheduleDto
+                    {
+                        Id = s.Id,
+                        DayOfWeek = s.DayOfWeek,
+                        StartTime = s.StartTime,
+                        EndTime = s.EndTime,
+                        IsActive = s.IsActive
+                    }).ToList() ?? new()
+            };
         }
 
-        // mapping
-
-        private static DoctorClinicProfileDto MapToProfileDto(DoctorsProfile d) => new()
+        public async Task<List<AvailableSlotDto>> GetAvailableSlotsAsync(Guid doctorId, DateTime from, DateTime to)
         {
-            ClinicName = d.Clinic?.ClinicName ?? string.Empty,
-            DisplayName = d.FullName,
-            ProfessionalTitle = d.Specialization,
-            YearsOfExperience = d.YearsOfExperience,
-            Bio = d.Bio,
-            IsPublicListed = d.Clinic?.IsPublicListed ?? false,
-            ClinicAddress = d.Clinic?.ClinicAddress ?? string.Empty,
-            City = d.Clinic?.City ?? string.Empty,
-            CountryCode = d.Clinic?.CountryCode ?? string.Empty,
-            Phone = d.Clinic?.Phone ?? string.Empty,
-            ContactEmail = d.Clinic?.ContactEmail ?? string.Empty,
-            FeePerSession = d.ServiceSetting?.FeePerSession ?? 0,
-            SessionDurationMinutes = d.ServiceSetting?.SessionDurationMinutes ?? 0,
-            AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? default,
-            Specialties = d.DoctorSpecialties
-                                     .Select(ds => new SpecialtyItemDto
-                                     {
-                                         Id = ds.SpecialtyId,
-                                         Name = ds.BaseSpecialty?.SpecialtyName ?? string.Empty
-                                     }).ToList(),
-            Languages = d.DoctorLanguages
-                                     .Select(dl => new LanguageItemDto
-                                     {
-                                         Id = dl.BaseLanguageId,
-                                         Name = dl.BaseLanguage?.LanguageName ?? string.Empty
-                                     }).ToList(),
-            WeeklySchedule = d.DefaultSchedules
-                                     .OrderBy(s => s.DayOfWeek)
-                                     .Select(s => new DefaultScheduleDto
-                                     {
-                                         Id = s.Id,
-                                         DayOfWeek = s.DayOfWeek,
-                                         StartTime = s.StartTime,
-                                         EndTime = s.EndTime,
-                                         IsActive = s.IsActive
-                                     }).ToList()
-        };
+            var doctor = await _unitOfWork.DoctorProfile.GetFullProfileByDoctorIdAsync(doctorId)
+                ?? throw new KeyNotFoundException("Doctor not found.");
 
-        private static PublicDoctorCardDto MapToCardDto(DoctorsProfile d) => new()
-        {
-            DoctorId = d.Id,
-            DisplayName = d.FullName,
-            ProfessionalTitle = d.Specialization,
-            AverageRating = d.AverageRating,
-            ReviewCount = d.Reviews?.Count ?? 0,
-            YearsOfExperience = d.YearsOfExperience,
-            City = d.Clinic?.City ?? string.Empty,
-            CountryCode = d.Clinic?.CountryCode ?? string.Empty,
-            Bio = d.Bio,
-            FeePerSession = d.ServiceSetting?.FeePerSession ?? 0,
-            AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? default,
-            Specialties = d.DoctorSpecialties
-                                     .Select(ds => ds.BaseSpecialty?.SpecialtyName ?? string.Empty)
-                                     .ToList(),
-            Languages = d.DoctorLanguages
-                                     .Select(dl => dl.BaseLanguage?.LanguageName ?? string.Empty)
-                                     .ToList(),
-            NextAvailableSlot = ResolveNextAvailableSlot(d.DefaultSchedules)
-        };
+            if (doctor.Clinic == null || !doctor.Clinic.IsPublicListed)
+                throw new KeyNotFoundException("Doctor not found.");
 
-        private static PublicDoctorProfileDto MapToFullPublicDto(DoctorsProfile d) => new()
-        {
-            DoctorId = d.Id,
-            DisplayName = d.FullName,
-            ProfessionalTitle = d.Specialization,
-            AverageRating = d.AverageRating,
-            ReviewCount = d.Reviews?.Count ?? 0,
-            YearsOfExperience = d.YearsOfExperience,
-            City = d.Clinic?.City ?? string.Empty,
-            CountryCode = d.Clinic?.CountryCode ?? string.Empty,
-            Bio = d.Bio,
-            FeePerSession = d.ServiceSetting?.FeePerSession ?? 0,
-            AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? default,
-            Specialties = d.DoctorSpecialties
-                                     .Select(ds => ds.BaseSpecialty?.SpecialtyName ?? string.Empty)
-                                     .ToList(),
-            Languages = d.DoctorLanguages
-                                     .Select(dl => dl.BaseLanguage?.LanguageName ?? string.Empty)
-                                     .ToList(),
-            NextAvailableSlot = ResolveNextAvailableSlot(d.DefaultSchedules),
-            WeeklySchedule = d.DefaultSchedules
-                                     .OrderBy(s => s.DayOfWeek)
-                                     .Select(s => new DefaultScheduleDto
-                                     {
-                                         Id = s.Id,
-                                         DayOfWeek = s.DayOfWeek,
-                                         StartTime = s.StartTime,
-                                         EndTime = s.EndTime,
-                                         IsActive = s.IsActive
-                                     }).ToList()
-        };
+            var sessionDuration = doctor.ServiceSetting?.SessionDurationMinutes ?? 50;
 
-        private static string ResolveNextAvailableSlot(ICollection<DoctorDefaultSchedule>? schedules)
+            var existingBookings = await _unitOfWork.Booking
+                .GetAllQueryableNoTracking()
+                .Where(b => b.DoctorId == doctorId &&
+                            b.BookingDate.Date >= from.Date &&
+                            b.BookingDate.Date <= to.Date &&
+                            b.Status == BookingStatus.Confirmed)
+                .ToListAsync();
+
+            var customSchedules = await _unitOfWork.DoctorProfile
+                .GetCustomSchedulesAsync(doctorId, from, to);
+
+            var slots = new List<AvailableSlotDto>();
+            var current = from.Date;
+
+            while (current <= to.Date)
+            {
+                var dayOfWeek = (DaysOfWeek)current.DayOfWeek;
+
+                var customDay = customSchedules
+                    .Where(cs => cs.CustomDate.Date == current)
+                    .ToList();
+
+                if (customDay.Any(cs => cs.IsOffDay))
+                {
+                    current = current.AddDays(1);
+                    continue;
+                }
+
+                List<(TimeSpan start, TimeSpan end)> windows = new();
+
+                if (customDay.Any(cs => !cs.IsOffDay))
+                {
+                    windows = customDay
+                        .Where(cs => !cs.IsOffDay)
+                        .Select(cs => (cs.StartTime, cs.EndTime))
+                        .ToList();
+                }
+                else
+                {
+                    var defaultSchedule = doctor.DefaultSchedules
+                        .FirstOrDefault(s => s.DayOfWeek == dayOfWeek && s.IsActive);
+
+                    if (defaultSchedule != null) 
+                        windows.Add((defaultSchedule.StartTime, defaultSchedule.EndTime));
+                }
+
+                foreach (var (start, end) in windows)
+                {
+                    var slotStart = start;
+                    while (slotStart.Add(TimeSpan.FromMinutes(sessionDuration)) <= end)
+                    {
+                        var slotEnd = slotStart.Add(TimeSpan.FromMinutes(sessionDuration));
+                        var isBooked = existingBookings.Any(b =>
+                            b.BookingDate.Date == current && b.SlotTime == slotStart);
+
+                        if (!isBooked)
+                        {
+                            slots.Add(new AvailableSlotDto
+                            {
+                                Date = current,
+                                StartTime = slotStart,
+                                EndTime = slotEnd
+                            });
+                        }
+
+                        slotStart = slotEnd;
+                    }
+                }
+
+                current = current.AddDays(1);
+            }
+
+            return slots;
+        }
+
+        private static DoctorClinicProfileDto MapToProfileDto(DoctorsProfile doctor)
         {
-            if (schedules == null || !schedules.Any(s => s.IsActive))
-                return "Not available";
+            return new DoctorClinicProfileDto
+            {
+                DisplayName = doctor.FullName,
+                ProfessionalTitle = doctor.Specialization,
+                Bio = doctor.Bio,
+                YearsOfExperience = doctor.YearsOfExperience,
+                PracticeType = doctor.DoctorType.ToString(),
+                ClinicName = doctor.Clinic?.ClinicName,
+                ClinicAddress = doctor.Clinic?.ClinicAddress,
+                City = doctor.Clinic?.City,
+                CountryCode = doctor.Clinic?.CountryCode,
+                Phone = doctor.Clinic?.Phone,
+                ContactEmail = doctor.Clinic?.ContactEmail,
+                IsPublicListed = doctor.Clinic?.IsPublicListed ?? false,
+                FeePerSession = doctor.ServiceSetting?.FeePerSession ?? 0,
+                SessionDurationMinutes = doctor.ServiceSetting?.SessionDurationMinutes ?? 0,
+                AvailableSessionType = doctor.ServiceSetting?.AvailableSessionType ?? SessionType.both,
+                Specialties = doctor.DoctorSpecialties?.Select(s => s.BaseSpecialty.SpecialtyName).ToList() ?? new(),
+                Languages = doctor.DoctorLanguages?.Select(l => l.BaseLanguage.LanguageName).ToList() ?? new(),
+                WeeklySchedule = doctor.DefaultSchedules?
+                    .OrderBy(s => s.DayOfWeek)
+                    .Select(s => new DefaultScheduleDto
+                    {
+                        Id = s.Id,
+                        DayOfWeek = s.DayOfWeek,
+                        StartTime = s.StartTime,
+                        EndTime = s.EndTime,
+                        IsActive = s.IsActive
+                    }).ToList() ?? new()
+            };
+        }
+
+        private static CustomScheduleDto MapToCustomScheduleDto(DoctorCustomSchedule entity)
+        {
+            return new CustomScheduleDto
+            {
+                Id = entity.Id,
+                CustomDate = entity.CustomDate,
+                StartTime = entity.StartTime,
+                EndTime = entity.EndTime,
+                IsOffDay = entity.IsOffDay
+            };
+        }
+
+        private static string? GetNextAvailableSlot(DoctorsProfile doctor)
+        {
+            if (doctor.DefaultSchedules == null || !doctor.DefaultSchedules.Any())
+                return null;
 
             var today = DateTime.UtcNow;
+            var todayDow = (DaysOfWeek)today.DayOfWeek;
 
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i <= 7; i++)
             {
-                var candidate = today.AddDays(i);
-                var dayEnum = (GhaithAI.GaithAI.Domain.Enums.DaysOfWeek)((int)candidate.DayOfWeek);
-                var slot = schedules.FirstOrDefault(s => s.DayOfWeek == dayEnum && s.IsActive);
+                var checkDay = (DaysOfWeek)(((int)todayDow + i) % 7);
+                var schedule = doctor.DefaultSchedules
+                    .FirstOrDefault(s => s.DayOfWeek == checkDay && s.IsActive);
 
-                if (slot != null)
+                if (schedule != null)
                 {
-                    var label = i == 0 ? "Today" : i == 1 ? "Tomorrow" : candidate.ToString("ddd, MMM d");
-                    return $"{label}, {slot.StartTime:hh\\:mm tt}";
+                    var date = today.Date.AddDays(i);
+                    var label = i == 0 ? "Today" : i == 1 ? "Tomorrow" : date.ToString("ddd, MMM d");
+                    return $"{label}, {schedule.StartTime:hh\\:mm} AM";
                 }
             }
 
-            return "Check schedule";
-        }
-
-
-        private static void UpdateSpecialties(DoctorsProfile profile, List<Guid> newIds)
-        {
-            var toRemove = profile.DoctorSpecialties
-                .Where(ds => !newIds.Contains(ds.SpecialtyId))
-                .ToList();
-            foreach (var r in toRemove)
-                profile.DoctorSpecialties.Remove(r);
-
-            var existingIds = profile.DoctorSpecialties.Select(ds => ds.SpecialtyId).ToHashSet();
-            foreach (var id in newIds.Where(id => !existingIds.Contains(id)))
-            {
-                profile.DoctorSpecialties.Add(new DoctorSpecialty
-                {
-                    Id = Guid.NewGuid(),
-                    DoctorId = profile.Id,
-                    SpecialtyId = id
-                });
-            }
-        }
-
-        private static void UpdateLanguages(DoctorsProfile profile, List<Guid> newIds)
-        {
-            var toRemove = profile.DoctorLanguages
-                .Where(dl => !newIds.Contains(dl.BaseLanguageId))
-                .ToList();
-            foreach (var r in toRemove)
-                profile.DoctorLanguages.Remove(r);
-
-            var existingIds = profile.DoctorLanguages.Select(dl => dl.BaseLanguageId).ToHashSet();
-            foreach (var id in newIds.Where(id => !existingIds.Contains(id)))
-            {
-                profile.DoctorLanguages.Add(new DoctorLanguage
-                {
-                    Id = Guid.NewGuid(),
-                    DoctorId = profile.Id,
-                    BaseLanguageId = id
-                });
-            }
-        }
-
-        private static void UpdateDefaultSchedule(DoctorsProfile profile, List<UpsertScheduleDto> desired)
-        {
-
-            profile.DefaultSchedules.Clear();
-
-            foreach (var s in desired)
-            {
-                profile.DefaultSchedules.Add(new DoctorDefaultSchedule
-                {
-                    Id = Guid.NewGuid(),
-                    DoctorId = profile.Id,
-                    DayOfWeek = s.DayOfWeek,
-                    StartTime = s.StartTime,
-                    EndTime = s.EndTime,
-                    IsActive = s.IsActive
-                });
-            }
+            return null;
         }
     }
 }
