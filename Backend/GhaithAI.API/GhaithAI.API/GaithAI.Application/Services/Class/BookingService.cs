@@ -130,21 +130,13 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             return doctorProfile.Id;
         }
 
-
-
-
-
-
-        
         public async Task<Guid> CreateUserBookingAsync(string userId, CreateUserBookingDto dto)
         {
-            // تحقق إن الدكتور موجود ومعتمد
             var doctor = await _unitOfWork.DoctorProfile.GetAllQueryableNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == dto.DoctorId &&
                                           d.ApprovalStatus == ApprovalStatus.Approved)
                 ?? throw new KeyNotFoundException("Doctor not found or not approved.");
 
-            // تحقق إن الـ slot مش محجوز
             var slotTaken = await _unitOfWork.Booking.GetAllQueryableNoTracking()
                 .AnyAsync(b => b.DoctorId == dto.DoctorId &&
                                b.BookingDate.Date == dto.BookingDate.Date &&
@@ -154,7 +146,6 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             if (slotTaken)
                 throw new InvalidOperationException("This slot is already booked.");
 
-            // تحقق إن اليوزر مش حاجز نفس الوقت مع دكتور تاني
             var userHasConflict = await _unitOfWork.Booking.GetAllQueryableNoTracking()
                 .AnyAsync(b => b.PatientId == userId &&
                                b.BookingDate.Date == dto.BookingDate.Date &&
@@ -188,8 +179,6 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             return booking.Id;
         }
-
-
 
         // ─── Get User Bookings ────────────────────────────
         public async Task<IEnumerable<UserBookingResponseDto>> GetUserBookingsAsync(
@@ -244,7 +233,6 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                     SessionType = b.SessionType.ToString(),
                     Status = b.Status.ToString(),
                     Notes = b.Notes,
-                    // ✅ يقدر يكنسل لو أكتر من ساعة
                     CanCancel = b.Status != BookingStatus.Cancelled && hoursUntil > 1
                 };
             });
@@ -285,7 +273,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             var dayOfWeek = (DaysOfWeek)date.DayOfWeek;
 
             // شوف لو في custom schedule للتاريخ ده
-            var customSchedule = await _unitOfWork.DoctorCustomSchedule
+            var customSchedule = await _unitOfWork.CustomSchedule
                 .GetAllQueryableNoTracking()
                 .FirstOrDefaultAsync(s => s.DoctorId == doctorId &&
                                           s.CustomDate.Date == date.Date);
