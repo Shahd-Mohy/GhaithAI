@@ -29,18 +29,13 @@ namespace GhaithAI.API.Repositories.UnitWork
         }
 
         public ISessionRepository Session => _session ??= new SessionRepository(_context);
-
         public IMessageRepository Message => _message ??= new MessageRepository(_context);
-
         public IRiskRepository Risk => _risk ??= new RiskRepository(_context);
-
         public ISelfHelpRepository SelfHelp => _selfHelp ??= new SelfHelpRepository(_context);
-
         public IBaseSpecialtyRepository BaseSpecialty => _baseSpecialty ??= new BaseSpecialtyRepository(_context);
         public IBaseLanguageRepository BaseLanguage => _baseLanguage ??= new BaseLanguageRepository(_context);
         public IClinicPatientRepository ClinicPatient => _clinicPatient ??= new ClinicPatientRepository(_context);
         public IDoctorProfileRepository DoctorProfile => _doctorProfile ??= new DoctorProfileRepository(_context);
-
         public IExerciseTipsRepository ExerciseTips => _exerciseTips ??= new ExerciseTipsRepository(_context);
         public IBookingRepository Booking => _booking ??= new BookingRepository(_context);
         public IGenericRepository<DoctorSpecialty> DoctorSpecialty =>
@@ -49,19 +44,19 @@ namespace GhaithAI.API.Repositories.UnitWork
             _doctorLanguage ??= new GenericRepository<DoctorLanguage>(_context);
         public IGenericRepository<DoctorDefaultSchedule> DoctorDefaultSchedule =>
             _doctorDefaultSchedule ??= new GenericRepository<DoctorDefaultSchedule>(_context);
-        public IGenericRepository<DoctorCustomSchedule> CustomSchedule =>   
+        public IGenericRepository<DoctorCustomSchedule> CustomSchedule =>
             _customSchedule ??= new GenericRepository<DoctorCustomSchedule>(_context);
 
         public async Task<int> CompleteAsync()
         {
             try
-            { 
-                return await _context.SaveChangesAsync(); 
+            {
+                return await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 throw new InvalidOperationException(
-                    "An error occurred while saving changes to the database. See inner exception for details.", 
+                    "An error occurred while saving changes to the database. See inner exception for details.",
                     ex);
             }
         }
@@ -86,9 +81,9 @@ namespace GhaithAI.API.Repositories.UnitWork
             GC.SuppressFinalize(this);
         }
 
-        ~UnitOfWork() 
+        ~UnitOfWork()
         {
             Dispose();
-        } 
+        }
     }
 }

@@ -1,4 +1,3 @@
-using GhaithAI.API.Repositories.Interfaces;
 using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository;
 using GhaithAI.GaithAI.Domain.Entities;
 
@@ -14,13 +13,12 @@ namespace GhaithAI.API.Repositories.UnitWork
         IBaseLanguageRepository BaseLanguage { get; }
         IClinicPatientRepository ClinicPatient { get; }
         IDoctorProfileRepository DoctorProfile { get; }
-
         IExerciseTipsRepository ExerciseTips { get; }
         IBookingRepository Booking { get; }
         IGenericRepository<DoctorSpecialty> DoctorSpecialty { get; }
         IGenericRepository<DoctorLanguage> DoctorLanguage { get; }
         IGenericRepository<DoctorDefaultSchedule> DoctorDefaultSchedule { get; }
-        IGenericRepository<DoctorCustomSchedule> CustomSchedule { get; }  
+        IGenericRepository<DoctorCustomSchedule> CustomSchedule { get; }
         Task<int> CompleteAsync();
         int Complete();
     }

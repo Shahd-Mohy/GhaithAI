@@ -16,6 +16,7 @@ import {
   DailyMoodDTO
 } from '../../../services/insight.service';
 import { DashboardRefreshService } from '../../../services/dashboard-refresh.service';
+import { ProfessionalsComponent } from "../professionals/professionals";
 
 interface QuickAction {
   name: string; desc: string; page: string; colorClass: string; icon: string;
@@ -24,7 +25,7 @@ interface QuickAction {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, SelfHelpComponent, MoodTrackerComponent, JournalComponent],
+  imports: [CommonModule, RouterLink, SelfHelpComponent, MoodTrackerComponent, JournalComponent, ProfessionalsComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })

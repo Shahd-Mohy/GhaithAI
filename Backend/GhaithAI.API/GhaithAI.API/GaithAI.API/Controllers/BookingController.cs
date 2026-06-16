@@ -1,4 +1,4 @@
-using GhaithAI.API.Constants;
+﻿using GhaithAI.API.Constants;
 using GhaithAI.GaithAI.Application.DTOs.Booking;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Authorization;
@@ -66,6 +66,94 @@ namespace GhaithAI.GaithAI.API.Controllers
         private string? GetCurrentUserId()
         {
             return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+
+
+
+        // ─── User Books a Doctor ✅ ────────────────────────
+        [HttpPost("book")]
+        public async Task<IActionResult> BookDoctor([FromBody] CreateUserBookingDto dto)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null)
+                return Unauthorized(new { message = "Invalid or missing identifiers in token." });
+
+            try
+            {
+                var bookingId = await _bookingService.CreateUserBookingAsync(userId, dto);
+                return StatusCode(201, new { id = bookingId, message = "Booking created successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
+        }
+        // ─── Get User Bookings ✅ ──────────────────────────
+        [HttpGet("my-bookings")]
+        public async Task<IActionResult> GetMyBookings(
+            [FromQuery] string? timeFilter = "all",
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 10)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null)
+                return Unauthorized(new { message = "Invalid or missing identifiers in token." });
+
+            var bookings = await _bookingService.GetUserBookingsAsync(userId, timeFilter, pageIndex, pageSize);
+            return Ok(bookings);
+        }
+
+        // ─── Cancel User Booking ✅ ───────────────────────
+        [HttpPost("{bookingId:guid}/cancel")]
+        public async Task<IActionResult> CancelBooking([FromRoute] Guid bookingId)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null)
+                return Unauthorized(new { message = "Invalid or missing identifiers in token." });
+
+            try
+            {
+                await _bookingService.CancelUserBookingAsync(userId, bookingId);
+                return Ok(new { message = "Booking cancelled successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
+        }
+
+        // ─── Get Available Slots ✅ ───────────────────────
+        [HttpGet("{doctorId:guid}/available-slots")]
+        public async Task<IActionResult> GetAvailableSlots(
+            [FromRoute] Guid doctorId,
+            [FromQuery] DateTime date)
+        {
+            try
+            {
+                var slots = await _bookingService.GetAvailableSlotsAsync(doctorId, date);
+                return Ok(slots);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
         }
     }
 }
