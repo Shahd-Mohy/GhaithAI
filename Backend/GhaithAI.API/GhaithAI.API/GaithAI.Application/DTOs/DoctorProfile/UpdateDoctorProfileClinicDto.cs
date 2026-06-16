@@ -9,9 +9,9 @@
         public string Bio { get; set; }
 
         public string ClinicName { get; set; }
-        public string ClinicAddress { get; set; }
-        public string City { get; set; }
-        public string CountryCode { get; set; }
+        public string? ClinicAddress { get; set; }
+        public string? City { get; set; }
+        public string? CountryCode { get; set; }
         public string Phone { get; set; }
         public string ContactEmail { get; set; }
 

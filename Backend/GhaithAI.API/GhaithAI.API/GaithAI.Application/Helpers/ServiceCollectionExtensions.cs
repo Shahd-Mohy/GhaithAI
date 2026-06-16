@@ -6,6 +6,7 @@ global using GhaithAI.API.Repositories.Interfaces;
 global using GhaithAI.API.Services.Class;
 global using GhaithAI.API.Services.Interfaces;
 global using System.Reflection;
+using GhaithAI.GaithAI.Application.Services;
 using GhaithAI.GaithAI.Application.Services.Class;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 

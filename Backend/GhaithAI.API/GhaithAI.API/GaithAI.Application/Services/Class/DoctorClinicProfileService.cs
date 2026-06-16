@@ -450,7 +450,7 @@ namespace GhaithAI.GaithAI.Application.Services
                     var defaultSchedule = doctor.DefaultSchedules
                         .FirstOrDefault(s => s.DayOfWeek == dayOfWeek && s.IsActive);
 
-                    if (defaultSchedule != null)
+                    if (defaultSchedule != null) 
                         windows.Add((defaultSchedule.StartTime, defaultSchedule.EndTime));
                 }
 
