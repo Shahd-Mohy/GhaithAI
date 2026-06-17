@@ -352,6 +352,24 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             return slots;
         }
-       
+
+        public async Task<IEnumerable<ScheduleItemDto>> GetTodaySchedulePagedAsync(string userId)
+        {
+            var doctorId = await GetDoctorIdByUserIdAsync(userId);
+            var today = DateTime.Today;
+            var bookings = await _unitOfWork.Booking.GetAllQueryableNoTracking()
+             .Include(b => b.ClinicPatient)
+             .Include(b => b.Patient)
+             .Where(b => b.DoctorId == doctorId
+                      && b.BookingDate.Date == today
+                      && b.Status != BookingStatus.Cancelled
+                      && b.SlotTime >= DateTime.Now.TimeOfDay) 
+             .OrderBy(b => b.SlotTime) 
+             .Take(6)
+             .ToListAsync();
+            return _mapper.Map<IEnumerable<ScheduleItemDto>>(bookings);
+        }
+
+
     }
 }

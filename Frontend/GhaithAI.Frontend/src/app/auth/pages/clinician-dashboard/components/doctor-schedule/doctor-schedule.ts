@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // 👈 ضفنا ChangeDetectorRef هنا
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core'; // 👈 ضفنا ChangeDetectorRef هنا
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DoctorBookingResponseDto, TimeFilterType } from './interface/DoctorBookingResponseDto';
 import { DoctorScheduleService } from './services/doctor-schedule';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-doctor-schedule',
@@ -19,7 +20,7 @@ export class DoctorScheduleComponent implements OnInit {
   currentPageIndex: number = 0;
   currentPageSize: number = 10;
   hasNextPage: boolean = true;
-
+  private readonly route = inject(ActivatedRoute);
   // 👈 عملنا Inject للـ ChangeDetectorRef جوه الـ constructor
   constructor(
     private doctorScheduleService: DoctorScheduleService,

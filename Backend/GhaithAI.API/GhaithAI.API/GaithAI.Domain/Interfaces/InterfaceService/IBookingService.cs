@@ -1,4 +1,4 @@
-using GhaithAI.GaithAI.Application.DTOs.Booking;
+﻿using GhaithAI.GaithAI.Application.DTOs.Booking;
 
 namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
 {
@@ -27,5 +27,7 @@ namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
         Task<IEnumerable<AvailableSlotDto>> GetAvailableSlotsAsync(
             Guid doctorId,
             DateTime date);
+
+        Task<IEnumerable<ScheduleItemDto>> GetTodaySchedulePagedAsync(string userId);
     }
 }
