@@ -24,14 +24,8 @@ namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
         Task DeleteCustomScheduleAsync(string userId, Guid id);
 
         Task<PagedResult<PublicDoctorCardDto>> GetPublicDoctorsAsync(
-            string? searchTerm,
-            string? specialty,
-            string? language,
-            string? sessionType,   
-            string? city,
-            int pageNumber = 1,
-            int pageSize = 10);
-
+            string? searchTerm, string? specialty, string? language,
+            string? sessionType, string? city, int pageNumber = 1, int pageSize = 10);
         Task<PublicDoctorProfileDto> GetPublicDoctorProfileAsync(Guid doctorId);
 
 

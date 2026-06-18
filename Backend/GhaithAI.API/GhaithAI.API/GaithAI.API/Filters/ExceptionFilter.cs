@@ -7,15 +7,16 @@ namespace GhaithAI.API.Filters
     {
         public void OnException(ExceptionContext context)
         {
-            context.Result = new ObjectResult(
-                new
-                {
-                    Message = context.Exception.Message
-                })
+            var (statusCode, message) = context.Exception switch
             {
-                StatusCode = 500
+                KeyNotFoundException ex => (404, ex.Message),
+                ArgumentException ex => (400, ex.Message),
+                UnauthorizedAccessException ex => (403, ex.Message),
+                InvalidOperationException ex => (422, ex.Message),
+                _ => (500, "An unexpected error occurred.")
             };
 
+            context.Result = new ObjectResult(new { message }) { StatusCode = statusCode };
             context.ExceptionHandled = true;
         }
     }
