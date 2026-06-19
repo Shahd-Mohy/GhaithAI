@@ -6,7 +6,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, forkJoin, takeUntil, finalize, of, catchError } from 'rxjs';
 import { AuthService } from '../../../../services/auth';
-import { AuthResponse } from '../../../../models/auth/auth-response.model';
 import {
   ClinicService,
   DoctorClinicProfileDto,
@@ -50,28 +49,33 @@ export class MyClinicComponent implements OnInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
 
+  // ── DoctorType (Psychiatrist / Therapist / Counselor) ─────────
+  // Stored separately and always sent back as-is on save.
+  // NEVER conflated with availableSessionType (Online / Offline / both).
+  practiceType: string = 'Psychiatrist';
+
   // ── Session type ──────────────────────────────────────────────
   availableSessionType: SessionTypeEnum = 'both';
 
-  // ── Profile ───────────────────────────────────────────────────
+  // ── Profile fields ────────────────────────────────────────────
   displayName = '';
   title = '';
   clinicName = '';
   yearsExp = 0;
   bio = '';
 
-  // ── Contact ───────────────────────────────────────────────────
+  // ── Contact fields ────────────────────────────────────────────
   address = '';
   city = '';
   country = '';
   phone = '';
   email = '';
 
-  // ── Lookups (from DB) ─────────────────────────────────────────
+  // ── Lookup data (loaded from DB) ──────────────────────────────
   allSpecialties: SpecialtyItem[] = [];
   allLanguages: LanguageItem[] = [];
 
-  // ── Doctor's selected IDs ─────────────────────────────────────
+  // ── Doctor's selections ───────────────────────────────────────
   selectedSpecialtyIds: string[] = [];
   selectedLanguageIds: string[] = [];
 
@@ -79,7 +83,7 @@ export class MyClinicComponent implements OnInit, OnDestroy {
   feePerSession = 0;
   sessionDuration = 50;
 
-  // ── Weekly Schedule ───────────────────────────────────────────
+  // ── Weekly schedule ───────────────────────────────────────────
   readonly allDays: DaysOfWeek[] = [
     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
   ];
@@ -88,7 +92,7 @@ export class MyClinicComponent implements OnInit, OnDestroy {
     dayOfWeek: d, enabled: false, from: '09:00', to: '17:00'
   }));
 
-  // ── Custom Schedules ──────────────────────────────────────────
+  // ── Custom schedules ──────────────────────────────────────────
   customSchedules: CustomScheduleDto[] = [];
   showCustomForm = false;
   customForm: CustomScheduleForm = this.emptyCustomForm();
@@ -105,23 +109,20 @@ export class MyClinicComponent implements OnInit, OnDestroy {
   hasChanges = false;
   deletingId: string | null = null;
 
-  // ── Internal flag: suppress toggle callback while loading ─────
+  // Suppresses the publicListing (ngModelChange) callback while
+  // applyProfile() sets values programmatically on load.
   private _applyingProfile = false;
 
-  // ─────────────────────────────────────────────────────────────
+  // ── Lifecycle ─────────────────────────────────────────────────
   ngOnInit(): void { this.loadAll(); }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 
   // ── Computed ──────────────────────────────────────────────────
   get isOnline(): boolean { return this.availableSessionType === 'Online'; }
   isSpecialtySelected(id: string): boolean { return this.selectedSpecialtyIds.includes(id); }
   isLanguageSelected(id: string): boolean { return this.selectedLanguageIds.includes(id); }
 
-  // ── Load ──────────────────────────────────────────────────────
+  // ── Load all data ─────────────────────────────────────────────
   private loadAll(): void {
     this.isLoading = true;
     this.loadError = '';
@@ -131,38 +132,45 @@ export class MyClinicComponent implements OnInit, OnDestroy {
       languages: this.clinicService.getAllLanguages().pipe(catchError(() => of([] as LanguageItem[]))),
       profile: this.clinicService.getProfile().pipe(catchError(err => of(err)))
     })
-      .pipe(takeUntil(this.destroy$), finalize(() => {
-        this.isLoading = false;
-        this.cdr.markForCheck();
-      }))
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => { this.isLoading = false; this.cdr.markForCheck(); })
+      )
       .subscribe(({ specialties, languages, profile }) => {
         this.allSpecialties = specialties;
         this.allLanguages = languages;
 
-        if (profile && !(profile instanceof Error) && !profile.status) {
+        const isHttpError = profile != null && profile.status !== undefined;
+        const isError = profile instanceof Error;
+
+        if (profile && !isHttpError && !isError) {
+          // Existing doctor — hydrate all fields from saved profile
           this.applyProfile(profile as DoctorClinicProfileDto);
         } else {
-          // New doctor — seed from auth token and enable save immediately
-          const user = this.authService.getUser() as AuthResponse | null;
+          // New doctor or network error — seed from auth token
+          const user = this.authService.getUser() as any;
           if (user) {
             this.displayName = user.fullName?.trim() || '';
-            this.title = user.specialization?.trim() || (user as any).doctorType?.trim() || '';
+            this.title = user.specialization?.trim() || '';
+            this.practiceType = user.doctorType?.trim() || 'Psychiatrist';
             this.email = user.email || '';
           }
-          // Allow saving right away — the doctor needs to set up their profile
+          // Enable Save immediately — new doctor must be able to save
           this.hasChanges = true;
 
-          if (profile?.status && profile.status !== 404) {
-            this.loadError = 'Could not load your profile. Fill in your details and save.';
+          // Only show a banner for real server errors; 404 just means new doctor
+          if (isHttpError && profile.status !== 404) {
+            this.loadError = 'Could not load your saved profile. Fill in your details and save.';
           }
         }
       });
   }
 
+  // ── Apply a loaded/saved profile to all component fields ──────
   private applyProfile(p: DoctorClinicProfileDto): void {
-    // Suppress the publicListing toggle callback while we set values programmatically
     this._applyingProfile = true;
 
+    this.practiceType = p.practiceType || 'Psychiatrist';
     this.availableSessionType = p.availableSessionType ?? 'both';
     this.displayName = p.displayName || '';
     this.title = p.professionalTitle || '';
@@ -193,29 +201,37 @@ export class MyClinicComponent implements OnInit, OnDestroy {
 
     this.hasChanges = false;
 
-    // Re-enable the toggle callback now that loading is done
     this._applyingProfile = false;
   }
 
-  // ── Session Type ──────────────────────────────────────────────
+  // ── Session type cards ────────────────────────────────────────
   setSessionType(type: SessionTypeEnum): void {
     if (this.availableSessionType === type) return;
     this.availableSessionType = type;
     this.markChanged();
   }
 
-  // ── Public Listing ────────────────────────────────────────────
+  // ── Public listing toggle ─────────────────────────────────────
   onPublicListingChange(): void {
-    // Do nothing if we are in the middle of loading/applying profile data
+    // Guard: ignore programmatic changes during applyProfile()
     if (this._applyingProfile) return;
 
     const intended = this.publicListing;
     this.clinicService.setPublicListing(intended)
       .pipe(takeUntil(this.destroy$))
-      .subscribe({ error: () => { this.publicListing = !intended; this.cdr.markForCheck(); } });
+      .subscribe({
+        error: (err) => {
+          this.publicListing = !intended;   // revert
+          // 404 = clinic not saved yet; don't alarm the doctor
+          if (err?.status !== 404) {
+            this.saveError = 'Could not update public listing. Please save your profile first.';
+          }
+          this.cdr.markForCheck();
+        }
+      });
   }
 
-  // ── Specialties ───────────────────────────────────────────────
+  // ── Chip toggles ──────────────────────────────────────────────
   toggleSpecialty(id: string): void {
     this.selectedSpecialtyIds = this.selectedSpecialtyIds.includes(id)
       ? this.selectedSpecialtyIds.filter(x => x !== id)
@@ -223,7 +239,6 @@ export class MyClinicComponent implements OnInit, OnDestroy {
     this.markChanged();
   }
 
-  // ── Languages ─────────────────────────────────────────────────
   toggleLanguage(id: string): void {
     this.selectedLanguageIds = this.selectedLanguageIds.includes(id)
       ? this.selectedLanguageIds.filter(x => x !== id)
@@ -231,7 +246,7 @@ export class MyClinicComponent implements OnInit, OnDestroy {
     this.markChanged();
   }
 
-  // ── Custom Schedule CRUD ──────────────────────────────────────
+  // ── Custom schedule CRUD ──────────────────────────────────────
   openAddCustomForm(): void {
     this.customForm = this.emptyCustomForm();
     this.showCustomForm = true;
@@ -286,11 +301,16 @@ export class MyClinicComponent implements OnInit, OnDestroy {
     if (this.deletingId) return;
     this.deletingId = id;
     this.clinicService.deleteCustomSchedule(id)
-      .pipe(takeUntil(this.destroy$), finalize(() => { this.deletingId = null; this.cdr.markForCheck(); }))
-      .subscribe({ next: () => { this.customSchedules = this.customSchedules.filter(cs => cs.id !== id); } });
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => { this.deletingId = null; this.cdr.markForCheck(); })
+      )
+      .subscribe({
+        next: () => { this.customSchedules = this.customSchedules.filter(cs => cs.id !== id); }
+      });
   }
 
-  // ── Save Profile ──────────────────────────────────────────────
+  // ── Save ──────────────────────────────────────────────────────
   saveChanges(): void {
     if (this.isSaving) return;
     this.isSaving = true;
@@ -305,17 +325,18 @@ export class MyClinicComponent implements OnInit, OnDestroy {
     }));
 
     const dto = {
-      practiceType: this.availableSessionType,
+      // Send DoctorType (Psychiatrist/Therapist/Counselor), NOT session type
+      practiceType: this.practiceType,
       displayName: this.displayName,
       professionalTitle: this.title,
       yearsOfExperience: Number(this.yearsExp),
       bio: this.bio,
-      clinicName: this.clinicName,
-      clinicAddress: this.isOnline ? null : this.address,
-      city: this.isOnline ? null : this.city,
-      countryCode: this.isOnline ? null : this.country,
-      phone: this.phone,
-      contactEmail: this.email,
+      clinicName: this.clinicName || '',
+      clinicAddress: this.isOnline ? null : (this.address || null),
+      city: this.isOnline ? null : (this.city || null),
+      countryCode: this.isOnline ? null : (this.country || null),
+      phone: this.phone || '',
+      contactEmail: this.email || '',
       isPublicListed: this.publicListing,
       feePerSession: Number(this.feePerSession),
       sessionDurationMinutes: Number(this.sessionDuration),
@@ -326,7 +347,10 @@ export class MyClinicComponent implements OnInit, OnDestroy {
     };
 
     this.clinicService.updateProfile(dto)
-      .pipe(takeUntil(this.destroy$), finalize(() => { this.isSaving = false; this.cdr.markForCheck(); }))
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => { this.isSaving = false; this.cdr.markForCheck(); })
+      )
       .subscribe({
         next: (updated) => {
           this.applyProfile(updated);
@@ -335,7 +359,7 @@ export class MyClinicComponent implements OnInit, OnDestroy {
           setTimeout(() => { this.saveSuccess = false; this.cdr.markForCheck(); }, 3000);
         },
         error: (err) => {
-          this.saveError = err?.error?.title || err?.error?.message || 'Failed to save. Please try again.';
+          this.saveError = err?.error?.message || err?.error?.title || 'Failed to save. Please try again.';
         }
       });
   }
@@ -372,12 +396,14 @@ export class MyClinicComponent implements OnInit, OnDestroy {
     };
   }
 
+  // "09:00:00" → "09:00"
   private tsToInput(ts: string): string {
     if (!ts) return '09:00';
-    const parts = ts.split(':');
-    return `${parts[0].padStart(2, '0')}:${(parts[1] || '00').padStart(2, '0')}`;
+    const p = ts.split(':');
+    return `${p[0].padStart(2, '0')}:${(p[1] || '00').padStart(2, '0')}`;
   }
 
+  // "09:00" → "09:00:00"
   private inputToTs(t: string): string {
     if (!t) return '00:00:00';
     return t.length === 5 ? `${t}:00` : t;
