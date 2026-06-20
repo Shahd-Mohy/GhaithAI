@@ -1,6 +1,6 @@
 namespace GhaithAI.GaithAI.Domain.Enums
 {
-    public enum SessionType
+    public enum DoctorSessionType
     {
         Online,
         Offline,

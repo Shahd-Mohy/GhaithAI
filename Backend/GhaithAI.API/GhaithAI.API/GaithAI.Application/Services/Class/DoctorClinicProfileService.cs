@@ -60,7 +60,7 @@ namespace GhaithAI.GaithAI.Application.Services
             doctor.Clinic.ContactEmail = dto.ContactEmail;
             doctor.Clinic.IsPublicListed = dto.IsPublicListed;
 
-            if (dto.AvailableSessionType != SessionType.Online)
+            if (dto.AvailableSessionType != DoctorSessionType.Online)
             {
                 doctor.Clinic.ClinicAddress = dto.ClinicAddress;
                 doctor.Clinic.City = dto.City;
@@ -295,12 +295,12 @@ namespace GhaithAI.GaithAI.Application.Services
             }
 
             if (!string.IsNullOrWhiteSpace(sessionType) &&
-                Enum.TryParse<SessionType>(sessionType, true, out var sessionTypeEnum))
+                Enum.TryParse<DoctorSessionType>(sessionType, true, out var sessionTypeEnum))
             {
                 query = query.Where(d =>
                     d.ServiceSetting != null &&
                     (d.ServiceSetting.AvailableSessionType == sessionTypeEnum ||
-                     d.ServiceSetting.AvailableSessionType == SessionType.both));
+                     d.ServiceSetting.AvailableSessionType == DoctorSessionType.both));
             }
 
             if (!string.IsNullOrWhiteSpace(city))
@@ -454,7 +454,7 @@ namespace GhaithAI.GaithAI.Application.Services
                 IsPublicListed = d.Clinic?.IsPublicListed ?? false,
                 FeePerSession = d.ServiceSetting?.FeePerSession ?? 0,
                 SessionDurationMinutes = d.ServiceSetting?.SessionDurationMinutes ?? 0,
-                AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? SessionType.both,
+                AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? DoctorSessionType.both,
                 Specialties = d.DoctorSpecialties?
                     .Select(s => s.BaseSpecialty.SpecialtyName).ToList() ?? new(),
                 SpecialtyIds = d.DoctorSpecialties?
@@ -487,7 +487,7 @@ namespace GhaithAI.GaithAI.Application.Services
                 CountryCode = d.Clinic?.CountryCode,
                 Bio = d.Bio,
                 FeePerSession = d.ServiceSetting?.FeePerSession ?? 0,
-                AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? SessionType.both,
+                AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? DoctorSessionType.both,
                 Specialties = d.DoctorSpecialties?.Select(s => s.BaseSpecialty.SpecialtyName).ToList() ?? new(),
                 Languages = d.DoctorLanguages?.Select(l => l.BaseLanguage.LanguageName).ToList() ?? new(),
                 NextAvailableSlot = GetNextAvailableSlot(d)

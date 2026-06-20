@@ -6,7 +6,7 @@ namespace GhaithAI.GaithAI.Domain.Entities
 
         public decimal FeePerSession { get; set; }
         public int SessionDurationMinutes { get; set; }
-        public SessionType AvailableSessionType { get; set; } = SessionType.both;
+        public DoctorSessionType AvailableSessionType { get; set; } = DoctorSessionType.both;
         public bool IsActive { get; set; } = true;
 
         public virtual DoctorsProfile Doctor { get; set; }

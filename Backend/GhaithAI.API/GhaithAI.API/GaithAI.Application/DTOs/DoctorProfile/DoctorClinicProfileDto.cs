@@ -17,7 +17,7 @@
         public bool IsPublicListed { get; set; }
         public decimal FeePerSession { get; set; }
         public int SessionDurationMinutes { get; set; }
-        public SessionType AvailableSessionType { get; set; }
+        public DoctorSessionType AvailableSessionType { get; set; }
         public List<string> Specialties { get; set; } = new();
         public List<string> Languages { get; set; } = new();
         public List<Guid> SpecialtyIds { get; set; } = new();

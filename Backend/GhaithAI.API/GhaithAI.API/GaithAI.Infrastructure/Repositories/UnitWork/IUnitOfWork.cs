@@ -19,6 +19,8 @@ namespace GhaithAI.API.Repositories.UnitWork
         IGenericRepository<DoctorLanguage> DoctorLanguage { get; }
         IGenericRepository<DoctorDefaultSchedule> DoctorDefaultSchedule { get; }
         IGenericRepository<DoctorCustomSchedule> CustomSchedule { get; }
+        IClinicalSessionRepository ClinicalSession { get; }
+        ISessionNoteRepository SessionNote { get; }
         Task<int> CompleteAsync();
         int Complete();
     }

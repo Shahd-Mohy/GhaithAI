@@ -12,7 +12,7 @@
         public string CountryCode { get; set; }
         public string Bio { get; set; }
         public decimal FeePerSession { get; set; }
-        public SessionType AvailableSessionType { get; set; }
+        public DoctorSessionType AvailableSessionType { get; set; }
         public List<string> Specialties { get; set; } = new();
         public List<string> Languages { get; set; } = new();
         public string NextAvailableSlot { get; set; }  

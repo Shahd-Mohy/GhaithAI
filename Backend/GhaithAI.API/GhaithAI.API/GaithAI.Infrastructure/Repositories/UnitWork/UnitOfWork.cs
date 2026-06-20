@@ -21,6 +21,8 @@ namespace GhaithAI.API.Repositories.UnitWork
         private IGenericRepository<DoctorLanguage> _doctorLanguage;
         private IGenericRepository<DoctorDefaultSchedule> _doctorDefaultSchedule;
         private IGenericRepository<DoctorCustomSchedule> _customSchedule;
+        private IClinicalSessionRepository _clinicalSession;
+        private ISessionNoteRepository _sessionNote;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -50,6 +52,12 @@ namespace GhaithAI.API.Repositories.UnitWork
 
         public IGenericRepository<DoctorCustomSchedule> CustomSchedule =>
             _customSchedule ??= new GenericRepository<DoctorCustomSchedule>(_context);
+
+        public IClinicalSessionRepository ClinicalSession =>
+            _clinicalSession ??= new ClinicalSessionRepository(_context);
+
+        public ISessionNoteRepository SessionNote =>
+            _sessionNote ??= new SessionNoteRepository(_context);
 
         public async Task<int> CompleteAsync()
         {

@@ -19,7 +19,7 @@
 
         public decimal FeePerSession { get; set; }
         public int SessionDurationMinutes { get; set; }
-        public SessionType AvailableSessionType { get; set; }
+        public DoctorSessionType AvailableSessionType { get; set; }
 
         public List<Guid> SpecialtyIds { get; set; } = new();
         public List<Guid> LanguageIds { get; set; } = new();

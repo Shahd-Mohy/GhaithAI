@@ -36,6 +36,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IBookingRepository, BookingRepository>();
             services.AddScoped<IDoctorCustomScheduleRepository, DoctorCustomScheduleRepository>();
             services.AddScoped<IDoctorDefaultScheduleRepository, DoctorDefaultScheduleRepository>();
+            services.AddScoped<IClinicalSessionRepository, ClinicalSessionRepository>();
+            services.AddScoped<ISessionNoteRepository, SessionNoteRepository>();
             return services;
         }
 
@@ -59,6 +61,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IAdminDashboardStatsService, AdminDashboardStatsService>();
             services.AddScoped<IBookingService, BookingService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IClinicalSessionService, ClinicalSessionService>();
+            services.AddScoped<ISessionNoteService, SessionNoteService>();
 
             services.AddScoped<IDoctorDashboardPatiantService, DoctorDashboardPatiantService>();
 
