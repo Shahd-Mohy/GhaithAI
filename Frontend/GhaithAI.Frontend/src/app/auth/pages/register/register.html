@@ -268,10 +268,20 @@
           </p>
 
           <div class="form-row">
-            <div class="form-group">
-              <label>Age</label>
-              <input type="number" [(ngModel)]="age" placeholder="25" min="13" max="100">
-            </div>
+            <div class="form-row">
+  <div class="form-group">
+    <label>Age</label>
+    <input type="number" [(ngModel)]="age" placeholder="25" min="13" max="100">
+  </div>
+  <div class="form-group">
+    <label>Gender</label>
+    <select [(ngModel)]="gender">
+      <option value="">Select gender</option>
+      <option value="1">Male</option>
+      <option value="2">Female</option>
+    </select>
+  </div>
+</div>
             <div class="form-group">
               <label>Preferred Language</label>
               <select [(ngModel)]="lang">
@@ -281,6 +291,7 @@
               </select>
             </div>
           </div>
+          
 
           <div class="form-group">
             <label>What brings you here? <span class="label-note">(Select all that apply)</span></label>

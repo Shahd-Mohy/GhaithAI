@@ -1,0 +1,416 @@
+/* ═══════════════════════════════════════════
+   GhaithAI — professionals.css
+   ═══════════════════════════════════════════ */
+
+.professionals-wrap {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ─── HEADER ─── */
+.pro-header {
+  margin-bottom: 4px;
+}
+
+.pro-header h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0D1B3E;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.pro-header p {
+  font-size: 13px;
+  color: #64748B;
+}
+
+/* ─── FILTERS BAR ─── */
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid #E2ECF0;
+  border-radius: 14px;
+  padding: 14px 18px;
+}
+
+.search-wrap {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F4F9FB;
+  border: 1px solid #E2ECF0;
+  border-radius: 9px;
+  padding: 8px 13px;
+}
+
+.search-wrap svg {
+  width: 15px;
+  height: 15px;
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+.search-wrap input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: 'Sora', sans-serif;
+  color: #0D1B3E;
+  outline: none;
+}
+
+.search-wrap input::placeholder {
+  color: #94A3B8;
+}
+
+.filters-bar select {
+  padding: 8px 13px;
+  border: 1px solid #E2ECF0;
+  border-radius: 9px;
+  background: #F4F9FB;
+  font-size: 13px;
+  font-family: 'Sora', sans-serif;
+  color: #4A5568;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filters-bar select:focus {
+  border-color: #0B8FAC;
+}
+
+.btn-search {
+  padding: 9px 20px;
+  background: #0B8FAC;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Sora', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-search:hover {
+  background: #076E86;
+}
+
+.btn-clear {
+  padding: 9px 16px;
+  background: transparent;
+  color: #64748B;
+  border: 1px solid #E2ECF0;
+  border-radius: 9px;
+  font-size: 13px;
+  font-family: 'Sora', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear:hover {
+  border-color: #DC2626;
+  color: #DC2626;
+}
+
+/* ─── STATES ─── */
+.loading-state,
+.error-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  background: #fff;
+  border: 1px solid #E2ECF0;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #64748B;
+  text-align: center;
+}
+
+.loading-state {
+  flex-direction: row;
+  padding: 40px;
+  font-weight: 500;
+  color: #0B8FAC;
+}
+
+.error-state {
+  flex-direction: row;
+  padding: 24px;
+  background: rgba(220, 38, 38, .04);
+  border-color: rgba(220, 38, 38, .15);
+  color: #DC2626;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.error-state svg,
+.loading-state svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.empty-state svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: #64748B;
+  margin: 0;
+}
+
+/* ─── DOCTORS GRID ─── */
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+/* ─── DOCTOR CARD ─── */
+.doctor-card {
+  background: #fff;
+  border: 1px solid #E2ECF0;
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.doctor-card:hover {
+  box-shadow: 0 8px 28px rgba(13, 27, 62, .09);
+  transform: translateY(-3px);
+  border-color: rgba(11, 143, 172, .25);
+}
+
+/* Card Top */
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.doc-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0B8FAC, #076E86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.doc-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-info h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0D1B3E;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-title {
+  font-size: 12px;
+  color: #0B8FAC;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.doc-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #64748B;
+}
+
+.doc-location svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* Session badge */
+.session-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(100, 116, 139, .1);
+  color: #64748B;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.session-badge.online {
+  background: rgba(5, 150, 105, .1);
+  color: #059669;
+}
+
+/* Rating Row */
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.stars svg {
+  width: 13px;
+  height: 13px;
+  fill: #E2ECF0;
+}
+
+.stars svg.filled {
+  fill: #F59E0B;
+}
+
+.rating-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0D1B3E;
+}
+
+.review-count {
+  font-size: 12px;
+  color: #64748B;
+}
+
+/* Specialties Row */
+.specialties-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.specialty-tag {
+  padding: 4px 10px;
+  background: rgba(11, 143, 172, .07);
+  color: #076E86;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.specialty-tag.more {
+  background: #F4F9FB;
+  color: #64748B;
+}
+
+/* Card Footer */
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #E2ECF0;
+}
+
+.fee {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.fee-amount {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0D1B3E;
+}
+
+.fee-label {
+  font-size: 11px;
+  color: #64748B;
+}
+
+.exp {
+  font-size: 12px;
+  color: #64748B;
+  flex: 1;
+}
+
+.btn-book {
+  padding: 8px 16px;
+  background: #0B8FAC;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Sora', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-book:hover {
+  background: #076E86;
+}
+
+/* Next Slot */
+.next-slot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #059669;
+  background: rgba(5, 150, 105, .06);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+
+.next-slot svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .doctors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-wrap {
+    min-width: unset;
+  }
+}

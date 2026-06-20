@@ -18,17 +18,20 @@ namespace GhaithAI.API.Services
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly IEmailService _emailService;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             IConfiguration configuration,
             ApplicationDbContext context,
-            IWebHostEnvironment env )
+            IWebHostEnvironment env,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _configuration = configuration;
             _context = context;
             _env = env;
+            _emailService = emailService;
         }
 
         public async Task<AuthResponseDTO> RegisterAsync(RegisterDTO dto)
@@ -421,6 +424,48 @@ namespace GhaithAI.API.Services
 
                 throw;
             }
+        }
+
+        // ─── Forgot Password ──────────────────────────────
+        public async Task ForgotPasswordAsync(ForgotPasswordDTO dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+
+            // ✅ مش بنقول للمستخدم إن الـ email مش موجود (security)
+            if (user == null) return;
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // ✅ Encode الـ token عشان يمشي في URL
+            var encodedToken = Uri.EscapeDataString(token);
+            var encodedEmail = Uri.EscapeDataString(dto.Email);
+
+            // ✅ الـ frontend URL
+            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
+            var resetLink = $"{frontendUrl}/reset-password?email={encodedEmail}&token={encodedToken}";
+
+            await _emailService.SendPasswordResetEmailAsync(dto.Email, resetLink);
+        }
+
+        // ─── Reset Password ───────────────────────────────
+        public async Task ResetPasswordAsync(ResetPasswordDTO dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+
+            if (user == null)
+                throw new Exception("User not found.");
+
+            // ✅ Decode الـ token
+            var decodedToken = Uri.UnescapeDataString(dto.Token);
+
+            var result = await _userManager.ResetPasswordAsync(
+                user,
+                decodedToken,
+                dto.NewPassword);
+
+            if (!result.Succeeded)
+                throw new Exception(
+                    string.Join(", ", result.Errors.Select(e => e.Description)));
         }
     }
 }

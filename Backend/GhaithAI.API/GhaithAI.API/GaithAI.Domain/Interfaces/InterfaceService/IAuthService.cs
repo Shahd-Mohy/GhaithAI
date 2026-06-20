@@ -15,5 +15,9 @@ namespace GhaithAI.API.Services.Interfaces
 
         Task<AuthResponseDTO> RegisterClinicianAsync(
             RegisterClinicianDTO dto);
+
+        Task ForgotPasswordAsync(ForgotPasswordDTO dto);
+
+        Task ResetPasswordAsync(ResetPasswordDTO dto);
     }
 }

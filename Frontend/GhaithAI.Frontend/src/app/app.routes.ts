@@ -4,6 +4,9 @@ import { authGuard } from './guards/auth-guard';
 import { adminGuard } from './guards/admin-guard';
 import { clinicianGuard } from './guards/clinician-guard';
 import { ExerciseDetailsComponent } from './selfHelp/exercise-details-component/exercise-details-component';
+// import { ForgotPasswordComponent } from './pages/auth/forgot-password/forgot-password';
+// import { ResetPasswordComponent } from './pages/auth/reset-password/reset-password';
+import { ProfessionalsComponent } from './auth/pages/professionals/professionals';
 
 export const routes: Routes = [
 
@@ -62,6 +65,12 @@ export const routes: Routes = [
     path: 'dashboard/self-help/exercise/:id',
     component: ExerciseDetailsComponent
   },
+  {
+  path: 'dashboard/professionals',
+  loadComponent: () =>
+    import('./auth/pages/professionals/professionals')
+      .then(m => m.ProfessionalsComponent)
+},
 
   // ✅ Admin routes
   {
@@ -91,6 +100,19 @@ export const routes: Routes = [
       { path: 'crisis', loadComponent: () => import('./support/emergency/page').then(m => m.EmergencyPage) }
     ]
   },
+
+{
+  path: 'forgot-password',
+  loadComponent: () =>
+    import('./auth/pages/forgot-password/forgot-password')
+      .then(m => m.ForgotPasswordComponent)
+},
+{
+  path: 'reset-password',
+  loadComponent: () =>
+    import('./auth/pages/reset-password/reset-password')
+      .then(m => m.ResetPasswordComponent)
+},
 
   { path: '**', redirectTo: '' }
 ];

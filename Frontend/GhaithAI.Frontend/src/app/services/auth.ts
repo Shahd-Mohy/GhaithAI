@@ -94,4 +94,26 @@ export class AuthService {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   }
+
+  forgotPassword(email: string) {
+  return this.http.post(
+    `${this.baseUrl}/forgot-password`,
+    { email }
+  );
+}
+
+resetPassword(
+  email: string,
+  token: string,
+  newPassword: string
+) {
+  return this.http.post(
+    `${this.baseUrl}/reset-password`,
+    {
+      email,
+      token,
+      newPassword
+    }
+  );
+}
 }

@@ -124,4 +124,28 @@ export class LoginComponent {
       }
     });
   }
+
+  googleLogin(idToken: string): void {
+  this.submitting = true;
+  this.apiError = '';
+
+  this.auth.googleLogin(idToken).subscribe({
+    next: (res) => {
+      this.auth.saveSession(res);
+      this.submitting = false;
+
+      if (res.role === 'Admin') {
+        this.router.navigate(['/admin']);
+      } else if (res.role === 'Clinician') {
+        this.router.navigate(['/clinician-dashboard']);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
+    },
+    error: () => {
+      this.submitting = false;
+      this.apiError = 'Google login failed';
+    }
+  });
+}
 }

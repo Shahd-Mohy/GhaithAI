@@ -263,14 +263,15 @@ export class RegisterComponent implements OnInit {
 
   // ─── Step 3 Validation ────────────────────────────────
   step3Valid(): boolean {
-    return (
-      this.age !== null &&
-      this.age >= 13 &&
-      this.age <= 100 &&
-      this.sleep !== '' &&
-      this.stress !== ''
-    );
-  }
+  return (
+    this.age !== null &&
+    this.age >= 13 &&
+    this.age <= 100 &&
+    this.gender !== '' &&   // ✅ أضيف دي
+    this.sleep !== '' &&
+    this.stress !== ''
+  );
+}
 
   // ─── Submit ───────────────────────────────────────────
   submitForm(): void {
@@ -292,7 +293,7 @@ export class RegisterComponent implements OnInit {
       fullName: `${this.firstName} ${this.lastName}`,
       email: this.email,
       password: this.password,
-      gender: this.gender,
+      gender: Number(this.gender),
       phoneNumber: this.phone,
       countryCode: 'EG',
       preferredLanguage: this.lang,

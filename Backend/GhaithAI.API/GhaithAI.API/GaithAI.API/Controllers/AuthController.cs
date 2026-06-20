@@ -59,7 +59,7 @@ namespace GhaithAI.API.Controllers
         }
 
         [HttpPost("register-clinician")]
-        public async Task<IActionResult>RegisterClinician([FromForm] RegisterClinicianDTO dto)
+        public async Task<IActionResult> RegisterClinician([FromForm] RegisterClinicianDTO dto)
         {
             var result =
                 await _authService
@@ -67,5 +67,47 @@ namespace GhaithAI.API.Controllers
 
             return Ok(result);
         }
+
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDTO dto)
+        {
+            try
+            {
+                await _authService.ForgotPasswordAsync(dto);
+                return Ok(new
+                {
+                    message = "If the email exists, a reset link has been sent."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDTO dto)
+        {
+            try
+            {
+                await _authService.ResetPasswordAsync(dto);
+                return Ok(new
+                {
+                    message = "Password reset successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
+
     }
 }
