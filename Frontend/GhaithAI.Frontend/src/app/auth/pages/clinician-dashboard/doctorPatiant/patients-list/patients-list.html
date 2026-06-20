@@ -1,0 +1,143 @@
+<div class="dashboard-container">
+  <!-- Stats Grid Layout (replicates clinician dashboard style) -->
+  <div class="stats-grid">
+    <div class="stat-card stat-teal">
+      <div class="stat-content">
+        <div class="stat-label">Total Patients</div>
+        <div class="stat-value">{{ dashboardData?.totalPatients || 0 }}</div>
+        <div class="stat-sub">Assigned to your care</div>
+      </div>
+      <div class="stat-icon icon-teal">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-card stat-red">
+      <div class="stat-content">
+        <div class="stat-label">High Risk Patients</div>
+        <div class="stat-value text-red">{{ dashboardData?.highRiskCount || 0 }}</div>
+        <div class="stat-sub">Requiring immediate review</div>
+      </div>
+      <div class="stat-icon icon-red">
+        <svg viewBox="0 0 24 24">
+          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-card stat-green">
+      <div class="stat-content">
+        <div class="stat-label">Sessions This Week</div>
+        <div class="stat-value">{{ dashboardData?.sessionsThisWeek || 0 }}</div>
+        <div class="stat-sub">Completed and scheduled</div>
+      </div>
+      <div class="stat-icon icon-green">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-card stat-amber">
+      <div class="stat-content">
+        <div class="stat-label">Total Risk Alerts</div>
+        <div class="stat-value text-orange">{{ dashboardData?.totalRiskAlerts || 0 }}</div>
+        <div class="stat-sub">Active patient flags</div>
+      </div>
+      <div class="stat-icon icon-amber">
+        <svg viewBox="0 0 24 24">
+          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Header (replicates Self-Help structure) -->
+  <div class="dashboard-header">
+    <div class="header-title">
+      <h2>Patient Directory</h2>
+      <p>Monitor patients' risk levels, session history, and contact details.</p>
+    </div>
+    <div class="controls">
+      <div class="search-wrapper">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput()" placeholder="Search patients...">
+      </div>
+      <select class="filter-select" [(ngModel)]="riskFilter" (change)="onFilterChange()">
+        <option value="">All Risks</option>
+        <option value="high">High Risk</option>
+        <option value="medium">Medium Risk</option>
+        <option value="low">Low Risk</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table View Card (replicates Self-Help card structure) -->
+  <div class="card table-card">
+    <div class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Patient Name</th>
+            <th>Phone Number</th>
+            <th>Email</th>
+            <th>Total Bookings</th>
+            <th>Last Booking</th>
+            <th>Risk Level</th>
+            <th class="text-center">More Info</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of dashboardData?.patients">
+            <td class="patient-name-cell">{{ p.fullName }}</td>
+            <td class="patient-name-cell">{{ p.phoneNumber }}</td>
+            <td>{{ p.email }}</td>
+            <td class="bookings-cell">{{ p.totalBookingsCount }}</td>
+            <td class="date-cell">{{ (p.lastBookingDate | date:'mediumDate') || '----' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-high': p.riskLevel?.toLowerCase() === 'high',
+                'badge-medium': p.riskLevel?.toLowerCase() === 'medium',
+                'badge-low': p.riskLevel?.toLowerCase() === 'low'
+              }">
+                {{ p.riskLevel | titlecase }}
+              </span>
+            </td>
+            <td class="text-center">
+              <div class="action-buttons">
+                <button class="btn-action btn-view" title="View Patient Details" type="button">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Empty State -->
+          <tr *ngIf="!dashboardData || !dashboardData?.patients || dashboardData.patients.length === 0">
+            <td colspan="7" class="text-center-empty">
+              <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  stroke-width="1.5"
+                  style="width: 48px; height: 48px; margin: 0 auto 12px; display: block; color: #94A3B8;">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+                <p>No patients found matching the search criteria.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

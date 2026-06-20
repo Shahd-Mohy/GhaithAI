@@ -8,6 +8,7 @@ namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
 
         Task<DoctorClinicProfileDto> UpdateMyProfileAsync(string userId, UpdateDoctorClinicProfileDto dto);
 
+
         Task<DoctorClinicProfileDto> SetPublicListingAsync(string userId, bool isPublicListed);
 
         Task<List<DefaultScheduleDto>> GetDefaultScheduleAsync(string userId);
@@ -23,15 +24,10 @@ namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
         Task DeleteCustomScheduleAsync(string userId, Guid id);
 
         Task<PagedResult<PublicDoctorCardDto>> GetPublicDoctorsAsync(
-            string? searchTerm,
-            string? specialty,
-            string? language,
-            string? sessionType,   
-            string? city,
-            int pageNumber = 1,
-            int pageSize = 10);
-
+            string? searchTerm, string? specialty, string? language,
+            string? sessionType, string? city, int pageNumber = 1, int pageSize = 10);
         Task<PublicDoctorProfileDto> GetPublicDoctorProfileAsync(Guid doctorId);
+
 
         Task<List<AvailableSlotDto>> GetAvailableSlotsAsync(Guid doctorId, DateTime from, DateTime to);
     }

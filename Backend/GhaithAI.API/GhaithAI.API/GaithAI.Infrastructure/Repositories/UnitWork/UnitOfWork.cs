@@ -38,12 +38,16 @@ namespace GhaithAI.API.Repositories.UnitWork
         public IDoctorProfileRepository DoctorProfile => _doctorProfile ??= new DoctorProfileRepository(_context);
         public IExerciseTipsRepository ExerciseTips => _exerciseTips ??= new ExerciseTipsRepository(_context);
         public IBookingRepository Booking => _booking ??= new BookingRepository(_context);
+
         public IGenericRepository<DoctorSpecialty> DoctorSpecialty =>
             _doctorSpecialty ??= new GenericRepository<DoctorSpecialty>(_context);
+
         public IGenericRepository<DoctorLanguage> DoctorLanguage =>
             _doctorLanguage ??= new GenericRepository<DoctorLanguage>(_context);
+
         public IGenericRepository<DoctorDefaultSchedule> DoctorDefaultSchedule =>
             _doctorDefaultSchedule ??= new GenericRepository<DoctorDefaultSchedule>(_context);
+
         public IGenericRepository<DoctorCustomSchedule> CustomSchedule =>
             _customSchedule ??= new GenericRepository<DoctorCustomSchedule>(_context);
 

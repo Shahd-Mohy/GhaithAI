@@ -1,8 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // 👈 ضفنا ChangeDetectorRef هنا
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core'; // 👈 ضفنا ChangeDetectorRef هنا
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DoctorBookingResponseDto, TimeFilterType } from './interface/DoctorBookingResponseDto';
 import { DoctorScheduleService } from './services/doctor-schedule';
+import { ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-doctor-schedule',
@@ -19,7 +21,8 @@ export class DoctorScheduleComponent implements OnInit {
   currentPageIndex: number = 0;
   currentPageSize: number = 10;
   hasNextPage: boolean = true;
-
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   // 👈 عملنا Inject للـ ChangeDetectorRef جوه الـ constructor
   constructor(
     private doctorScheduleService: DoctorScheduleService,
@@ -27,7 +30,13 @@ export class DoctorScheduleComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadBookings();
+    this.route.queryParams.subscribe(params => {
+      const filterFromUrl = params['filter'] as TimeFilterType;
+      if (filterFromUrl) {
+        this.currentTimeFilter = filterFromUrl;
+      }
+      this.loadBookings();
+    });
   }
 
   // جلب البيانات من الباك إند
@@ -56,13 +65,18 @@ export class DoctorScheduleComponent implements OnInit {
     });
   }
 
-  // فلترة الداتا (All, Today, Tomorrow...)
   onFilterChange(filter: TimeFilterType): void {
     this.currentTimeFilter = filter;
     this.currentPageIndex = 0;
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { filter: filter },
+      queryParamsHandling: 'merge'
+    });
+
     this.loadBookings();
   }
-
   // فلترة بناءً على تاريخ محدد من الـ Date Picker
   onDateFilterChange(event: Event): void {
     const input = event.target as HTMLInputElement;

@@ -1,4 +1,4 @@
-﻿namespace GhaithAI.GaithAI.Infrastructure.Repositories.Class
+namespace GhaithAI.GaithAI.Infrastructure.Repositories.Class
 {
     public class DoctorProfileRepository : GenericRepository<DoctorsProfile>, IDoctorProfileRepository
     {
@@ -22,10 +22,13 @@
                 .Where(d => d.Clinic != null && d.Clinic.IsPublicListed);
         }
 
-
         public IQueryable<DoctorsProfile> GetProfileForUpdateQueryable()
         {
+            // IgnoreQueryFilters so soft-deleted (IsDeleted=true) child rows
+            // like Clinic and ServiceSetting are still loaded and updated in place
+            // instead of appearing null and triggering a duplicate INSERT.
             return _dbSet
+                .IgnoreQueryFilters()
                 .Include(d => d.Clinic)
                 .Include(d => d.ServiceSetting)
                 .Include(d => d.DefaultSchedules)

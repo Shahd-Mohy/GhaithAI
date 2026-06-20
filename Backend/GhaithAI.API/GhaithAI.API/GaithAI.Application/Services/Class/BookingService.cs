@@ -19,10 +19,10 @@ namespace GhaithAI.GaithAI.Application.Services.Class
         }
 
         public async Task<IEnumerable<DoctorBookingResponseDto>> GetDoctorBookingsPagedAsync(
-            string userId,
-            string? timeFilter,
-            int pageIndex = 0,
-            int pageSize = 10)
+     string userId,
+     string? timeFilter,
+     int pageIndex = 0,
+     int pageSize = 10)
         {
             var doctorId = await GetDoctorIdByUserIdAsync(userId);
 
@@ -57,21 +57,23 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 .Take(pageSize)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<DoctorBookingResponseDto>>(items);
+            return _mapper.Map<IEnumerable<DoctorBookingResponseDto>>(items); 
         }
+
+
 
         public async Task<Guid> CreateClinicBookingAsync(string userId, CreateClinicBookingDto dto)
         {
             var doctorId = await GetDoctorIdByUserIdAsync(userId);
-
             bool isSlotBusy = await _unitOfWork.Booking.GetAllQueryableNoTracking()
                 .AnyAsync(b => b.DoctorId == doctorId &&
-                               b.BookingDate == dto.BookingDate.Date &&
                                b.SlotTime == dto.SlotTime &&
                                b.Status != BookingStatus.Cancelled);
 
             if (isSlotBusy)
+            {
                 throw new InvalidOperationException("This time slot is already booked. Please choose another time.");
+            }
 
             Guid finalClinicPatientId;
 
@@ -81,14 +83,20 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                     .AnyAsync(p => p.Id == dto.ClinicPatientId.Value && p.DoctorId == doctorId);
 
                 if (!patientExists)
+                {
                     throw new KeyNotFoundException("Patient profile not found or does not belong to this clinic.");
+                }
+
 
                 finalClinicPatientId = dto.ClinicPatientId.Value;
             }
             else
             {
                 if (dto.NewPatientInfo == null)
+                {
                     throw new ArgumentException("New patient information is required.");
+                }
+
 
                 var createdPatient = await _patientService.CreateAsync(dto.NewPatientInfo, userId);
                 finalClinicPatientId = createdPatient.Id;
@@ -114,7 +122,9 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             var result = await _unitOfWork.CompleteAsync();
 
             if (result <= 0)
+            {
                 throw new Exception("An unexpected error occurred while saving the booking data.");
+            }
 
             return booking.Id;
         }
@@ -125,10 +135,14 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 .FirstOrDefaultAsync(d => d.UserId == userId);
 
             if (doctorProfile == null)
+            {
+                //_logger.LogWarning("Operation failed: No doctor profile found for User ID {UserId}", userId);
                 throw new KeyNotFoundException("Doctor profile not found in the system. Please ensure your profile is complete.");
+            }
 
             return doctorProfile.Id;
         }
+
 
         public async Task<Guid> CreateUserBookingAsync(string userId, CreateUserBookingDto dto)
         {
@@ -338,5 +352,24 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             return slots;
         }
+
+        public async Task<IEnumerable<ScheduleItemDto>> GetTodaySchedulePagedAsync(string userId)
+        {
+            var doctorId = await GetDoctorIdByUserIdAsync(userId);
+            var today = DateTime.Today;
+            var bookings = await _unitOfWork.Booking.GetAllQueryableNoTracking()
+             .Include(b => b.ClinicPatient)
+             .Include(b => b.Patient)
+             .Where(b => b.DoctorId == doctorId
+                      && b.BookingDate.Date == today
+                      && b.Status != BookingStatus.Cancelled
+                      && b.SlotTime >= DateTime.Now.TimeOfDay) 
+             .OrderBy(b => b.SlotTime) 
+             .Take(6)
+             .ToListAsync();
+            return _mapper.Map<IEnumerable<ScheduleItemDto>>(bookings);
+        }
+
+
     }
 }

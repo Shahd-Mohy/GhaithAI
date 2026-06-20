@@ -256,7 +256,7 @@
                 <div class="card-sub">Your upcoming sessions for today</div>
               </div>
             </div>
-            <button class="view-all-btn" type="button" (click)="navigate('schedule')">View All →</button>
+            <button class="view-all-btn" type="button" (click)="navigate('schedule', 'today')">View All →</button>
           </div>
 
           @if (isLoading) {
@@ -355,10 +355,8 @@
 
     <!-- PLACEHOLDER PAGES -->
     @if (activePage === 'patients') {
-    <div class="scroll-area coming-soon">
-      <div class="coming-soon-icon">👥</div>
-      <h2>Patients</h2>
-      <p>Patient management panel coming soon.</p>
+    <div class="scroll-area ">
+      <app-patients-list></app-patients-list>
     </div>
     }
     @if (activePage === 'sessions') {
@@ -395,7 +393,7 @@
     </div>
     }
     @if (activePage === 'clinic') {
-      <app-my-clinic></app-my-clinic>
+    <app-my-clinic></app-my-clinic>
     }
     @if (activePage === 'clinic-patients') {
     <div class="scroll-area">

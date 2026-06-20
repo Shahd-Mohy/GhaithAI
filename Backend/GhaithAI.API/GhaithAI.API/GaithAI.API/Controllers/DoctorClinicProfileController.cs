@@ -1,12 +1,12 @@
-﻿using GhaithAI.API.Constants;
 using GhaithAI.GaithAI.Application.DTOs.DoctorProfile;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace GhaithAI.GaithAI.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class DoctorClinicProfileController : ControllerBase
     {
@@ -20,9 +20,6 @@ namespace GhaithAI.GaithAI.API.Controllers
         private string GetUserId() =>
             User.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? throw new UnauthorizedAccessException("User ID not found in token.");
-
-
-        // ─── DOCTOR SIDE ─────────────────────────────────────────────────────────
 
         // GET /api/doctor/clinic/profile
         [HttpGet("api/doctor/clinic/profile")]
@@ -38,8 +35,19 @@ namespace GhaithAI.GaithAI.API.Controllers
         [Authorize(Roles = "Clinician")]
         public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateDoctorClinicProfileDto dto)
         {
-            var result = await _service.UpdateMyProfileAsync(GetUserId(), dto);
-            return Ok(result);
+            try
+            {
+                var result = await _service.UpdateMyProfileAsync(GetUserId(), dto);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         // PATCH /api/doctor/clinic/profile/public-listing
@@ -47,8 +55,15 @@ namespace GhaithAI.GaithAI.API.Controllers
         [Authorize(Roles = "Clinician")]
         public async Task<IActionResult> SetPublicListing([FromBody] SetPublicListingDto dto)
         {
-            var result = await _service.SetPublicListingAsync(GetUserId(), dto.IsPublicListed);
-            return Ok(result);
+            try
+            {
+                var result = await _service.SetPublicListingAsync(GetUserId(), dto.IsPublicListed);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         // GET /api/doctor/clinic/schedule/default
@@ -107,9 +122,6 @@ namespace GhaithAI.GaithAI.API.Controllers
             return NoContent();
         }
 
-
-        // ─── PATIENT SIDE ─────────────────────────────────────────────────────────
-
         // GET /api/professionals
         [HttpGet("api/professionals")]
         [Authorize]
@@ -146,7 +158,6 @@ namespace GhaithAI.GaithAI.API.Controllers
         {
             if (from > to)
                 return BadRequest("'from' must be before 'to'.");
-
             if ((to - from).TotalDays > 31)
                 return BadRequest("Date range cannot exceed 31 days.");
 

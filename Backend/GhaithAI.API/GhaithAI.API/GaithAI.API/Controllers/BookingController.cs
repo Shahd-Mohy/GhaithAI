@@ -1,10 +1,12 @@
 ﻿using GhaithAI.API.Constants;
+
 using GhaithAI.GaithAI.Application.DTOs.Booking;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace GhaithAI.GaithAI.API.Controllers
 {
@@ -67,10 +69,6 @@ namespace GhaithAI.GaithAI.API.Controllers
         {
             return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
-
-
-
-
         // ─── User Books a Doctor ✅ ────────────────────────
         [HttpPost("book")]
         public async Task<IActionResult> BookDoctor([FromBody] CreateUserBookingDto dto)
@@ -155,5 +153,28 @@ namespace GhaithAI.GaithAI.API.Controllers
                 return StatusCode(500, new { message = "Internal server error", details = ex.Message });
             }
         }
+        [HttpGet("schedule")]
+        public async Task<IActionResult> GetSchedule()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new { message = "User is not authenticated." });
+
+                var schedule = await _bookingService.GetTodaySchedulePagedAsync(userId);
+
+                return Ok(schedule);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An internal server error occurred while retrieving your schedule.", details = ex.Message });
+            }
+        }
+
     }
 }

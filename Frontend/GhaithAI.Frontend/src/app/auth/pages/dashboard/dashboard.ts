@@ -16,6 +16,7 @@ import {
   DailyMoodDTO
 } from '../../../services/insight.service';
 import { DashboardRefreshService } from '../../../services/dashboard-refresh.service';
+
 import { ProfessionalsComponent } from "../professionals/professionals";
 
 interface QuickAction {

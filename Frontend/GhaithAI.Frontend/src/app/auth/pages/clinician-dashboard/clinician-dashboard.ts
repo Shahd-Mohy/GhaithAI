@@ -10,6 +10,8 @@ import { AuthService } from '../../../services/auth';
 import { MyClinicComponent } from './my-clinic/my-clinic';
 import { DoctorScheduleComponent } from './components/doctor-schedule/doctor-schedule';
 import { ClinicPatientsComponent } from './components/clinic-patients/clinic-patients';
+import { PatientsList } from './doctorPatiant/patients-list/patients-list';
+import { ScheduleService } from './services/schedule';
 // ── Interfaces ─────────────────────────────────────────────────────────────
 
 interface ClinicianInfo {
@@ -46,7 +48,7 @@ interface RiskAlert {
 @Component({
   selector: 'app-clinician-dashboard',
   standalone: true,
-  imports: [CommonModule, MyClinicComponent, DoctorScheduleComponent, ClinicPatientsComponent],
+  imports: [CommonModule, MyClinicComponent, DoctorScheduleComponent, ClinicPatientsComponent, PatientsList],
   templateUrl: './clinician-dashboard.html',
   styleUrls: ['./clinician-dashboard.css']
 })
@@ -57,7 +59,7 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
-
+  private readonly scheduleService = inject(ScheduleService);
   // ── state ────────────────────────────────────────────────────────
   activePage = 'dashboard';
   isLoading = true;
@@ -95,13 +97,7 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
     { label: 'Risk Alerts', value: 2, sub: 'High priority', icon: 'risk', color: 'red' },
   ];
 
-  todaySchedule: ScheduleSession[] = [
-    { initials: 'AH', name: 'Ahmed Hassan', type: 'Follow-up', time: '10:00 AM', color: '#0B8FAC' },
-    { initials: 'FK', name: 'Fatima Khaled', type: 'Initial Assessment', time: '11:30 AM', color: '#7C3AED' },
-    { initials: 'OY', name: 'Omar Youssef', type: 'Therapy Session', time: '2:00 PM', color: '#059669' },
-    { initials: 'LI', name: 'Layla Ibrahim', type: 'Follow-up', time: '3:30 PM', color: '#D97706' },
-    { initials: 'MS', name: 'Mohammed Salem', type: 'Group Session', time: '5:00 PM', color: '#E11D48' },
-  ];
+  todaySchedule: ScheduleSession[] = []
 
   riskAlerts: RiskAlert[] = [
     { name: 'Ahmed Hassan', level: 'High', description: 'Suicidal ideation expressed', timeAgo: '2 hours ago' },
@@ -117,12 +113,36 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
     // ── Load real user data from the login response ──────────────
     this.loadClinicianProfile();
 
-    setTimeout(() => {
-      this.isLoading = false;
-      this.cdr.detectChanges();
-    }, 800);
-  }
 
+    this.loadTodaySchedule();
+    this.isLoading = false;
+
+  }
+  private loadTodaySchedule(): void {
+    this.isLoading = true;
+    this.scheduleService.getTodaySchedule(0, 6)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+
+          this.todaySchedule = data.map(item => ({
+            initials: item.patientName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
+            name: item.patientName,
+            type: item.sessionType,
+            time: item.time,
+            color: '#0B8FAC'
+          }));
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading schedule:', err);
+          this.todaySchedule = [];
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }
+      });
+  }
   // ── Populate clinician info from stored session ───────────────────
   private loadClinicianProfile(): void {
     const user = this.authService.getUser();
@@ -170,12 +190,14 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
   }
 
   // ── Navigation ───────────────────────────────────────────────────
-  navigate(page: string): void {
+  navigate(page: string, filter: string = 'all'): void {
     this.activePage = page;
-    this.closeSidebar();   // auto-close drawer on mobile nav
+    this.closeSidebar();
+
+    // نمرر الـ filter الجديد كـ queryParam
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { page },
+      queryParams: { page, filter },
       queryParamsHandling: 'merge'
     });
   }

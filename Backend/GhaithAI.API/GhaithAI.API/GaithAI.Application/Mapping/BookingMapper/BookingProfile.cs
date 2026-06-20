@@ -26,6 +26,16 @@ namespace GhaithAI.GaithAI.Application.Mapping.BookingMapper
                         : (src.BookingSource == BookingSource.Manual && src.ClinicPatient != null
                             ? src.ClinicPatient.PatientPhone ?? "N/A"
                             : "N/A")));
+
+
+            CreateMap<Booking ,ScheduleItemDto>()
+                .ForMember(dest => dest.BookingId , opt =>opt.MapFrom(src=>src.Id))
+                .ForMember(dest=> dest.PatientName , opt=> opt.MapFrom(src=>
+                    src.BookingSource == BookingSource.App ? (src.Patient != null ? src.Patient.FullName : "Unknown User") :
+                    (src.ClinicPatient != null ? src.ClinicPatient.PatientFullName : "Unknown Patient")))
+                .ForMember(dest => dest.Time, opt => opt.MapFrom(src =>src.SlotTime.ToString(@"hh\:mm")))
+                .ForMember(dest => dest.SessionType, opt => opt.MapFrom(src =>src.SessionType.ToString()))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src =>src.Status.ToString()));
         }
     }
 }

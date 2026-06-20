@@ -24,6 +24,7 @@ builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddMapping();
+builder.Services.AddMailService(builder.Configuration);
 
 //builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddSignalR();

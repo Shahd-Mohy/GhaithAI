@@ -9,6 +9,7 @@
         Task<DoctorsProfile?> GetFullProfileByUserIdAsync(string userId);
 
         IQueryable<DoctorsProfile> GetPublicDoctorsQueryable();
+
         IQueryable<DoctorsProfile> GetProfileForUpdateQueryable();
         Task<IList<DoctorCustomSchedule>> GetCustomSchedulesAsync(
             Guid doctorId,

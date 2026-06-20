@@ -75,17 +75,12 @@ namespace GhaithAI.API.Controllers
             try
             {
                 await _authService.ForgotPasswordAsync(dto);
-                return Ok(new
-                {
-                    message = "If the email exists, a reset link has been sent."
-                });
+                return Ok(new { message = "If the email exists, a reset link has been sent." });
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
+                // ✅ مؤقتاً عشان نشوف الـ error
+                return BadRequest(new { message = ex.Message, details = ex.InnerException?.Message });
             }
         }
 

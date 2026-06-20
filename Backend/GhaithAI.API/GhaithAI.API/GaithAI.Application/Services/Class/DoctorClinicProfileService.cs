@@ -36,10 +36,25 @@ namespace GhaithAI.GaithAI.Application.Services
             doctor.Bio = dto.Bio;
             doctor.YearsOfExperience = dto.YearsOfExperience;
 
+            // Map PracticeType string → DoctorType enum; validate so a bad value returns 400 not a silent no-op
+            if (!Enum.TryParse<DoctorType>(dto.PracticeType, ignoreCase: true, out var parsedDoctorType))
+                throw new ArgumentException($"Invalid PracticeType value: '{dto.PracticeType}'. Valid values are: {string.Join(", ", Enum.GetNames<DoctorType>())}");
+            doctor.DoctorType = parsedDoctorType;
+
             if (doctor.Clinic == null)
             {
                 doctor.Clinic = new Clinic { DoctorId = doctor.Id };
             }
+            else
+            {
+                var isDelProp = doctor.Clinic.GetType().GetProperty("IsDeleted");
+                if (isDelProp != null && isDelProp.CanWrite && (bool)(isDelProp.GetValue(doctor.Clinic) ?? false))
+                {
+                    isDelProp.SetValue(doctor.Clinic, false);
+                    doctor.Clinic.GetType().GetProperty("DeletedAt")?.SetValue(doctor.Clinic, null);
+                }
+            }
+
             doctor.Clinic.ClinicName = dto.ClinicName;
             doctor.Clinic.Phone = dto.Phone;
             doctor.Clinic.ContactEmail = dto.ContactEmail;
@@ -56,76 +71,58 @@ namespace GhaithAI.GaithAI.Application.Services
             {
                 doctor.ServiceSetting = new DoctorServiceSetting { DoctorId = doctor.Id };
             }
+
             doctor.ServiceSetting.FeePerSession = dto.FeePerSession;
             doctor.ServiceSetting.SessionDurationMinutes = dto.SessionDurationMinutes;
             doctor.ServiceSetting.AvailableSessionType = dto.AvailableSessionType;
 
-            var existingSpecialtyNames = doctor.DoctorSpecialties
-                .Select(s => s.BaseSpecialty.SpecialtyName.ToLower())
-                .ToHashSet();
-
-            var requestedNames = dto.Specialties.Select(s => s.ToLower()).ToHashSet();
-
             var toRemoveSpecialties = doctor.DoctorSpecialties
-                .Where(s => !requestedNames.Contains(s.BaseSpecialty.SpecialtyName.ToLower()))
+                .Where(s => !dto.SpecialtyIds.Contains(s.SpecialtyId))
                 .ToList();
 
             foreach (var s in toRemoveSpecialties)
                 _unitOfWork.DoctorSpecialty.Delete(s);
 
-            foreach (var specialtyName in dto.Specialties)
-            {
-                if (!existingSpecialtyNames.Contains(specialtyName.ToLower()))
-                {
-                    var baseSpecialty = await _unitOfWork.BaseSpecialty
-                        .GetAllQueryableNoTracking()
-                        .FirstOrDefaultAsync(b => b.SpecialtyName.ToLower() == specialtyName.ToLower());
+            var existingSpecialtyIds = doctor.DoctorSpecialties
+                .Select(s => s.SpecialtyId)
+                .ToHashSet();
 
-                    if (baseSpecialty != null)
+            foreach (var specialtyId in dto.SpecialtyIds)
+            {
+                if (!existingSpecialtyIds.Contains(specialtyId))
+                {
+                    await _unitOfWork.DoctorSpecialty.AddAsync(new DoctorSpecialty
                     {
-                        await _unitOfWork.DoctorSpecialty.AddAsync(new DoctorSpecialty
-                        {
-                            DoctorId = doctor.Id,
-                            SpecialtyId = baseSpecialty.Id
-                        });
-                    }
+                        DoctorId = doctor.Id,
+                        SpecialtyId = specialtyId
+                    });
                 }
             }
 
-            var existingLanguageNames = doctor.DoctorLanguages
-                .Select(l => l.BaseLanguage.LanguageName.ToLower())
-                .ToHashSet();
-
-            var requestedLanguages = dto.Languages.Select(l => l.ToLower()).ToHashSet();
-
             var toRemoveLanguages = doctor.DoctorLanguages
-                .Where(l => !requestedLanguages.Contains(l.BaseLanguage.LanguageName.ToLower()))
+                .Where(l => !dto.LanguageIds.Contains(l.BaseLanguageId))
                 .ToList();
 
             foreach (var l in toRemoveLanguages)
                 _unitOfWork.DoctorLanguage.Delete(l);
 
-            foreach (var languageName in dto.Languages)
-            {
-                if (!existingLanguageNames.Contains(languageName.ToLower()))
-                {
-                    var baseLang = await _unitOfWork.BaseLanguage
-                        .GetAllQueryableNoTracking()
-                        .FirstOrDefaultAsync(b => b.LanguageName.ToLower() == languageName.ToLower());
+            var existingLanguageIds = doctor.DoctorLanguages
+                .Select(l => l.BaseLanguageId)
+                .ToHashSet();
 
-                    if (baseLang != null)
+            foreach (var languageId in dto.LanguageIds)
+            {
+                if (!existingLanguageIds.Contains(languageId))
+                {
+                    await _unitOfWork.DoctorLanguage.AddAsync(new DoctorLanguage
                     {
-                        await _unitOfWork.DoctorLanguage.AddAsync(new DoctorLanguage
-                        {
-                            DoctorId = doctor.Id,
-                            BaseLanguageId = baseLang.Id
-                        });
-                    }
+                        DoctorId = doctor.Id,
+                        BaseLanguageId = languageId
+                    });
                 }
             }
 
-            var existingSchedules = doctor.DefaultSchedules.ToList();
-            foreach (var existing in existingSchedules)
+            foreach (var existing in doctor.DefaultSchedules.ToList())
                 _unitOfWork.DoctorDefaultSchedule.Delete(existing);
 
             foreach (var slot in dto.WeeklySchedule)
@@ -154,7 +151,7 @@ namespace GhaithAI.GaithAI.Application.Services
                 ?? throw new KeyNotFoundException("Doctor profile not found.");
 
             if (doctor.Clinic == null)
-                throw new InvalidOperationException("Clinic profile not set up yet.");
+                throw new KeyNotFoundException("Clinic profile has not been set up yet. Save your clinic profile first before toggling public listing.");
 
             doctor.Clinic.IsPublicListed = isPublicListed;
             await _unitOfWork.CompleteAsync();
@@ -169,14 +166,7 @@ namespace GhaithAI.GaithAI.Application.Services
 
             return doctor.DefaultSchedules
                 .OrderBy(s => s.DayOfWeek)
-                .Select(s => new DefaultScheduleDto
-                {
-                    Id = s.Id,
-                    DayOfWeek = s.DayOfWeek,
-                    StartTime = s.StartTime,
-                    EndTime = s.EndTime,
-                    IsActive = s.IsActive
-                })
+                .Select(MapToDefaultScheduleDto)
                 .ToList();
         }
 
@@ -187,8 +177,7 @@ namespace GhaithAI.GaithAI.Application.Services
                 .FirstOrDefaultAsync(d => d.UserId == userId)
                 ?? throw new KeyNotFoundException("Doctor profile not found.");
 
-            var existing = doctor.DefaultSchedules.ToList();
-            foreach (var s in existing)
+            foreach (var s in doctor.DefaultSchedules.ToList())
                 _unitOfWork.DoctorDefaultSchedule.Delete(s);
 
             foreach (var slot in slots)
@@ -204,9 +193,9 @@ namespace GhaithAI.GaithAI.Application.Services
             }
 
             await _unitOfWork.CompleteAsync();
-
             return await GetDefaultScheduleAsync(userId);
         }
+
 
         public async Task<List<CustomScheduleDto>> GetCustomSchedulesAsync(string userId, DateTime? from, DateTime? to)
         {
@@ -277,13 +266,8 @@ namespace GhaithAI.GaithAI.Application.Services
         }
 
         public async Task<PagedResult<PublicDoctorCardDto>> GetPublicDoctorsAsync(
-            string? searchTerm,
-            string? specialty,
-            string? language,
-            string? sessionType,
-            string? city,
-            int pageNumber = 1,
-            int pageSize = 10)
+            string? searchTerm, string? specialty, string? language,
+            string? sessionType, string? city, int pageNumber = 1, int pageSize = 10)
         {
             var query = _unitOfWork.DoctorProfile.GetPublicDoctorsQueryable();
 
@@ -293,7 +277,7 @@ namespace GhaithAI.GaithAI.Application.Services
                 query = query.Where(d =>
                     d.FullName.ToLower().Contains(term) ||
                     d.Specialization.ToLower().Contains(term) ||
-                    d.Bio.ToLower().Contains(term));
+                    (d.Bio != null && d.Bio.ToLower().Contains(term)));
             }
 
             if (!string.IsNullOrWhiteSpace(specialty))
@@ -333,27 +317,9 @@ namespace GhaithAI.GaithAI.Application.Services
                 .Take(pageSize)
                 .ToListAsync();
 
-            var items = doctors.Select(d => new PublicDoctorCardDto
-            {
-                DoctorId = d.Id,
-                DisplayName = d.FullName,
-                ProfessionalTitle = d.Specialization,
-                AverageRating = d.AverageRating,
-                ReviewCount = d.Reviews?.Count ?? 0,
-                YearsOfExperience = d.YearsOfExperience,
-                City = d.Clinic?.City,
-                CountryCode = d.Clinic?.CountryCode,
-                Bio = d.Bio,
-                FeePerSession = d.ServiceSetting?.FeePerSession ?? 0,
-                AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? SessionType.both,
-                Specialties = d.DoctorSpecialties?.Select(s => s.BaseSpecialty.SpecialtyName).ToList() ?? new(),
-                Languages = d.DoctorLanguages?.Select(l => l.BaseLanguage.LanguageName).ToList() ?? new(),
-                NextAvailableSlot = GetNextAvailableSlot(d)
-            }).ToList();
-
             return new PagedResult<PublicDoctorCardDto>
             {
-                Items = items,
+                Items = doctors.Select(MapToPublicCardDto).ToList(),
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize
@@ -368,33 +334,29 @@ namespace GhaithAI.GaithAI.Application.Services
             if (doctor.Clinic == null || !doctor.Clinic.IsPublicListed)
                 throw new KeyNotFoundException("Doctor not found.");
 
+            var card = MapToPublicCardDto(doctor);
+
             return new PublicDoctorProfileDto
             {
-                DoctorId = doctor.Id,
-                DisplayName = doctor.FullName,
-                ProfessionalTitle = doctor.Specialization,
-                AverageRating = doctor.AverageRating,
-                ReviewCount = doctor.Reviews?.Count ?? 0,
-                YearsOfExperience = doctor.YearsOfExperience,
-                City = doctor.Clinic?.City,
-                CountryCode = doctor.Clinic?.CountryCode,
-                Bio = doctor.Bio,
-                FeePerSession = doctor.ServiceSetting?.FeePerSession ?? 0,
-                AvailableSessionType = doctor.ServiceSetting?.AvailableSessionType ?? SessionType.both,
-                Specialties = doctor.DoctorSpecialties?.Select(s => s.BaseSpecialty.SpecialtyName).ToList() ?? new(),
-                Languages = doctor.DoctorLanguages?.Select(l => l.BaseLanguage.LanguageName).ToList() ?? new(),
-                NextAvailableSlot = GetNextAvailableSlot(doctor),
+                DoctorId = card.DoctorId,
+                DisplayName = card.DisplayName,
+                ProfessionalTitle = card.ProfessionalTitle,
+                AverageRating = card.AverageRating,
+                ReviewCount = card.ReviewCount,
+                YearsOfExperience = card.YearsOfExperience,
+                City = card.City,
+                CountryCode = card.CountryCode,
+                Bio = card.Bio,
+                FeePerSession = card.FeePerSession,
+                AvailableSessionType = card.AvailableSessionType,
+                Specialties = card.Specialties,
+                Languages = card.Languages,
+                NextAvailableSlot = card.NextAvailableSlot,
                 WeeklySchedule = doctor.DefaultSchedules?
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.DayOfWeek)
-                    .Select(s => new DefaultScheduleDto
-                    {
-                        Id = s.Id,
-                        DayOfWeek = s.DayOfWeek,
-                        StartTime = s.StartTime,
-                        EndTime = s.EndTime,
-                        IsActive = s.IsActive
-                    }).ToList() ?? new()
+                    .Select(MapToDefaultScheduleDto)
+                    .ToList() ?? new()
             };
         }
 
@@ -425,10 +387,7 @@ namespace GhaithAI.GaithAI.Application.Services
             while (current <= to.Date)
             {
                 var dayOfWeek = (DaysOfWeek)current.DayOfWeek;
-
-                var customDay = customSchedules
-                    .Where(cs => cs.CustomDate.Date == current)
-                    .ToList();
+                var customDay = customSchedules.Where(cs => cs.CustomDate.Date == current).ToList();
 
                 if (customDay.Any(cs => cs.IsOffDay))
                 {
@@ -447,11 +406,10 @@ namespace GhaithAI.GaithAI.Application.Services
                 }
                 else
                 {
-                    var defaultSchedule = doctor.DefaultSchedules
+                    var def = doctor.DefaultSchedules
                         .FirstOrDefault(s => s.DayOfWeek == dayOfWeek && s.IsActive);
-
-                    if (defaultSchedule != null)
-                        windows.Add((defaultSchedule.StartTime, defaultSchedule.EndTime));
+                    if (def != null)
+                        windows.Add((def.StartTime, def.EndTime));
                 }
 
                 foreach (var (start, end) in windows)
@@ -460,18 +418,11 @@ namespace GhaithAI.GaithAI.Application.Services
                     while (slotStart.Add(TimeSpan.FromMinutes(sessionDuration)) <= end)
                     {
                         var slotEnd = slotStart.Add(TimeSpan.FromMinutes(sessionDuration));
-                        var isBooked = existingBookings.Any(b =>
+                        var booked = existingBookings.Any(b =>
                             b.BookingDate.Date == current && b.SlotTime == slotStart);
 
-                        if (!isBooked)
-                        {
-                            slots.Add(new AvailableSlotDto
-                            {
-                                Date = current,
-                                StartTime = slotStart,
-                                EndTime = slotEnd
-                            });
-                        }
+                        if (!booked)
+                            slots.Add(new AvailableSlotDto { Date = current, StartTime = slotStart, EndTime = slotEnd });
 
                         slotStart = slotEnd;
                     }
@@ -483,71 +434,89 @@ namespace GhaithAI.GaithAI.Application.Services
             return slots;
         }
 
-        private static DoctorClinicProfileDto MapToProfileDto(DoctorsProfile doctor)
+        //  Mappers
+
+        private static DoctorClinicProfileDto MapToProfileDto(DoctorsProfile d)
         {
             return new DoctorClinicProfileDto
             {
-                DisplayName = doctor.FullName,
-                ProfessionalTitle = doctor.Specialization,
-                Bio = doctor.Bio,
-                YearsOfExperience = doctor.YearsOfExperience,
-                PracticeType = doctor.DoctorType.ToString(),
-                ClinicName = doctor.Clinic?.ClinicName,
-                ClinicAddress = doctor.Clinic?.ClinicAddress,
-                City = doctor.Clinic?.City,
-                CountryCode = doctor.Clinic?.CountryCode,
-                Phone = doctor.Clinic?.Phone,
-                ContactEmail = doctor.Clinic?.ContactEmail,
-                IsPublicListed = doctor.Clinic?.IsPublicListed ?? false,
-                FeePerSession = doctor.ServiceSetting?.FeePerSession ?? 0,
-                SessionDurationMinutes = doctor.ServiceSetting?.SessionDurationMinutes ?? 0,
-                AvailableSessionType = doctor.ServiceSetting?.AvailableSessionType ?? SessionType.both,
-                Specialties = doctor.DoctorSpecialties?.Select(s => s.BaseSpecialty.SpecialtyName).ToList() ?? new(),
-                Languages = doctor.DoctorLanguages?.Select(l => l.BaseLanguage.LanguageName).ToList() ?? new(),
-                WeeklySchedule = doctor.DefaultSchedules?
+                PracticeType = d.DoctorType.ToString(),
+                DisplayName = d.FullName,
+                ProfessionalTitle = d.Specialization,
+                Bio = d.Bio,
+                YearsOfExperience = d.YearsOfExperience,
+                ClinicName = d.Clinic?.ClinicName,
+                ClinicAddress = d.Clinic?.ClinicAddress,
+                City = d.Clinic?.City,
+                CountryCode = d.Clinic?.CountryCode,
+                Phone = d.Clinic?.Phone,
+                ContactEmail = d.Clinic?.ContactEmail,
+                IsPublicListed = d.Clinic?.IsPublicListed ?? false,
+                FeePerSession = d.ServiceSetting?.FeePerSession ?? 0,
+                SessionDurationMinutes = d.ServiceSetting?.SessionDurationMinutes ?? 0,
+                AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? SessionType.both,
+                Specialties = d.DoctorSpecialties?
+                    .Select(s => s.BaseSpecialty.SpecialtyName).ToList() ?? new(),
+                SpecialtyIds = d.DoctorSpecialties?
+                    .Select(s => s.SpecialtyId).ToList() ?? new(),
+                Languages = d.DoctorLanguages?
+                    .Select(l => l.BaseLanguage.LanguageName).ToList() ?? new(),
+                LanguageIds = d.DoctorLanguages?
+                    .Select(l => l.BaseLanguageId).ToList() ?? new(),
+                WeeklySchedule = d.DefaultSchedules?
                     .OrderBy(s => s.DayOfWeek)
-                    .Select(s => new DefaultScheduleDto
-                    {
-                        Id = s.Id,
-                        DayOfWeek = s.DayOfWeek,
-                        StartTime = s.StartTime,
-                        EndTime = s.EndTime,
-                        IsActive = s.IsActive
-                    }).ToList() ?? new()
+                    .Select(MapToDefaultScheduleDto).ToList() ?? new(),
+                CustomSchedules = d.CustomSchedules?
+                    .OrderBy(cs => cs.CustomDate)
+                    .ThenBy(cs => cs.StartTime)
+                    .Select(MapToCustomScheduleDto).ToList() ?? new()
             };
         }
 
-        private static CustomScheduleDto MapToCustomScheduleDto(DoctorCustomSchedule entity)
+        private static PublicDoctorCardDto MapToPublicCardDto(DoctorsProfile d)
         {
-            return new CustomScheduleDto
+            return new PublicDoctorCardDto
             {
-                Id = entity.Id,
-                CustomDate = entity.CustomDate,
-                StartTime = entity.StartTime,
-                EndTime = entity.EndTime,
-                IsOffDay = entity.IsOffDay
+                DoctorId = d.Id,
+                DisplayName = d.FullName,
+                ProfessionalTitle = d.Specialization,
+                AverageRating = d.AverageRating,
+                ReviewCount = d.Reviews?.Count ?? 0,
+                YearsOfExperience = d.YearsOfExperience,
+                City = d.Clinic?.City,
+                CountryCode = d.Clinic?.CountryCode,
+                Bio = d.Bio,
+                FeePerSession = d.ServiceSetting?.FeePerSession ?? 0,
+                AvailableSessionType = d.ServiceSetting?.AvailableSessionType ?? SessionType.both,
+                Specialties = d.DoctorSpecialties?.Select(s => s.BaseSpecialty.SpecialtyName).ToList() ?? new(),
+                Languages = d.DoctorLanguages?.Select(l => l.BaseLanguage.LanguageName).ToList() ?? new(),
+                NextAvailableSlot = GetNextAvailableSlot(d)
             };
         }
+
+        private static DefaultScheduleDto MapToDefaultScheduleDto(DoctorDefaultSchedule s) =>
+            new() { Id = s.Id, DayOfWeek = s.DayOfWeek, StartTime = s.StartTime, EndTime = s.EndTime, IsActive = s.IsActive };
+
+        private static CustomScheduleDto MapToCustomScheduleDto(DoctorCustomSchedule cs) =>
+            new() { Id = cs.Id, CustomDate = cs.CustomDate, StartTime = cs.StartTime, EndTime = cs.EndTime, IsOffDay = cs.IsOffDay };
 
         private static string? GetNextAvailableSlot(DoctorsProfile doctor)
         {
-            if (doctor.DefaultSchedules == null || !doctor.DefaultSchedules.Any())
+            if (doctor.DefaultSchedules == null || !doctor.DefaultSchedules.Any(s => s.IsActive))
                 return null;
 
-            var today = DateTime.UtcNow;
-            var todayDow = (DaysOfWeek)today.DayOfWeek;
+            var todayDow = (DaysOfWeek)DateTime.UtcNow.DayOfWeek;
 
             for (int i = 0; i <= 7; i++)
             {
                 var checkDay = (DaysOfWeek)(((int)todayDow + i) % 7);
-                var schedule = doctor.DefaultSchedules
-                    .FirstOrDefault(s => s.DayOfWeek == checkDay && s.IsActive);
+                var schedule = doctor.DefaultSchedules.FirstOrDefault(s => s.DayOfWeek == checkDay && s.IsActive);
 
                 if (schedule != null)
                 {
-                    var date = today.Date.AddDays(i);
+                    var date = DateTime.UtcNow.Date.AddDays(i);
                     var label = i == 0 ? "Today" : i == 1 ? "Tomorrow" : date.ToString("ddd, MMM d");
-                    return $"{label}, {schedule.StartTime:hh\\:mm} AM";
+                    return $"{label}, {schedule.StartTime:hh\\:mm}";
                 }
             }
 

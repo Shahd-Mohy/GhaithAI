@@ -431,20 +431,24 @@ namespace GhaithAI.API.Services
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
 
-            // ✅ مش بنقول للمستخدم إن الـ email مش موجود (security)
-            if (user == null) return;
+            // ✅ Debug مؤقت
+            if (user == null)
+                throw new Exception($"No user found with email: {dto.Email}");
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-            // ✅ Encode الـ token عشان يمشي في URL
             var encodedToken = Uri.EscapeDataString(token);
             var encodedEmail = Uri.EscapeDataString(dto.Email);
-
-            // ✅ الـ frontend URL
             var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
             var resetLink = $"{frontendUrl}/reset-password?email={encodedEmail}&token={encodedToken}";
 
-            await _emailService.SendPasswordResetEmailAsync(dto.Email, resetLink);
+            try
+            {
+                await _emailService.SendPasswordResetEmailAsync(dto.Email, resetLink);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"SMTP Error: {ex.Message} | Inner: {ex.InnerException?.Message}");
+            }
         }
 
         // ─── Reset Password ───────────────────────────────
@@ -455,7 +459,6 @@ namespace GhaithAI.API.Services
             if (user == null)
                 throw new Exception("User not found.");
 
-            // ✅ Decode الـ token
             var decodedToken = Uri.UnescapeDataString(dto.Token);
 
             var result = await _userManager.ResetPasswordAsync(
@@ -465,7 +468,8 @@ namespace GhaithAI.API.Services
 
             if (!result.Succeeded)
                 throw new Exception(
-                    string.Join(", ", result.Errors.Select(e => e.Description)));
+                    string.Join(", ",
+                        result.Errors.Select(e => e.Description)));
         }
     }
 }
