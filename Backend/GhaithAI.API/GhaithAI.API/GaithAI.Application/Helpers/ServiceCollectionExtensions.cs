@@ -59,6 +59,13 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IAdminDashboardStatsService, AdminDashboardStatsService>();
             services.AddScoped<IBookingService, BookingService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<ILangFlowClient, LangFlowClient>();
+            services.AddScoped<IReportGenerationService, ReportGenerationService>();
+            services.AddScoped<IReportApprovalService, ReportApprovalService>();
+            services.AddScoped<IReportHistoryService, ReportHistoryService>();
+            services.AddScoped<IReportFeedbackService, ReportFeedbackService>();
+            services.AddScoped<IPdfExportService, PdfExportService>();
+            services.AddScoped<ITranscriptAggregationService, TranscriptAggregationService>();
 
             services.AddScoped<IDoctorDashboardPatiantService, DoctorDashboardPatiantService>();
 

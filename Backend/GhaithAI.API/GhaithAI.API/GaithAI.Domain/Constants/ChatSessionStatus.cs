@@ -1,6 +1,6 @@
 namespace GhaithAI.API.Constants
 {
-    public static class SessionStatus
+    public static class ChatSessionStatus
     {
         public const string Active = "active";
 

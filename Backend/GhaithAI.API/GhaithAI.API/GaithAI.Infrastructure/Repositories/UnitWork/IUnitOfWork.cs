@@ -1,5 +1,6 @@
-using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository;
+﻿using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository;
 using GhaithAI.GaithAI.Domain.Entities;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace GhaithAI.API.Repositories.UnitWork
 {
@@ -19,6 +20,18 @@ namespace GhaithAI.API.Repositories.UnitWork
         IGenericRepository<DoctorLanguage> DoctorLanguage { get; }
         IGenericRepository<DoctorDefaultSchedule> DoctorDefaultSchedule { get; }
         IGenericRepository<DoctorCustomSchedule> CustomSchedule { get; }
+        IClinicalReportRepository ClinicalReport { get; }
+        IReportSectionRepository ReportSection { get; }
+        IClinicalReportHistoryRepository ClinicalReportHistory { get; }
+        IReportFeedbackTagRepository ReportFeedbackTag { get; }
+
+        // ✅ الناقصين
+        IGenericRepository<ClinicalSession> ClinicalSession { get; }
+        IGenericRepository<MoodLog> MoodLog { get; }
+
+        // ✅ Transaction
+        Task<IDbContextTransaction> BeginTransactionAsync();
+
         Task<int> CompleteAsync();
         int Complete();
     }

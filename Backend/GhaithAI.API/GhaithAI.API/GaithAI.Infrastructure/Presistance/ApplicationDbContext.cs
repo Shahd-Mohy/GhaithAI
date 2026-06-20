@@ -55,6 +55,9 @@ namespace GhaithAI.API.Presistance
         public DbSet<DoctorReview> DoctorReviews { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
+        public DbSet<ClinicalSession> ClinicalSessions { get; set; }
+        //public DbSet<SessionNote> SessionNotes { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)

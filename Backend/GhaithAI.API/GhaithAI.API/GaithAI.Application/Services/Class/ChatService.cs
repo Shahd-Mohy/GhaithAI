@@ -52,7 +52,7 @@ namespace GhaithAI.API.Services.Class
             // Query with tracking to automatically capture state changes for persistence
             var activeSessions = await _unitOfWork.Session
                 .GetAllQueryableTracking()
-                .Where(s => s.UserId == userId && s.Status == SessionStatus.Active).ToListAsync();
+                .Where(s => s.UserId == userId && s.Status == ChatSessionStatus.Active).ToListAsync();
             //.FirstOrDefaultAsync();
 
             foreach (var activeSession in activeSessions)
@@ -60,7 +60,7 @@ namespace GhaithAI.API.Services.Class
                 if (activeSession is not null)
                 {
                     // Update state directly in memory
-                    activeSession.Status = SessionStatus.Ended;
+                    activeSession.Status = ChatSessionStatus.Ended;
                     activeSession.EndedAt = DateTime.UtcNow;
 
                     _logger.LogInformation(
@@ -78,7 +78,7 @@ namespace GhaithAI.API.Services.Class
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
-                Status = SessionStatus.Active,
+                Status = ChatSessionStatus.Active,
                 RiskLevel = RiskLevels.Low,
                 MemoryEnabled = dto.MemoryEnabled && user.MemoryEnabled,
                 Title = sessionTitle,
@@ -109,10 +109,10 @@ namespace GhaithAI.API.Services.Class
                 ?? throw new KeyNotFoundException("Session not found or access denied.");
 
             // Phase 2: State Transition
-            if (session.Status == SessionStatus.Ended)
+            if (session.Status == ChatSessionStatus.Ended)
                 throw new InvalidOperationException("Session is already ended.");
 
-            session.Status = SessionStatus.Ended;
+            session.Status = ChatSessionStatus.Ended;
             session.EndedAt = DateTime.UtcNow;
 
             // Phase 3: Implicit Persistence & Logging
@@ -184,7 +184,7 @@ namespace GhaithAI.API.Services.Class
                 .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId)
                 ?? throw new KeyNotFoundException("Session not found or access denied.");
 
-            if (session.Status != SessionStatus.Active)
+            if (session.Status != ChatSessionStatus.Active)
             {
                 _logger.LogWarning(
                     "Session {SessionId} is no longer active. User {UserId} attempted to send a message.",
