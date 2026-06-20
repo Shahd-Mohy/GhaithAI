@@ -2,7 +2,7 @@
 {
     public interface IPdfExportService
     {
-        Task<byte[]> GenerateAsync(Guid report);
+        Task<string> GenerateAsync(ClinicalReport report);
         Task<byte[]> ExportReportToPdfAsync(Guid reportId);
     }
 }

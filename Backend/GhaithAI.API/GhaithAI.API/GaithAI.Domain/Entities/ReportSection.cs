@@ -25,3 +25,4 @@ namespace GhaithAI.GaithAI.Domain.Entities
         public bool IsEdited { get; set; } = false;
     }
 }
+

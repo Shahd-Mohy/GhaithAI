@@ -26,12 +26,14 @@ namespace GhaithAI.API.Repositories.UnitWork
         IReportFeedbackTagRepository ReportFeedbackTag { get; }
 
         // ✅ الناقصين
-        IGenericRepository<ClinicalSession> ClinicalSession { get; }
+        //IGenericRepository<ClinicalSession> ClinicalSession { get; }
         IGenericRepository<MoodLog> MoodLog { get; }
 
         // ✅ Transaction
         Task<IDbContextTransaction> BeginTransactionAsync();
 
+        IClinicalSessionRepository ClinicalSession { get; }
+        ISessionNoteRepository SessionNote { get; }
         Task<int> CompleteAsync();
         int Complete();
     }

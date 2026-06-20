@@ -901,6 +901,199 @@ namespace GhaithAI.Migrations
                     b.ToTable("ClinicPatients", (string)null);
                 });
 
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ClinicalReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AiDraftJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AiModelVersion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ClinicalSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DoctorNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FinalContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAiGenerated")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PdfUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ReportType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Draft");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicalSessionId")
+                        .IsUnique();
+
+                    b.ToTable("ClinicalReports", (string)null);
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ClinicalReportHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CapturedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ClinicalReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DoctorEditDurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ModificationSeverity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("OriginalAiContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(MAX)");
+
+                    b.Property<int>("TotalChangesCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicalReportId")
+                        .IsUnique();
+
+                    b.ToTable("ClinicalReportHistories");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ClinicalSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ChiefComplaint")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PatientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SessionType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("InProgress");
+
+                    b.Property<string>("VideoRoomId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("VideoRoomUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("DoctorId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("ClinicalSessions", (string)null);
+                });
+
             modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.DoctorCustomSchedule", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1247,6 +1440,185 @@ namespace GhaithAI.Migrations
                     b.HasIndex("UserId", "IsRead");
 
                     b.ToTable("Notifications", (string)null);
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ReportFeedbackTag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClinicalReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatorId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatorRole")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(MAX)");
+
+                    b.Property<string>("TagType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicalReportId");
+
+                    b.ToTable("ReportFeedbackTags");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ReportSection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AiContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(MAX)");
+
+                    b.Property<Guid>("ClinicalReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DoctorContent")
+                        .HasColumnType("nvarchar(MAX)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SectionType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicalReportId", "OrderIndex");
+
+                    b.ToTable("ReportSections");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.SessionNote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClinicalSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(MAX)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NoteType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Quick");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicalSessionId");
+
+                    b.ToTable("SessionNotes", (string)null);
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.SessionTranscript", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClinicalSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("ConfidenceScore")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EndMs")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Speaker")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("StartMs")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicalSessionId", "StartMs");
+
+                    b.ToTable("SessionTranscripts", (string)null);
                 });
 
             modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.UserAssessment", b =>
@@ -1596,6 +1968,55 @@ namespace GhaithAI.Migrations
                     b.Navigation("Doctor");
                 });
 
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ClinicalReport", b =>
+                {
+                    b.HasOne("GhaithAI.GaithAI.Domain.Entities.ClinicalSession", "ClinicalSession")
+                        .WithMany()
+                        .HasForeignKey("ClinicalSessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ClinicalSession");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ClinicalReportHistory", b =>
+                {
+                    b.HasOne("GhaithAI.GaithAI.Domain.Entities.ClinicalReport", "ClinicalReport")
+                        .WithOne("ClinicalReportHistory")
+                        .HasForeignKey("GhaithAI.GaithAI.Domain.Entities.ClinicalReportHistory", "ClinicalReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClinicalReport");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ClinicalSession", b =>
+                {
+                    b.HasOne("GhaithAI.GaithAI.Domain.Entities.Booking", "Booking")
+                        .WithMany()
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GhaithAI.GaithAI.Domain.Entities.DoctorsProfile", "Doctor")
+                        .WithMany()
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GhaithAI.API.Models.ApplicationUser", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Patient");
+                });
+
             modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.DoctorCustomSchedule", b =>
                 {
                     b.HasOne("GhaithAI.GaithAI.Domain.Entities.DoctorsProfile", "Doctor")
@@ -1717,6 +2138,50 @@ namespace GhaithAI.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ReportFeedbackTag", b =>
+                {
+                    b.HasOne("GhaithAI.GaithAI.Domain.Entities.ClinicalReport", "ClinicalReport")
+                        .WithMany("FeedbackTags")
+                        .HasForeignKey("ClinicalReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClinicalReport");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ReportSection", b =>
+                {
+                    b.HasOne("GhaithAI.GaithAI.Domain.Entities.ClinicalReport", "ClinicalReport")
+                        .WithMany("ReportSections")
+                        .HasForeignKey("ClinicalReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClinicalReport");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.SessionNote", b =>
+                {
+                    b.HasOne("GhaithAI.GaithAI.Domain.Entities.ClinicalSession", "ClinicalSession")
+                        .WithMany("Notes")
+                        .HasForeignKey("ClinicalSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClinicalSession");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.SessionTranscript", b =>
+                {
+                    b.HasOne("GhaithAI.GaithAI.Domain.Entities.ClinicalSession", "ClinicalSession")
+                        .WithMany()
+                        .HasForeignKey("ClinicalSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClinicalSession");
                 });
 
             modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.UserAssessment", b =>
@@ -1844,6 +2309,21 @@ namespace GhaithAI.Migrations
             modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ClinicPatient", b =>
                 {
                     b.Navigation("Bookings");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ClinicalReport", b =>
+                {
+                    b.Navigation("ClinicalReportHistory")
+                        .IsRequired();
+
+                    b.Navigation("FeedbackTags");
+
+                    b.Navigation("ReportSections");
+                });
+
+            modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.ClinicalSession", b =>
+                {
+                    b.Navigation("Notes");
                 });
 
             modelBuilder.Entity("GhaithAI.GaithAI.Domain.Entities.DoctorsProfile", b =>

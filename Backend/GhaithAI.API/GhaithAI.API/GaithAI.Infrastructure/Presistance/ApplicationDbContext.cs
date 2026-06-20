@@ -55,14 +55,21 @@ namespace GhaithAI.API.Presistance
         public DbSet<DoctorReview> DoctorReviews { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
+
+        //--------------------------------------------------------------
         public DbSet<ClinicalSession> ClinicalSessions { get; set; }
-        //public DbSet<SessionNote> SessionNotes { get; set; }
+        public DbSet<SessionNote> SessionNotes { get; set; }
+        public DbSet<SessionTranscript> SessionTranscripts { get; set; }
+        public DbSet<ClinicalReport> ClinicalReports { get; set; }
+        public DbSet<ReportSection> ReportSections { get; set; }
+        public DbSet<ClinicalReportHistory> ClinicalReportHistories { get; set; }
+        public DbSet<ReportFeedbackTag> ReportFeedbackTags { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=GhaithAI_DB;Trusted_Connection=True;TrustServerCertificate=True;");
+                optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=GhaithAI_DB;Trusted_Connection=True;TrustServerCertificate=True;");
             }
         }
         protected override void OnModelCreating(ModelBuilder builder)

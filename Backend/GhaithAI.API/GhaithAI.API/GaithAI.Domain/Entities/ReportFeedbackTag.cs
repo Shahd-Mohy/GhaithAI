@@ -19,3 +19,4 @@ namespace GhaithAI.GaithAI.Domain.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
+

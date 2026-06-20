@@ -29,8 +29,10 @@ namespace GhaithAI.API.Repositories.UnitWork
         private IReportFeedbackTagRepository _reportFeedbackTag;
 
         // ✅ الجديدين
-        private IGenericRepository<ClinicalSession> _clinicalSession;
+        //private IGenericRepository<ClinicalSession> _clinicalSession;
         private IGenericRepository<MoodLog> _moodLog;
+        private IClinicalSessionRepository _clinicalSession;
+        private ISessionNoteRepository _sessionNote;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -79,6 +81,7 @@ namespace GhaithAI.API.Repositories.UnitWork
         public IGenericRepository<DoctorCustomSchedule> CustomSchedule =>
             _customSchedule ??= new GenericRepository<DoctorCustomSchedule>(_context);
 
+
         public IClinicalReportRepository ClinicalReport =>
             _clinicalReport ??= new ClinicalReportRepository(_context);
 
@@ -92,8 +95,8 @@ namespace GhaithAI.API.Repositories.UnitWork
             _reportFeedbackTag ??= new ReportFeedbackTagRepository(_context);
 
         // ✅ الجديدين
-        public IGenericRepository<ClinicalSession> ClinicalSession =>
-            _clinicalSession ??= new GenericRepository<ClinicalSession>(_context);
+        //public IGenericRepository<ClinicalSession> ClinicalSession =>
+        //    _clinicalSession ??= new GenericRepository<ClinicalSession>(_context);
 
         public IGenericRepository<MoodLog> MoodLog =>
             _moodLog ??= new GenericRepository<MoodLog>(_context);
@@ -103,6 +106,11 @@ namespace GhaithAI.API.Repositories.UnitWork
         {
             return await _context.Database.BeginTransactionAsync();
         }
+        public IClinicalSessionRepository ClinicalSession =>
+            _clinicalSession ??= new ClinicalSessionRepository(_context);
+
+        public ISessionNoteRepository SessionNote =>
+            _sessionNote ??= new SessionNoteRepository(_context);
 
         public async Task<int> CompleteAsync()
         {

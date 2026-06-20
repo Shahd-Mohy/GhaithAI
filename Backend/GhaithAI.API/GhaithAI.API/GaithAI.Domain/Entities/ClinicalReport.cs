@@ -39,3 +39,4 @@ namespace GhaithAI.GaithAI.Domain.Entities
         public ICollection<ReportFeedbackTag> FeedbackTags { get; set; } = new List<ReportFeedbackTag>();
     }
 }
+

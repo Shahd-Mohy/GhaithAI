@@ -37,11 +37,11 @@ namespace GhaithAI.GaithAI.Application.Services.Class
         public async Task<ClinicalReportResponseDto> GenerateAsync(Guid clinicalSessionId, string requestedByUserId)
         {
             var session = await _unitOfWork.ClinicalSession.GetAllQueryableNoTracking()
-                .Include(s => s.SessionNotes)
+                .Include(s => s.Notes)
                 .FirstOrDefaultAsync(s => s.Id == clinicalSessionId)
                 ?? throw new KeyNotFoundException("Clinical session not found.");
 
-            if (session.Status != SessionStatus.Completed)
+            if (session.Status != ClinicalSessionStatus.Completed)
                 throw new InvalidOperationException("Cannot generate a report before the session has ended.");
 
             var existingReport = await _unitOfWork.ClinicalReport.GetAllQueryableNoTracking()
@@ -54,7 +54,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             var aggregatedTranscript = await _transcriptAggregation.BuildAsync(clinicalSessionId);
 
             // 2 — جمع السياق الإضافي
-            var doctorNotes = session.SessionNotes
+            var doctorNotes = session.Notes
                 .OrderBy(n => n.CreatedAt)
                 .Select(n => n.Content);
 

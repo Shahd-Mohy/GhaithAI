@@ -1,10 +1,13 @@
+
 ﻿namespace GhaithAI.GaithAI.Domain.Entities
 {
-    public class SessionNote : AuditableEntity<Guid>
+    public class SessionNote : BaseEntity<Guid>
     {
         public Guid ClinicalSessionId { get; set; }
-        public string Content { get; set; } = string.Empty;
-        public string CreatedByUserId { get; set; } = string.Empty;
+        public string Content { get; set; }
+        public NoteType NoteType { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+
         public virtual ClinicalSession ClinicalSession { get; set; }
     }
 }

@@ -22,3 +22,4 @@ namespace GhaithAI.GaithAI.Domain.Entities
     }
 
 }
+

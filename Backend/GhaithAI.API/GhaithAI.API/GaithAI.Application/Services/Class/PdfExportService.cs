@@ -4,7 +4,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 {
     public class PdfExportService : IPdfExportService
     {
-        public Task<byte[]> GenerateAsync(Guid report)
+        public Task<string> GenerateAsync(ClinicalReport report)
         {
             throw new NotImplementedException("PDF export will be implemented in the next sprint.");
         }
