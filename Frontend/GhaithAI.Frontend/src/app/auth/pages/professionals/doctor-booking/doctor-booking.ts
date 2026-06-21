@@ -1,6 +1,8 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { timeout, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { DoctorService, PublicDoctorProfile, AvailableSlot } from '../../../../services/doctor.service';
 
 @Component({
@@ -10,7 +12,7 @@ import { DoctorService, PublicDoctorProfile, AvailableSlot } from '../../../../s
   templateUrl: './doctor-booking.html',
   styleUrls: ['./doctor-booking.css']
 })
-export class DoctorBookingComponent implements OnInit, OnChanges {
+export class DoctorBookingComponent implements OnInit {
 
   @Input() doctorId!: string;
   @Output() back = new EventEmitter<void>();
@@ -33,22 +35,30 @@ export class DoctorBookingComponent implements OnInit, OnChanges {
 
   minDate = new Date().toISOString().split('T')[0];
 
-  constructor(private doctorService: DoctorService) {}
+  constructor(private doctorService: DoctorService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.loadProfile();
-  }
-
-  ngOnChanges(): void {
     this.loadProfile();
   }
 
   loadProfile(): void {
     this.loading = true;
     this.error = '';
-    this.doctorService.getDoctorProfile(this.doctorId).subscribe({
-      next: (data) => { this.doctor = data; this.loading = false; },
-      error: () => { this.error = 'Failed to load doctor profile.'; this.loading = false; }
+    this.doctor = null;
+
+    this.doctorService.getDoctorProfile(this.doctorId).pipe(
+      timeout(10000),
+      catchError(() => of(null))
+    ).subscribe((data) => {
+      this.loading = false;
+      if (data) {
+        this.doctor = data;
+        if (data.availableSessionType === 'Online') this.sessionType = 1;
+        else if (data.availableSessionType === 'InPerson') this.sessionType = 0;
+      } else {
+        this.error = 'Failed to load doctor profile. Please try again.';
+      }
+      this.cdr.detectChanges();
     });
   }
 
@@ -58,15 +68,18 @@ export class DoctorBookingComponent implements OnInit, OnChanges {
     this.slots = [];
     this.selectedSlot = '';
 
-    this.doctorService.getAvailableSlots(this.doctorId, this.selectedDate).subscribe({
-      next: (data) => { this.slots = data; this.slotsLoading = false; },
-      error: () => { this.slotsLoading = false; }
+    this.doctorService.getAvailableSlots(this.doctorId, this.selectedDate).pipe(
+      timeout(10000),
+      catchError(() => of([]))
+    ).subscribe((data) => {
+      this.slots = data;
+      this.slotsLoading = false;
+      this.cdr.detectChanges();
     });
   }
 
   selectSlot(slot: AvailableSlot): void {
-    if (!slot.isAvailable) return;
-    this.selectedSlot = slot.slotTime;
+    this.selectedSlot = slot.startTime;
   }
 
   get canBook(): boolean {
@@ -102,10 +115,10 @@ export class DoctorBookingComponent implements OnInit, OnChanges {
   }
 
   getDayLabel(day: string): string {
-    const days: Record<string, string> = {
-      '0': 'Sun', '1': 'Mon', '2': 'Tue', '3': 'Wed',
-      '4': 'Thu', '5': 'Fri', '6': 'Sat'
+    const map: Record<string, string> = {
+      'Sunday': 'Sun', 'Monday': 'Mon', 'Tuesday': 'Tue',
+      'Wednesday': 'Wed', 'Thursday': 'Thu', 'Friday': 'Fri', 'Saturday': 'Sat'
     };
-    return days[day] ?? day;
+    return map[day] ?? day.slice(0, 3);
   }
 }

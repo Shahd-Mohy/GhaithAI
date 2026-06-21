@@ -1,8 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DoctorService, PublicDoctorCard } from '../../../services/doctor.service';
-import { DoctorBookingComponent } from "./doctor-booking/doctor-booking";
+import { Subject, merge, debounceTime, switchMap, takeUntil, of, catchError } from 'rxjs';
+import {
+  ProfessionalsService,
+  ProfessionalCard,
+  ProfessionalsResponse,
+  ProfessionalsFilter
+} from '../../../services/professionals.service';
+import { DoctorBookingComponent } from './doctor-booking/doctor-booking';
 
 @Component({
   selector: 'app-professionals',
@@ -11,79 +17,188 @@ import { DoctorBookingComponent } from "./doctor-booking/doctor-booking";
   templateUrl: './professionals.html',
   styleUrls: ['./professionals.css']
 })
-export class ProfessionalsComponent implements OnInit {
+export class ProfessionalsComponent implements OnInit, OnDestroy {
 
-  doctors: PublicDoctorCard[] = [];
+  doctors: ProfessionalCard[] = [];
+  totalCount = 0;
   loading = true;
   error = '';
 
+  // Filter state
   searchTerm = '';
   selectedSpecialty = '';
   selectedLanguage = '';
+  selectedSessionType = '';
+  selectedCity = '';
 
-  specialties = [
-    'Anxiety & Stress', 'Depression', 'Trauma & PTSD',
-    'Addiction & Recovery', 'Child & Adolescent',
-    'Couples & Family', 'OCD', 'Eating Disorders', 'Grief & Loss'
+  // Pagination
+  currentPage = 1;
+  pageSize = 10;
+
+  specialtyChips = [
+    'All Specialties', 'Anxiety', 'Depression', 'Trauma',
+    'Relationships', 'Stress', 'CBT', 'Family Therapy', 'OCD', 'Addiction'
   ];
 
-  languages = ['English', 'Arabic', 'French'];
+  sessionTypes = [
+    { label: 'Any Type', value: '' },
+    { label: 'Online', value: 'Online' },
+    { label: 'In-Person', value: 'InPerson' },
+    { label: 'Both', value: 'Both' }
+  ];
 
-  // ✅ Output للـ parent عشان يفتح profile
+  languages = ['English', 'Arabic', 'French', 'Spanish'];
+
   selectedDoctorId: string | null = null;
 
-  constructor(private doctorService: DoctorService) {}
+  // Typing/dropdowns are debounced; chips, pagination, clear, retry fire instantly.
+  // Both merge into one switchMap pipeline so a stale in-flight request never
+  // overwrites a newer one, and markForCheck keeps OnPush ancestors in sync.
+  private debouncedTrigger$ = new Subject<void>();
+  private instantTrigger$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private professionalsService: ProfessionalsService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
-    this.loadDoctors();
-  }
-
-  loadDoctors(): void {
-    this.loading = true;
-    this.error = '';
-
-    this.doctorService.getDoctors({
-      searchTerm: this.searchTerm || undefined,
-      specialty: this.selectedSpecialty || undefined,
-      language: this.selectedLanguage || undefined
-    }).subscribe({
-      next: (data) => {
-        this.doctors = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.error = 'Failed to load doctors. Please try again.';
-        this.loading = false;
+    merge(
+      this.debouncedTrigger$.pipe(debounceTime(350)),
+      this.instantTrigger$
+    ).pipe(
+      switchMap(() => {
+        this.loading = true;
+        this.error = '';
+        this.cdr.markForCheck();
+        return this.professionalsService.getAll(this.buildFilters()).pipe(
+          catchError(() => of(null))
+        );
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe((res: ProfessionalsResponse | null) => {
+      this.loading = false;
+      if (res) {
+        this.doctors = res.items ?? [];
+        this.totalCount = res.totalCount ?? 0;
+      } else {
+        this.doctors = [];
+        this.error = 'Failed to load professionals. Please try again.';
       }
+      this.cdr.markForCheck();
     });
+
+    this.instantTrigger$.next();
   }
 
-  search(): void {
-    this.loadDoctors();
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private buildFilters(): ProfessionalsFilter {
+    const filters: ProfessionalsFilter = {
+      page: this.currentPage,
+      pageSize: this.pageSize
+    };
+    if (this.searchTerm.trim()) filters.search = this.searchTerm.trim();
+    if (this.selectedSpecialty) filters.specialty = this.selectedSpecialty;
+    if (this.selectedLanguage) filters.language = this.selectedLanguage;
+    if (this.selectedSessionType) filters.sessionType = this.selectedSessionType;
+    if (this.selectedCity.trim()) filters.city = this.selectedCity.trim();
+    return filters;
+  }
+
+  /** Kept public so the Retry button in the template still works unchanged. */
+  loadDoctors(): void {
+    this.instantTrigger$.next();
+  }
+
+  // ── Filter triggers (ngModelChange) ──
+
+  onSearchChange(): void {
+    this.currentPage = 1;
+    this.debouncedTrigger$.next();
+  }
+
+  onDropdownChange(): void {
+    this.currentPage = 1;
+    this.debouncedTrigger$.next();
+  }
+
+  onCityInput(): void {
+    this.currentPage = 1;
+    this.debouncedTrigger$.next();
+  }
+
+  selectChip(chip: string): void {
+    this.selectedSpecialty = (chip === 'All Specialties') ? '' : chip;
+    this.currentPage = 1;
+    this.instantTrigger$.next();
+  }
+
+  isChipActive(chip: string): boolean {
+    return chip === 'All Specialties' ? !this.selectedSpecialty : this.selectedSpecialty === chip;
   }
 
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedSpecialty = '';
     this.selectedLanguage = '';
-    this.loadDoctors();
+    this.selectedSessionType = '';
+    this.selectedCity = '';
+    this.currentPage = 1;
+    this.instantTrigger$.next();
   }
 
-  selectDoctor(doctorId: string): void {
-    this.selectedDoctorId = doctorId;
+  get hasActiveFilters(): boolean {
+    return !!(this.searchTerm || this.selectedSpecialty || this.selectedLanguage ||
+      this.selectedSessionType || this.selectedCity);
   }
 
-  goBack(): void {
-    this.selectedDoctorId = null;
+  // Pagination
+  get totalPages(): number { return Math.ceil(this.totalCount / this.pageSize); }
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.currentPage - 2);
+    const end = Math.min(this.totalPages, start + 4);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
   }
 
-  getStars(rating: number): number[] {
-    return Array(5).fill(0).map((_, i) => i < Math.round(rating) ? 1 : 0);
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+    this.currentPage = page;
+    this.instantTrigger$.next();
   }
 
-  getSessionTypeLabel(type: number): string {
-    if (type === 0) return 'In-Person';
-    if (type === 1) return 'Online';
-    return 'Both';
+  // Card helpers
+  selectDoctor(id: string): void { this.selectedDoctorId = id; }
+  goBack(): void { this.selectedDoctorId = null; }
+
+  trackByDoctorId(_index: number, doc: ProfessionalCard): string {
+    return doc.doctorId;
+  }
+
+  getInitials(name: string): string {
+    return (name || '').split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+  }
+
+  getStars(rating: number): boolean[] {
+    return Array(5).fill(false).map((_, i) => i < Math.round(rating ?? 0));
+  }
+
+  getAvatarGradient(index: number): string {
+    const gradients = [
+      'linear-gradient(135deg,#0B8FAC,#076E86)',
+      'linear-gradient(135deg,#6366F1,#4F46E5)',
+      'linear-gradient(135deg,#0EA5E9,#0284C7)',
+      'linear-gradient(135deg,#14B8A6,#0D9488)',
+      'linear-gradient(135deg,#8B5CF6,#7C3AED)',
+      'linear-gradient(135deg,#F59E0B,#D97706)',
+    ];
+    return gradients[index % gradients.length];
   }
 }

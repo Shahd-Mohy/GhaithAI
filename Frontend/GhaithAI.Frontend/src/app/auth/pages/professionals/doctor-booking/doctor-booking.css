@@ -384,6 +384,20 @@
   font-weight: 600;
 }
 
+/* Fixed session type badge (when doctor doesn't offer Both) */
+.session-fixed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: rgba(11, 143, 172, .07);
+  border: 1.5px solid rgba(11, 143, 172, .2);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #076E86;
+}
+
 /* Slots */
 .slots-loading {
   display: flex;

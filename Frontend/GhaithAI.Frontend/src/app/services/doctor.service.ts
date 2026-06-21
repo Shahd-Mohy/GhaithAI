@@ -10,28 +10,51 @@ export interface PublicDoctorCard {
   averageRating: number;
   reviewCount: number;
   yearsOfExperience: number;
-  city: string;
-  countryCode: string;
+  city: string | null;
+  countryCode: string | null;
   bio: string;
   feePerSession: number;
-  availableSessionType: number;
+  availableSessionType: string;  // 'Online' | 'InPerson' | 'Both'
   specialties: string[];
   languages: string[];
   nextAvailableSlot: string;
 }
 
-export interface PublicDoctorProfile extends PublicDoctorCard {
+export interface ProfessionalsResponse {
+  items: PublicDoctorCard[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
+export interface PublicDoctorProfile {
   weeklySchedule: {
+    id: string;
     dayOfWeek: string;
     startTime: string;
     endTime: string;
+    isActive: boolean;
   }[];
+  doctorId: string;
+  displayName: string;
+  professionalTitle: string;
+  averageRating: number;
+  reviewCount: number;
+  yearsOfExperience: number;
+  city: string | null;
+  countryCode: string | null;
+  bio: string;
+  feePerSession: number;
+  availableSessionType: string;
+  specialties: string[];
+  languages: string[];
+  nextAvailableSlot: string;
 }
 
 export interface AvailableSlot {
-  slotTime: string;
-  displayTime: string;
-  isAvailable: boolean;
+  date: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface UserBooking {
@@ -48,46 +71,55 @@ export interface UserBooking {
   canCancel: boolean;
 }
 
+export interface DoctorFilters {
+  search?: string;
+  specialty?: string;
+  language?: string;
+  sessionType?: string;
+  city?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DoctorService {
 
   private readonly baseUrl = `${environment.apiUrl}`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // ─── Get All Doctors ──────────────────────────────
-  getDoctors(filters?: {
-    searchTerm?: string;
-    specialty?: string;
-    language?: string;
-    pageNumber?: number;
-    pageSize?: number;
-  }): Observable<PublicDoctorCard[]> {
+  // ─── GET /api/professionals ───────────────────────
+  getDoctors(filters?: DoctorFilters): Observable<ProfessionalsResponse> {
     let params = new HttpParams();
-    if (filters?.searchTerm) params = params.set('searchTerm', filters.searchTerm);
+    if (filters?.search) params = params.set('search', filters.search);
     if (filters?.specialty) params = params.set('specialty', filters.specialty);
     if (filters?.language) params = params.set('language', filters.language);
-    if (filters?.pageNumber) params = params.set('pageNumber', filters.pageNumber);
-    if (filters?.pageSize) params = params.set('pageSize', filters.pageSize ?? 10);
+    if (filters?.sessionType) params = params.set('sessionType', filters.sessionType);
+    if (filters?.city) params = params.set('city', filters.city);
+    params = params.set('page', filters?.page ?? 1);
+    params = params.set('pageSize', filters?.pageSize ?? 10);
 
-    return this.http.get<PublicDoctorCard[]>(
-      `${this.baseUrl}/DoctorClinicProfile/professionals`,
+    return this.http.get<ProfessionalsResponse>(
+      `${this.baseUrl}/professionals`,
       { params }
     );
   }
 
-  // ─── Get Doctor Profile ───────────────────────────
+  // ─── GET /api/professionals/{doctorId} ────────────
   getDoctorProfile(doctorId: string): Observable<PublicDoctorProfile> {
     return this.http.get<PublicDoctorProfile>(
-      `${this.baseUrl}/DoctorClinicProfile/professionals/${doctorId}`
+      `${this.baseUrl}/professionals/${doctorId}`
     );
   }
 
   // ─── Get Available Slots ──────────────────────────
   getAvailableSlots(doctorId: string, date: string): Observable<AvailableSlot[]> {
+    // Build a from/to range covering the full selected day
+    const from = `${date}T00:00:00`;
+    const to   = `${date}T23:59:59`;
     return this.http.get<AvailableSlot[]>(
-      `${this.baseUrl}/Booking/${doctorId}/available-slots`,
-      { params: { date } }
+      `${this.baseUrl}/professionals/${doctorId}/available-slots`,
+      { params: { from, to } }
     );
   }
 

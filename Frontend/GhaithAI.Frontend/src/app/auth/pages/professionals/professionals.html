@@ -1,140 +1,264 @@
 <div class="professionals-wrap">
 
-  <!-- ── DOCTOR PROFILE VIEW ── -->
-  <app-doctor-booking
-    *ngIf="selectedDoctorId"
-    [doctorId]="selectedDoctorId"
-    (back)="goBack()">
+  <!-- ── BOOKING VIEW ── -->
+  <app-doctor-booking *ngIf="selectedDoctorId" [doctorId]="selectedDoctorId" (back)="goBack()">
   </app-doctor-booking>
 
   <!-- ── LIST VIEW ── -->
   <ng-container *ngIf="!selectedDoctorId">
 
-    <!-- Header -->
+    <!-- Page Header -->
     <div class="pro-header">
-      <h2>Find a Professional</h2>
-      <p>Connect with verified mental health professionals</p>
+      <div class="header-text">
+        <h1>Find a Professional</h1>
+        <p>Connect with licensed mental health professionals</p>
+      </div>
+      <div class="header-count" *ngIf="!loading && totalCount > 0">
+        <span class="count-num">{{ totalCount }}</span>
+        <span class="count-label">available</span>
+      </div>
     </div>
 
-    <!-- Search & Filters -->
-    <div class="filters-bar">
-      <div class="search-wrap">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    <!-- Search -->
+    <div class="search-box" [class.focused]="false">
+      <svg class="search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input id="pro-search" type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+        placeholder="Search by name, specialty, or condition...">
+      <button class="btn-clear-search" *ngIf="searchTerm" (click)="searchTerm=''; onSearchChange()">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
-        <input type="text" [(ngModel)]="searchTerm" placeholder="Search by name or specialty..."
-               (keyup.enter)="search()">
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-row">
+      <div class="filter-group">
+        <label class="filter-label">Language</label>
+        <select [(ngModel)]="selectedLanguage" (ngModelChange)="onDropdownChange()">
+          <option value="">All Languages</option>
+          <option *ngFor="let l of languages" [value]="l">{{ l }}</option>
+        </select>
       </div>
 
-      <select [(ngModel)]="selectedSpecialty" (change)="search()">
-        <option value="">All Specialties</option>
-        <option *ngFor="let s of specialties" [value]="s">{{ s }}</option>
-      </select>
+      <div class="filter-group">
+        <label class="filter-label">Session Type</label>
+        <select [(ngModel)]="selectedSessionType" (ngModelChange)="onDropdownChange()">
+          <option *ngFor="let s of sessionTypes" [value]="s.value">{{ s.label }}</option>
+        </select>
+      </div>
 
-      <select [(ngModel)]="selectedLanguage" (change)="search()">
-        <option value="">All Languages</option>
-        <option *ngFor="let l of languages" [value]="l">{{ l }}</option>
-      </select>
+      <div class="filter-group">
+        <label class="filter-label">City</label>
+        <input type="text" [(ngModel)]="selectedCity" (ngModelChange)="onCityInput()"
+          placeholder="e.g. Cairo, Dubai...">
+      </div>
 
-      <button class="btn-search" (click)="search()">Search</button>
-      <button class="btn-clear" *ngIf="searchTerm || selectedSpecialty || selectedLanguage"
-              (click)="clearFilters()">Clear</button>
+      <button class="btn-clear-all" *ngIf="hasActiveFilters" (click)="clearFilters()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+        Clear All
+      </button>
     </div>
 
-    <!-- Loading -->
-    <div class="loading-state" *ngIf="loading">
-      <svg fill="none" stroke="#0B8FAC" stroke-width="2" viewBox="0 0 24 24"
-           style="animation:spin 1s linear infinite; width:28px; height:28px;">
-        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+    <!-- Specialty Chips -->
+    <div class="chips-scroll">
+      <button *ngFor="let chip of specialtyChips" class="chip" [class.chip-active]="isChipActive(chip)"
+        (click)="selectChip(chip)">
+        {{ chip }}
+      </button>
+    </div>
+
+    <!-- ── Loading ── -->
+    <div class="state-box" *ngIf="loading">
+      <div class="pulse-ring"></div>
+      <div class="spinner"></div>
+      <span>Finding professionals...</span>
+    </div>
+
+    <!-- ── Error ── -->
+    <div class="error-box" *ngIf="error && !loading">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
       </svg>
-      Loading professionals...
+      <span>{{ error }}</span>
+      <button (click)="loadDoctors()">Retry</button>
     </div>
 
-    <!-- Error -->
-    <div class="error-state" *ngIf="error">
-      <svg fill="none" stroke="#DC2626" stroke-width="2" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-      {{ error }}
+    <!-- ── Empty ── -->
+    <div class="empty-box" *ngIf="!loading && !error && doctors.length === 0">
+      <span class="empty-emoji">🔍</span>
+      <h3>No professionals found</h3>
+      <p>Try adjusting your search criteria or clearing the filters.</p>
+      <button class="btn-clear-all" (click)="clearFilters()">Clear filters</button>
     </div>
 
-    <!-- Empty -->
-    <div class="empty-state" *ngIf="!loading && !error && doctors.length === 0">
-      <svg fill="none" stroke="#CBD5E1" stroke-width="1.5" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-      </svg>
-      <p>No professionals found matching your criteria.</p>
-      <button class="btn-clear" (click)="clearFilters()">Clear filters</button>
-    </div>
+    <!-- ── Doctor Cards ── -->
+    <div class="doctors-list" *ngIf="!loading && !error && doctors.length > 0">
 
-    <!-- Doctors Grid -->
-    <div class="doctors-grid" *ngIf="!loading && doctors.length > 0">
-      <div class="doctor-card" *ngFor="let doc of doctors" (click)="selectDoctor(doc.doctorId)">
+      <div class="doctor-card" *ngFor="let doc of doctors; let i = index; trackBy: trackByDoctorId">
 
-        <div class="card-top">
-          <div class="doc-avatar">{{ doc.displayName[0] }}</div>
-          <div class="doc-info">
-            <h3>{{ doc.displayName }}</h3>
-            <p class="doc-title">{{ doc.professionalTitle }}</p>
-            <div class="doc-location" *ngIf="doc.city">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                <circle cx="12" cy="10" r="3"/>
+        <!-- Left: avatar -->
+        <div class="avatar-col">
+          <div class="doc-avatar" [style.background]="getAvatarGradient(i)">
+            {{ getInitials(doc.displayName) }}
+          </div>
+        </div>
+
+        <!-- Center: info -->
+        <div class="info-col">
+
+          <!-- Name + verified -->
+          <div class="name-row">
+            <span class="doc-name">{{ doc.displayName }}</span>
+            <span class="verified-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
-              {{ doc.city }}
+            </span>
+          </div>
+
+          <span class="doc-specialty">{{ doc.professionalTitle }}</span>
+
+          <!-- Stars + exp -->
+          <div class="meta-row">
+            <div class="stars-wrap">
+              <svg class="star" *ngFor="let filled of getStars(doc.averageRating)" viewBox="0 0 24 24"
+                [class.star-filled]="filled" [class.star-empty]="!filled">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+              </svg>
+            </div>
+            <span class="rating-text">{{ (doc.averageRating ?? 0).toFixed(1) }}</span>
+            <span class="review-text">({{ doc.reviewCount }} reviews)</span>
+            <span class="sep">·</span>
+            <span class="exp-text">{{ doc.yearsOfExperience }} yrs exp</span>
+          </div>
+
+          <!-- Specialty tags -->
+          <div class="tags-row">
+            <span class="stag" *ngFor="let s of doc.specialties.slice(0, 3)">{{ s }}</span>
+            <span class="stag stag-more" *ngIf="doc.specialties.length > 3">+{{ doc.specialties.length - 3 }}</span>
+          </div>
+
+          <!-- Bio -->
+          <p class="bio-text" *ngIf="doc.bio">{{ doc.bio }}</p>
+
+          <!-- Location / Languages / Session -->
+          <div class="details-row">
+            <span class="ditem" *ngIf="doc.city">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              {{ doc.city }}{{ doc.countryCode ? ', ' + doc.countryCode : '' }}
+            </span>
+            <span class="ditem" *ngIf="doc.languages?.length">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+              {{ doc.languages.join(', ') }}
+            </span>
+            <span class="ditem" *ngIf="doc.availableSessionType">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="2" y="7" width="20" height="15" rx="2" />
+                <polyline points="17 2 12 7 7 2" />
+              </svg>
+              {{ doc.availableSessionType === 'InPerson' ? 'In-Person' : doc.availableSessionType }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Right: price + actions -->
+        <div class="action-col">
+          <div class="price-block">
+            <span class="price-val">${{ doc.feePerSession }}</span>
+            <span class="price-unit">/session</span>
+          </div>
+
+          <div class="slot-block" *ngIf="doc.nextAvailableSlot">
+            <svg fill="none" stroke="#0B8FAC" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <div class="slot-text">
+              <span class="slot-top">Next available</span>
+              <span class="slot-val">{{ doc.nextAvailableSlot }}</span>
             </div>
           </div>
-          <div class="session-badge" [class.online]="doc.availableSessionType === 1">
-            {{ getSessionTypeLabel(doc.availableSessionType) }}
+
+          <div class="btns-col">
+            <button class="btn-outline" (click)="selectDoctor(doc.doctorId)">View Profile</button>
+            <button class="btn-solid" (click)="selectDoctor(doc.doctorId)">Book Session</button>
           </div>
-        </div>
-
-        <div class="rating-row">
-          <div class="stars">
-            <svg *ngFor="let s of getStars(doc.averageRating)"
-                 viewBox="0 0 24 24" [class.filled]="s === 1">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-          </div>
-          <span class="rating-num">{{ doc.averageRating.toFixed(1) }}</span>
-          <span class="review-count">({{ doc.reviewCount }} reviews)</span>
-        </div>
-
-        <div class="specialties-row">
-          <span class="specialty-tag" *ngFor="let s of doc.specialties.slice(0, 2)">{{ s }}</span>
-          <span class="specialty-tag more" *ngIf="doc.specialties.length > 2">
-            +{{ doc.specialties.length - 2 }}
-          </span>
-        </div>
-
-        <div class="card-footer">
-          <div class="fee">
-            <span class="fee-amount">{{ doc.feePerSession > 0 ? doc.feePerSession + ' EGP' : 'Free' }}</span>
-            <span class="fee-label">/ session</span>
-          </div>
-          <div class="exp">{{ doc.yearsOfExperience }} yrs exp</div>
-          <button class="btn-book" (click)="$event.stopPropagation(); selectDoctor(doc.doctorId)">
-            Book Now
-          </button>
-        </div>
-
-        <div class="next-slot" *ngIf="doc.nextAvailableSlot">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-          </svg>
-          Next available: {{ doc.nextAvailableSlot }}
         </div>
 
       </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="!loading && totalPages > 1">
+      <button class="pg-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <button *ngFor="let p of pageNumbers" class="pg-btn" [class.pg-active]="p === currentPage" (click)="goToPage(p)">
+        {{ p }}
+      </button>
+      <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
     </div>
 
   </ng-container>
-
 </div>
 
 <style>
-  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulseRing {
+    0% {
+      transform: scale(.95);
+      box-shadow: 0 0 0 0 rgba(11, 143, 172, .35);
+    }
+
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 14px rgba(11, 143, 172, 0);
+    }
+
+    100% {
+      transform: scale(.95);
+      box-shadow: 0 0 0 0 rgba(11, 143, 172, 0);
+    }
+  }
 </style>
