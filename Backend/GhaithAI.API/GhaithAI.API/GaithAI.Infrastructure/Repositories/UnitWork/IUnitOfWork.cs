@@ -34,6 +34,7 @@ namespace GhaithAI.API.Repositories.UnitWork
 
         IClinicalSessionRepository ClinicalSession { get; }
         ISessionNoteRepository SessionNote { get; }
+        ISessionTranscriptRepository SessionTranscript { get; }
         Task<int> CompleteAsync();
         int Complete();
     }

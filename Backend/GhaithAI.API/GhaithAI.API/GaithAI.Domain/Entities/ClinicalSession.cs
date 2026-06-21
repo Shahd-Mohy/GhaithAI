@@ -17,6 +17,7 @@
         public string Provider { get; set; }
         public string? VideoRoomId { get; set; }
         public string? VideoRoomUrl { get; set; }
+        public TranscriptionStatus? TranscriptionStatus { get; set; }
 
         public virtual Booking Booking { get; set; }
         public virtual DoctorsProfile Doctor { get; set; }

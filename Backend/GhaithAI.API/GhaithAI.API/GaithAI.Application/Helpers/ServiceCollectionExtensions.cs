@@ -38,6 +38,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IDoctorDefaultScheduleRepository, DoctorDefaultScheduleRepository>();
             services.AddScoped<IClinicalSessionRepository, ClinicalSessionRepository>();
             services.AddScoped<ISessionNoteRepository, SessionNoteRepository>();
+            services.AddScoped<ISessionTranscriptRepository, SessionTranscriptRepository>();
+
             return services;
         }
 
@@ -70,6 +72,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<ITranscriptAggregationService, TranscriptAggregationService>();
             services.AddScoped<IClinicalSessionService, ClinicalSessionService>();
             services.AddScoped<ISessionNoteService, SessionNoteService>();
+            services.AddHttpClient<ITranscriptionService, TranscriptionService>();
+            services.AddScoped<ISessionTranscriptService, SessionTranscriptService>();
 
 
             services.AddScoped<IDoctorDashboardPatiantService, DoctorDashboardPatiantService>();

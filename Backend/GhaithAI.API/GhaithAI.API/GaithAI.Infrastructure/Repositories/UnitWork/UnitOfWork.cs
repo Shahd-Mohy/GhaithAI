@@ -34,6 +34,8 @@ namespace GhaithAI.API.Repositories.UnitWork
         private IClinicalSessionRepository _clinicalSession;
         private ISessionNoteRepository _sessionNote;
 
+        private ISessionTranscriptRepository _sessionTranscript;
+
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -111,6 +113,9 @@ namespace GhaithAI.API.Repositories.UnitWork
 
         public ISessionNoteRepository SessionNote =>
             _sessionNote ??= new SessionNoteRepository(_context);
+
+        public ISessionTranscriptRepository SessionTranscript =>
+             _sessionTranscript ??= new SessionTranscriptRepository(_context);
 
         public async Task<int> CompleteAsync()
         {
