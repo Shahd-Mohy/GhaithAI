@@ -74,13 +74,14 @@ namespace GhaithAI.API.GaithAI.API.Controllers
 
         /// <summary>
         /// Get a specific version of a session report.
+        /// If the version number is omitted, returns the latest version.
         /// </summary>
-        [HttpGet("{reportId}/versions/{versionNumber:int}")]
+        [HttpGet("{reportId}/versions/{versionNumber:int?}")]
         [ProducesResponseType(typeof(SessionReportVersionDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetVersion(
             [FromRoute] Guid reportId,
-            [FromRoute] int versionNumber)
+            [FromRoute] int? versionNumber = null)
         {
             try
             {
