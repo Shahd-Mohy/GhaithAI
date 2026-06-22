@@ -72,7 +72,7 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<ISessionNoteService, SessionNoteService>();
             services.AddHttpClient<ITranscriptionService, TranscriptionService>();
             services.AddScoped<ISessionTranscriptService, SessionTranscriptService>();
-
+            services.AddScoped<ISessionReportService, SessionReportService>();
 
             services.AddScoped<IDoctorDashboardPatiantService, DoctorDashboardPatiantService>();
 

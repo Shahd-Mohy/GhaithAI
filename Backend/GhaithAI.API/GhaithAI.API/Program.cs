@@ -1,11 +1,13 @@
-﻿using GhaithAI.API.Configurations;
+using GhaithAI.API.Configurations;
 using GhaithAI.API.Extensions;
 using GhaithAI.API.GaithAI.API.Configurations;
 using GhaithAI.API.GaithAI.API.Hubs;
 using GhaithAI.API.GaithAI.Application.Helpers;
+using GhaithAI.API.GaithAI.Application.Services.Class;
 using GhaithAI.API.Interfaces.InterfaceService;
 using GhaithAI.API.Seeders;
 using GhaithAI.API.Services;
+using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using GhaithAI.GaithAI.Infrastructure.Seeders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -29,7 +31,7 @@ builder.Services.AddMailService(builder.Configuration);
 //builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddSignalR();
 
-// إعدادات الـ Langflow والـ HttpClient الخاص به
+// إعدادات الـ Langflow والـ HttpClient الخاص به (Chat)
 builder.Services.Configure<LangflowSettings>(builder.Configuration.GetSection("Langflow"));
 builder.Services.AddHttpClient<ILangflowService, LangflowService>((serviceProvider, client) =>
 {
@@ -39,6 +41,21 @@ builder.Services.AddHttpClient<ILangflowService, LangflowService>((serviceProvid
         throw new InvalidOperationException("Langflow BaseUrl is missing from appsettings.json");
 
     client.BaseAddress = new Uri(settings.BaseUrl.EndsWith("/") ? settings.BaseUrl : settings.BaseUrl + "/");
+});
+
+// إعدادات الـ Langflow Report Flow والـ HttpClient الخاص به
+builder.Services.Configure<LangflowReportSettings>(builder.Configuration.GetSection("LangflowReport"));
+builder.Services.AddHttpClient<IReportLangflowService, ReportLangflowService>((serviceProvider, client) =>
+{
+    var settings = serviceProvider.GetRequiredService<IOptions<LangflowReportSettings>>().Value;
+
+    if (string.IsNullOrEmpty(settings.BaseUrl))
+        throw new InvalidOperationException("LangflowReport BaseUrl is missing from appsettings.json");
+
+    client.BaseAddress = new Uri(settings.BaseUrl.EndsWith("/") ? settings.BaseUrl : settings.BaseUrl + "/");
+
+    // الـ Report flow ممكن تاخد وقت أطول بسبب الـ 3 LLMs — نزود الـ timeout
+    client.Timeout = TimeSpan.FromMinutes(5);
 });
 
 // إعدادات الـ Identity
