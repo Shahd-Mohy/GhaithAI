@@ -3,6 +3,7 @@ using GhaithAI.GaithAI.Domain.Entities;
 using GhaithAI.GaithAI.Domain.Enums;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using System.Text;
+using System.Text.Json;
 
 namespace GhaithAI.API.GaithAI.Application.Services.Class
 {
@@ -86,12 +87,34 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
         }
 
         /// <inheritdoc/>
-        public async Task<SessionReportVersionDto> GetVersionAsync(Guid reportId, int versionNumber)
+        /// <remarks>
+        /// If <paramref name="versionNumber"/> is null, returns the latest version automatically.
+        /// </remarks>
+        public async Task<SessionReportVersionDto> GetVersionAsync(Guid reportId, int? versionNumber = null)
         {
-            var version = await _unitOfWork.SessionReportVersion
-                .GetVersionAsync(reportId, versionNumber)
-                ?? throw new KeyNotFoundException(
-                    $"Version {versionNumber} not found for report {reportId}.");
+            SessionReportVersion? version;
+
+            if (versionNumber.HasValue)
+            {
+                // Specific version requested
+                version = await _unitOfWork.SessionReportVersion
+                    .GetVersionAsync(reportId, versionNumber.Value);
+
+                if (version is null)
+                    throw new KeyNotFoundException(
+                        $"Version {versionNumber.Value} not found for report {reportId}.");
+            }
+            else
+            {
+                // No version specified → return latest
+                version = await _unitOfWork.SessionReportVersion
+                    .GetLatestVersionAsync(reportId);
+
+                if (version is null)
+                    throw new KeyNotFoundException(
+                        $"No versions found for report {reportId}.");
+            }
+
             return ToVersionDto(version);
         }
 
@@ -140,14 +163,28 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                     PatientId   = patientId,
                     Status      = SessionReportStatus.Draft,
 
+                    // ── Risk ───────────────────────────────────────────────
                     RiskTier  = ai.RiskAssessment.OverallRiskTier,
                     SiPresent = ai.RiskAssessment.SuicidalIdeationPresent,
+                    SuicidalIdeationDetails = ai.RiskAssessment.SuicidalIdeationDetails,
+                    RiskNarrative           = ai.RiskAssessment.RiskNarrative,
 
+                    // ── SOAP ───────────────────────────────────────────────
                     SoapSubjective = ai.Soap.Subjective,
                     SoapObjective  = ai.Soap.Objective,
                     SoapAssessment = ai.Soap.Assessment,
                     SoapPlan       = ai.Soap.Plan,
 
+                    // ── Chief Complaint ────────────────────────────────────
+                    ChiefComplaintPrimary  = ai.ChiefComplaint?.PrimaryConcern,
+                    ChiefComplaintDuration = ai.ChiefComplaint?.Duration,
+
+                    // ── Differential Considerations (stored as JSON array) ─
+                    DifferentialConsiderations = ai.ClinicalFormulation?.DifferentialConsiderations is { Count: > 0 } list
+                        ? JsonSerializer.Serialize(list)
+                        : null,
+
+                    // ── Full AI snapshot for PDF/versioning ────────────────
                     ReportJson = result.RawJson
                 };
 
@@ -168,6 +205,9 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                 await _unitOfWork.CompleteAsync();
                 await tx.CommitAsync();
 
+                _logger.LogInformation(
+                    "SessionReport {ReportId} and Version 1 committed to DB", report.Id);
+
                 return report;
             }
             catch
@@ -187,15 +227,32 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             ReportId       = r.Id,
             SessionId      = r.SessionId,
             Status         = r.Status.ToString(),
-            RiskTier       = r.RiskTier,
-            SiPresent      = r.SiPresent,
+
+            // Risk
+            RiskTier                = r.RiskTier,
+            SiPresent               = r.SiPresent,
+            SuicidalIdeationDetails = r.SuicidalIdeationDetails,
+            RiskNarrative           = r.RiskNarrative,
+
+            // SOAP (editable by doctor)
             SoapSubjective = r.SoapSubjective,
             SoapObjective  = r.SoapObjective,
             SoapAssessment = r.SoapAssessment,
             SoapPlan       = r.SoapPlan,
-            ReportJson     = r.ReportJson,
-            VersionNumber  = versionNumber,
-            GeneratedAt    = generatedAt
+
+            // Chief Complaint
+            ChiefComplaintPrimary  = r.ChiefComplaintPrimary,
+            ChiefComplaintDuration = r.ChiefComplaintDuration,
+
+            // Differential Considerations — deserialize from stored JSON array string
+            DifferentialConsiderations = r.DifferentialConsiderations is not null
+                ? JsonSerializer.Deserialize<List<string>>(r.DifferentialConsiderations)
+                : null,
+
+            // Metadata
+            VersionNumber = versionNumber,
+            GeneratedAt   = generatedAt
+            // NOTE: ReportJson intentionally excluded — kept in DB for PDF/versioning only
         };
 
         private static SessionReportVersionDto ToVersionDto(SessionReportVersion v) => new()
@@ -203,8 +260,9 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             VersionId     = v.Id,
             VersionNumber = v.VersionNumber,
             ChangeSummary = v.ChangeNote,
-            ReportJson    = v.SnapshotJson,
+            SnapshotJson  = v.SnapshotJson,
             CreatedAt     = v.CreatedAt
         };
     }
 }
+

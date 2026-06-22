@@ -32,7 +32,8 @@ namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
 
         /// <summary>
         /// Retrieve a specific version of a session report.
+        /// If <paramref name="versionNumber"/> is null, returns the latest version.
         /// </summary>
-        Task<SessionReportVersionDto> GetVersionAsync(Guid reportId, int versionNumber);
+        Task<SessionReportVersionDto> GetVersionAsync(Guid reportId, int? versionNumber = null);
     }
 }
