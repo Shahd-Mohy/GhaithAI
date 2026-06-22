@@ -60,10 +60,8 @@ namespace GhaithAI.API.Presistance
         public DbSet<ClinicalSession> ClinicalSessions { get; set; }
         public DbSet<SessionNote> SessionNotes { get; set; }
         public DbSet<SessionTranscript> SessionTranscripts { get; set; }
-        public DbSet<ClinicalReport> ClinicalReports { get; set; }
-        public DbSet<ReportSection> ReportSections { get; set; }
-        public DbSet<ClinicalReportHistory> ClinicalReportHistories { get; set; }
-        public DbSet<ReportFeedbackTag> ReportFeedbackTags { get; set; }
+        public DbSet<SessionReport> SessionReports { get; set; }
+        public DbSet<SessionReportVersion> SessionReportVersions { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
