@@ -10,14 +10,22 @@ namespace GhaithAI.API.GaithAI.Application.DTOs.Report
     // ─────────────────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Returned after a successful report generation.
+    /// Returned after report generation, fetch, update, approve, or lock.
     /// Contains all fields the Frontend needs to render the doctor's review UI.
+    /// All report-related endpoints return this same DTO for consistency.
     /// </summary>
     public sealed class SessionReportResponseDto
     {
         public Guid ReportId { get; set; }
         public Guid SessionId { get; set; }
         public string Status { get; set; } = string.Empty;
+
+        // ── Ownership ─────────────────────────────────────────────────────────
+        /// <summary>The DoctorProfile ID of the clinician who owns this report.</summary>
+        public Guid ClinicianId { get; set; }
+
+        /// <summary>The ApplicationUser ID of the patient.</summary>
+        public string PatientId { get; set; } = string.Empty;
 
         // ── Risk Summary ─────────────────────────────────────────────────────
         public string RiskTier { get; set; } = string.Empty;
@@ -29,7 +37,7 @@ namespace GhaithAI.API.GaithAI.Application.DTOs.Report
         /// <summary>Narrative text explaining risk level (shown in risk card sidebar).</summary>
         public string? RiskNarrative { get; set; }
 
-        // ── SOAP (editable by doctor) ─────────────────────────────────────────
+        // ── SOAP (editable by doctor until Locked) ────────────────────────────
         public string? SoapSubjective { get; set; }
         public string? SoapObjective { get; set; }
         public string? SoapAssessment { get; set; }
@@ -42,6 +50,13 @@ namespace GhaithAI.API.GaithAI.Application.DTOs.Report
         // ── Clinical Formulation (read-only sidebar) ──────────────────────────
         /// <summary>Differential diagnosis suggestions from the AI (list of strings).</summary>
         public List<string>? DifferentialConsiderations { get; set; }
+
+        // ── Approval ──────────────────────────────────────────────────────────
+        /// <summary>Populated when Status = Approved or Locked.</summary>
+        public DateTime? ApprovedAt { get; set; }
+
+        /// <summary>DoctorId who approved the report (string representation).</summary>
+        public string? ApprovedBy { get; set; }
 
         // ── Metadata ──────────────────────────────────────────────────────────
         public int VersionNumber { get; set; }
