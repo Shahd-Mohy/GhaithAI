@@ -39,6 +39,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IClinicalSessionRepository, ClinicalSessionRepository>();
             services.AddScoped<ISessionNoteRepository, SessionNoteRepository>();
             services.AddScoped<ISessionTranscriptRepository, SessionTranscriptRepository>();
+            services.AddScoped<ISessionReportRepository, SessionReportRepository>();
+            services.AddScoped<ISessionReportVersionRepository, SessionReportVersionRepository>();
 
             return services;
         }
@@ -64,17 +66,13 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<IBookingService, BookingService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ILangFlowClient, LangFlowClient>();
-            services.AddScoped<IReportGenerationService, ReportGenerationService>();
-            services.AddScoped<IReportApprovalService, ReportApprovalService>();
-            services.AddScoped<IReportHistoryService, ReportHistoryService>();
-            services.AddScoped<IReportFeedbackService, ReportFeedbackService>();
-            services.AddScoped<IPdfExportService, PdfExportService>();
+
             services.AddScoped<ITranscriptAggregationService, TranscriptAggregationService>();
             services.AddScoped<IClinicalSessionService, ClinicalSessionService>();
             services.AddScoped<ISessionNoteService, SessionNoteService>();
             services.AddHttpClient<ITranscriptionService, TranscriptionService>();
             services.AddScoped<ISessionTranscriptService, SessionTranscriptService>();
-
+            services.AddScoped<ISessionReportService, SessionReportService>();
 
             services.AddScoped<IDoctorDashboardPatiantService, DoctorDashboardPatiantService>();
 

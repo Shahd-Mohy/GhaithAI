@@ -1,4 +1,4 @@
-﻿global using GhaithAI.GaithAI.Infrastructure.Repositories.Class;
+global using GhaithAI.GaithAI.Infrastructure.Repositories.Class;
 using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository;
 using GhaithAI.GaithAI.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -23,10 +23,8 @@ namespace GhaithAI.API.Repositories.UnitWork
         private IGenericRepository<DoctorLanguage> _doctorLanguage;
         private IGenericRepository<DoctorDefaultSchedule> _doctorDefaultSchedule;
         private IGenericRepository<DoctorCustomSchedule> _customSchedule;
-        private IClinicalReportRepository _clinicalReport;
-        private IReportSectionRepository _reportSection;
-        private IClinicalReportHistoryRepository _clinicalReportHistory;
-        private IReportFeedbackTagRepository _reportFeedbackTag;
+        private ISessionReportRepository _sessionReport;
+        private ISessionReportVersionRepository _sessionReportVersion;
 
         // ✅ الجديدين
         //private IGenericRepository<ClinicalSession> _clinicalSession;
@@ -84,17 +82,11 @@ namespace GhaithAI.API.Repositories.UnitWork
             _customSchedule ??= new GenericRepository<DoctorCustomSchedule>(_context);
 
 
-        public IClinicalReportRepository ClinicalReport =>
-            _clinicalReport ??= new ClinicalReportRepository(_context);
+        public ISessionReportRepository SessionReport =>
+            _sessionReport ??= new SessionReportRepository(_context);
 
-        public IReportSectionRepository ReportSection =>
-            _reportSection ??= new ReportSectionRepository(_context);
-
-        public IClinicalReportHistoryRepository ClinicalReportHistory =>
-            _clinicalReportHistory ??= new ClinicalReportHistoryRepository(_context);
-
-        public IReportFeedbackTagRepository ReportFeedbackTag =>
-            _reportFeedbackTag ??= new ReportFeedbackTagRepository(_context);
+        public ISessionReportVersionRepository SessionReportVersion =>
+            _sessionReportVersion ??= new SessionReportVersionRepository(_context);
 
         // ✅ الجديدين
         //public IGenericRepository<ClinicalSession> ClinicalSession =>
