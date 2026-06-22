@@ -32,10 +32,6 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             _logger = logger;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Generation
-        // ─────────────────────────────────────────────────────────────────────
-
         /// <inheritdoc/>
         public async Task<SessionReportResponseDto> GenerateReportAsync(
             Guid clinicalSessionId,
@@ -45,7 +41,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             _logger.LogInformation(
                 "Generating report for ClinicalSession {SessionId}", clinicalSessionId);
 
-            // ── 1. Fetch ordered transcript segments ──────────────────────────
+            //  1. Fetch ordered transcript segments 
             var segments = (await _unitOfWork.SessionTranscript
                 .GetSegmentsBySessionAsync(clinicalSessionId)).ToList();
 
@@ -54,14 +50,14 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                     $"No transcript segments found for session {clinicalSessionId}. " +
                     "Cannot generate a report without a transcript.");
 
-            // ── 2. Format as labelled plain-text ──────────────────────────────
+            // 2. Format as labelled plain-text 
             var transcriptText = FormatTranscript(segments);
 
-            // ── 3. Call Langflow (HTTP delegated to IReportLangflowService) ───
+            // 3. Call Langflow (HTTP delegated to IReportLangflowService) 
             var langflowResult = await _langflowService
                 .AnalyzeTranscriptAsync(transcriptText, clinicalSessionId);
 
-            // ── 4. Persist ────────────────────────────────────────────────────
+            // 4. Persist 
             var report = await PersistAsync(
                 clinicalSessionId, doctorId, patientId, langflowResult);
 
@@ -72,9 +68,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             return ToResponseDto(report, versionNumber: 1, generatedAt: report.CreatedAt);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Retrieval
-        // ─────────────────────────────────────────────────────────────────────
+        //  Retrieval 
 
         /// <inheritdoc/>
         public async Task<SessionReportResponseDto> GetReportAsync(Guid reportId)
@@ -108,9 +102,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                 generatedAt: report.CreatedAt);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Mutation
-        // ─────────────────────────────────────────────────────────────────────
+        // Mutation 
 
         /// <inheritdoc/>
         public async Task<SessionReportResponseDto> UpdateReportAsync(
@@ -126,18 +118,18 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                 throw new InvalidOperationException(
                     $"Report {reportId} is Locked and cannot be edited.");
 
-            // ── Apply non-null SOAP fields ────────────────────────────────────
+            // Apply non-null SOAP fields 
             if (dto.SoapSubjective is not null) report.SoapSubjective = dto.SoapSubjective;
             if (dto.SoapObjective  is not null) report.SoapObjective  = dto.SoapObjective;
             if (dto.SoapAssessment is not null) report.SoapAssessment = dto.SoapAssessment;
             if (dto.SoapPlan       is not null) report.SoapPlan       = dto.SoapPlan;
 
-            // ── Determine next version number ─────────────────────────────────
+            // Determine next version number 
             var latestVersion = await _unitOfWork.SessionReportVersion
                 .GetLatestVersionAsync(reportId);
             var nextVersionNumber = (latestVersion?.VersionNumber ?? 0) + 1;
 
-            // ── Build snapshot JSON from current state ────────────────────────
+            // Build snapshot JSON from current state 
             var snapshotJson = JsonSerializer.Serialize(ToResponseDto(
                 report, nextVersionNumber, report.CreatedAt));
 
@@ -236,9 +228,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                 generatedAt: report.CreatedAt);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
         // Version queries
-        // ─────────────────────────────────────────────────────────────────────
 
         /// <inheritdoc/>
         public async Task<IEnumerable<SessionReportVersionDto>> GetVersionsAsync(Guid reportId)
@@ -278,9 +268,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             return ToVersionDto(version);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
         // Private helpers
-        // ─────────────────────────────────────────────────────────────────────
 
         /// <summary>
         /// Converts ordered <see cref="SessionTranscript"/> segments to the labelled
@@ -323,28 +311,28 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                     PatientId   = patientId,
                     Status      = SessionReportStatus.Draft,
 
-                    // ── Risk ───────────────────────────────────────────────
+                    //  Risk 
                     RiskTier  = ai.RiskAssessment.OverallRiskTier,
                     SiPresent = ai.RiskAssessment.SuicidalIdeationPresent,
                     SuicidalIdeationDetails = ai.RiskAssessment.SuicidalIdeationDetails,
                     RiskNarrative           = ai.RiskAssessment.RiskNarrative,
 
-                    // ── SOAP ───────────────────────────────────────────────
+                    //  SOAP 
                     SoapSubjective = ai.Soap.Subjective,
                     SoapObjective  = ai.Soap.Objective,
                     SoapAssessment = ai.Soap.Assessment,
                     SoapPlan       = ai.Soap.Plan,
 
-                    // ── Chief Complaint ────────────────────────────────────
+                    //  Chief Complaint 
                     ChiefComplaintPrimary  = ai.ChiefComplaint?.PrimaryConcern,
                     ChiefComplaintDuration = ai.ChiefComplaint?.Duration,
 
-                    // ── Differential Considerations (stored as JSON array) ─
+                    //  Differential Considerations (stored as JSON array) 
                     DifferentialConsiderations = ai.ClinicalFormulation?.DifferentialConsiderations is { Count: > 0 } list
                         ? JsonSerializer.Serialize(list)
                         : null,
 
-                    // ── Full AI snapshot for PDF/versioning ────────────────
+                    //  Full AI snapshot for PDF/versioning 
                     ReportJson = result.RawJson
                 };
 
@@ -377,9 +365,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
         // Mappers
-        // ─────────────────────────────────────────────────────────────────────
 
         private static SessionReportResponseDto ToResponseDto(
             SessionReport r, int versionNumber, DateTime generatedAt) => new()
@@ -408,7 +394,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             ChiefComplaintPrimary  = r.ChiefComplaintPrimary,
             ChiefComplaintDuration = r.ChiefComplaintDuration,
 
-            // Differential Considerations — deserialize from stored JSON array string
+            // Differential Considerations - deserialize from stored JSON array string
             DifferentialConsiderations = r.DifferentialConsiderations is not null
                 ? JsonSerializer.Deserialize<List<string>>(r.DifferentialConsiderations)
                 : null,
