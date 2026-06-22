@@ -1365,6 +1365,13 @@ namespace GhaithAI.Migrations
                     b.Property<string>("ApprovedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ChiefComplaintDuration")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ChiefComplaintPrimary")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("ClinicianId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1373,6 +1380,9 @@ namespace GhaithAI.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("DifferentialConsiderations")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -1383,6 +1393,9 @@ namespace GhaithAI.Migrations
 
                     b.Property<string>("ReportJson")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RiskNarrative")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RiskTier")
@@ -1412,6 +1425,9 @@ namespace GhaithAI.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("SuicidalIdeationDetails")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
