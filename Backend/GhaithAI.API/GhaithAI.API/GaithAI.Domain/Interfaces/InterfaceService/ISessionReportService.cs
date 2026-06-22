@@ -3,30 +3,77 @@ using GhaithAI.API.GaithAI.Application.DTOs.Report;
 namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
 {
     /// <summary>
-    /// Orchestrates the end-to-end session report lifecycle:
-    ///   1. Fetches ordered <c>SessionTranscript</c> segments from the DB.
-    ///   2. Formats them as a labelled plain-text transcript.
-    ///   3. Calls the Langflow 3-stage clinical report pipeline.
-    ///   4. Parses the returned JSON (SOAP + risk fields).
-    ///   5. Persists a new <c>SessionReport</c> + <c>SessionReportVersion</c> (v1).
+    /// Orchestrates the full session report lifecycle:
+    ///   Generate → Edit (SOAP) → Approve → Lock.
+    ///
+    /// Business rules enforced here:
+    ///   - Only Draft reports can be Approved.
+    ///   - Locked reports cannot be edited or re-locked.
+    ///   - Every successful edit creates a new <c>SessionReportVersion</c>.
     /// </summary>
     public interface ISessionReportService
     {
+        // ─────────────────────────────────────────────────────────────────────
+        // Generation
+        // ─────────────────────────────────────────────────────────────────────
+
         /// <summary>
         /// Generate a clinical report for the specified ClinicalSession.
         /// Creates a <c>SessionReport</c> in Draft status with Version 1.
         /// </summary>
-        /// <param name="clinicalSessionId">The ID of the completed ClinicalSession.</param>
-        /// <param name="doctorId">The ID of the clinician requesting the report.</param>
-        /// <param name="patientId">The string ID of the patient.</param>
-        /// <returns>The generated report details.</returns>
         Task<SessionReportResponseDto> GenerateReportAsync(
             Guid clinicalSessionId,
             Guid doctorId,
             string patientId);
 
+        // ─────────────────────────────────────────────────────────────────────
+        // Retrieval
+        // ─────────────────────────────────────────────────────────────────────
+
         /// <summary>
-        /// Retrieve all versions of a session report, ordered by version number.
+        /// Retrieve the current state of a report by its own ID.
+        /// Throws <see cref="KeyNotFoundException"/> if not found.
+        /// </summary>
+        Task<SessionReportResponseDto> GetReportAsync(Guid reportId);
+
+        /// <summary>
+        /// Retrieve the report generated for a specific ClinicalSession.
+        /// Throws <see cref="KeyNotFoundException"/> if no report exists for the session.
+        /// </summary>
+        Task<SessionReportResponseDto> GetReportBySessionAsync(Guid sessionId);
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Mutation
+        // ─────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Update the editable SOAP fields of a report and persist a new version.
+        /// Throws <see cref="InvalidOperationException"/> if the report is Locked.
+        /// </summary>
+        Task<SessionReportResponseDto> UpdateReportAsync(
+            Guid reportId,
+            Guid doctorId,
+            UpdateReportDto dto);
+
+        /// <summary>
+        /// Approve a Draft report (Draft → Approved).
+        /// Throws <see cref="InvalidOperationException"/> if the report is not in Draft status.
+        /// </summary>
+        Task<SessionReportResponseDto> ApproveReportAsync(Guid reportId, Guid doctorId);
+
+        /// <summary>
+        /// Lock a report permanently (Draft/Approved → Locked).
+        /// Once Locked the report becomes read-only.
+        /// Throws <see cref="InvalidOperationException"/> if the report is already Locked.
+        /// </summary>
+        Task<SessionReportResponseDto> LockReportAsync(Guid reportId, Guid doctorId);
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Versioning
+        // ─────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Retrieve all versions of a session report, ordered newest-first.
         /// </summary>
         Task<IEnumerable<SessionReportVersionDto>> GetVersionsAsync(Guid reportId);
 
@@ -37,3 +84,4 @@ namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
         Task<SessionReportVersionDto> GetVersionAsync(Guid reportId, int? versionNumber = null);
     }
 }
+
