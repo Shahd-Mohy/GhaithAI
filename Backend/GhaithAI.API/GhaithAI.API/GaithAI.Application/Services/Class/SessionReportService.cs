@@ -8,15 +8,13 @@ using System.Text.Json;
 namespace GhaithAI.API.GaithAI.Application.Services.Class
 {
     /// <summary>
-    /// Orchestrates session report generation and manages persistence.
+    /// Orchestrates the full session report lifecycle:
+    ///   Generate → Retrieve → Edit (SOAP) → Approve → Lock.
     ///
-    /// Responsibilities:
-    ///   1. Fetch ordered transcript segments from the database.
-    ///   2. Format them as labelled plain-text for the AI pipeline.
-    ///   3. Delegate the Langflow call to <see cref="IReportLangflowService"/>.
-    ///   4. Persist the result as <c>SessionReport</c> + <c>SessionReportVersion</c> (v1).
-    ///
-    /// Has no HTTP or JSON-parsing logic — that is owned by <see cref="IReportLangflowService"/>.
+    /// Enforced business rules:
+    ///   - Only Draft reports can be Approved.
+    ///   - Locked reports cannot be edited or re-locked.
+    ///   - Every successful edit creates a new <c>SessionReportVersion</c>.
     /// </summary>
     public sealed class SessionReportService : ISessionReportService
     {
@@ -75,6 +73,170 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
         }
 
         // ─────────────────────────────────────────────────────────────────────
+        // Retrieval
+        // ─────────────────────────────────────────────────────────────────────
+
+        /// <inheritdoc/>
+        public async Task<SessionReportResponseDto> GetReportAsync(Guid reportId)
+        {
+            var report = await _unitOfWork.SessionReport.GetByIdAsync(reportId)
+                ?? throw new KeyNotFoundException(
+                    $"Session report {reportId} not found.");
+
+            var latestVersion = await _unitOfWork.SessionReportVersion
+                .GetLatestVersionAsync(reportId);
+
+            return ToResponseDto(
+                report,
+                versionNumber: latestVersion?.VersionNumber ?? 1,
+                generatedAt: report.CreatedAt);
+        }
+
+        /// <inheritdoc/>
+        public async Task<SessionReportResponseDto> GetReportBySessionAsync(Guid sessionId)
+        {
+            var report = await _unitOfWork.SessionReport.GetBySessionIdAsync(sessionId)
+                ?? throw new KeyNotFoundException(
+                    $"No session report found for session {sessionId}.");
+
+            var latestVersion = await _unitOfWork.SessionReportVersion
+                .GetLatestVersionAsync(report.Id);
+
+            return ToResponseDto(
+                report,
+                versionNumber: latestVersion?.VersionNumber ?? 1,
+                generatedAt: report.CreatedAt);
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Mutation
+        // ─────────────────────────────────────────────────────────────────────
+
+        /// <inheritdoc/>
+        public async Task<SessionReportResponseDto> UpdateReportAsync(
+            Guid reportId,
+            Guid doctorId,
+            UpdateReportDto dto)
+        {
+            var report = await _unitOfWork.SessionReport.GetByIdAsync(reportId)
+                ?? throw new KeyNotFoundException(
+                    $"Session report {reportId} not found.");
+
+            if (report.Status == SessionReportStatus.Locked)
+                throw new InvalidOperationException(
+                    $"Report {reportId} is Locked and cannot be edited.");
+
+            // ── Apply non-null SOAP fields ────────────────────────────────────
+            if (dto.SoapSubjective is not null) report.SoapSubjective = dto.SoapSubjective;
+            if (dto.SoapObjective  is not null) report.SoapObjective  = dto.SoapObjective;
+            if (dto.SoapAssessment is not null) report.SoapAssessment = dto.SoapAssessment;
+            if (dto.SoapPlan       is not null) report.SoapPlan       = dto.SoapPlan;
+
+            // ── Determine next version number ─────────────────────────────────
+            var latestVersion = await _unitOfWork.SessionReportVersion
+                .GetLatestVersionAsync(reportId);
+            var nextVersionNumber = (latestVersion?.VersionNumber ?? 0) + 1;
+
+            // ── Build snapshot JSON from current state ────────────────────────
+            var snapshotJson = JsonSerializer.Serialize(ToResponseDto(
+                report, nextVersionNumber, report.CreatedAt));
+
+            await using var tx = await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                _unitOfWork.SessionReport.Update(report);
+
+                var version = new SessionReportVersion
+                {
+                    Id              = Guid.NewGuid(),
+                    SessionReportId = report.Id,
+                    VersionNumber   = nextVersionNumber,
+                    SnapshotJson    = snapshotJson,
+                    ChangeNote      = dto.ChangeNote ?? $"Doctor edit — version {nextVersionNumber}",
+                    CreatedBy       = doctorId.ToString()
+                };
+
+                await _unitOfWork.SessionReportVersion.AddAsync(version);
+                await _unitOfWork.CompleteAsync();
+                await tx.CommitAsync();
+
+                _logger.LogInformation(
+                    "Report {ReportId} updated — new version {VersionNumber} committed",
+                    reportId, nextVersionNumber);
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+
+            return ToResponseDto(report, nextVersionNumber, report.CreatedAt);
+        }
+
+        /// <inheritdoc/>
+        public async Task<SessionReportResponseDto> ApproveReportAsync(
+            Guid reportId,
+            Guid doctorId)
+        {
+            var report = await _unitOfWork.SessionReport.GetByIdAsync(reportId)
+                ?? throw new KeyNotFoundException(
+                    $"Session report {reportId} not found.");
+
+            if (report.Status != SessionReportStatus.Draft)
+                throw new InvalidOperationException(
+                    $"Report {reportId} cannot be approved — current status is '{report.Status}'. " +
+                    "Only Draft reports can be approved.");
+
+            report.Status     = SessionReportStatus.Approved;
+            report.ApprovedAt = DateTime.UtcNow;
+            report.ApprovedBy = doctorId.ToString();
+
+            _unitOfWork.SessionReport.Update(report);
+            await _unitOfWork.CompleteAsync();
+
+            _logger.LogInformation(
+                "Report {ReportId} approved by doctor {DoctorId}", reportId, doctorId);
+
+            var latestVersion = await _unitOfWork.SessionReportVersion
+                .GetLatestVersionAsync(reportId);
+
+            return ToResponseDto(
+                report,
+                versionNumber: latestVersion?.VersionNumber ?? 1,
+                generatedAt: report.CreatedAt);
+        }
+
+        /// <inheritdoc/>
+        public async Task<SessionReportResponseDto> LockReportAsync(
+            Guid reportId,
+            Guid doctorId)
+        {
+            var report = await _unitOfWork.SessionReport.GetByIdAsync(reportId)
+                ?? throw new KeyNotFoundException(
+                    $"Session report {reportId} not found.");
+
+            if (report.Status == SessionReportStatus.Locked)
+                throw new InvalidOperationException(
+                    $"Report {reportId} is already Locked.");
+
+            report.Status = SessionReportStatus.Locked;
+
+            _unitOfWork.SessionReport.Update(report);
+            await _unitOfWork.CompleteAsync();
+
+            _logger.LogInformation(
+                "Report {ReportId} locked by doctor {DoctorId}", reportId, doctorId);
+
+            var latestVersion = await _unitOfWork.SessionReportVersion
+                .GetLatestVersionAsync(reportId);
+
+            return ToResponseDto(
+                report,
+                versionNumber: latestVersion?.VersionNumber ?? 1,
+                generatedAt: report.CreatedAt);
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
         // Version queries
         // ─────────────────────────────────────────────────────────────────────
 
@@ -96,7 +258,6 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
 
             if (versionNumber.HasValue)
             {
-                // Specific version requested
                 version = await _unitOfWork.SessionReportVersion
                     .GetVersionAsync(reportId, versionNumber.Value);
 
@@ -106,7 +267,6 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             }
             else
             {
-                // No version specified → return latest
                 version = await _unitOfWork.SessionReportVersion
                     .GetLatestVersionAsync(reportId);
 
@@ -224,9 +384,13 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
         private static SessionReportResponseDto ToResponseDto(
             SessionReport r, int versionNumber, DateTime generatedAt) => new()
         {
-            ReportId       = r.Id,
-            SessionId      = r.SessionId,
-            Status         = r.Status.ToString(),
+            ReportId    = r.Id,
+            SessionId   = r.SessionId,
+            Status      = r.Status.ToString(),
+
+            // Ownership
+            ClinicianId = r.ClinicianId,
+            PatientId   = r.PatientId,
 
             // Risk
             RiskTier                = r.RiskTier,
@@ -234,7 +398,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             SuicidalIdeationDetails = r.SuicidalIdeationDetails,
             RiskNarrative           = r.RiskNarrative,
 
-            // SOAP (editable by doctor)
+            // SOAP
             SoapSubjective = r.SoapSubjective,
             SoapObjective  = r.SoapObjective,
             SoapAssessment = r.SoapAssessment,
@@ -248,6 +412,10 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             DifferentialConsiderations = r.DifferentialConsiderations is not null
                 ? JsonSerializer.Deserialize<List<string>>(r.DifferentialConsiderations)
                 : null,
+
+            // Approval
+            ApprovedAt = r.ApprovedAt,
+            ApprovedBy = r.ApprovedBy,
 
             // Metadata
             VersionNumber = versionNumber,
@@ -265,4 +433,3 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
         };
     }
 }
-
