@@ -1,0 +1,46 @@
+<div class="session-room">
+
+  <audio #remoteAudio autoplay style="display:none"></audio>
+
+  <div class="status-bar">
+    <span class="status-badge" [ngClass]="state">{{ state }}</span>
+    <span *ngIf="state === 'InCall'" class="duration">{{ callDurationDisplay }}</span>
+  </div>
+
+  <div class="error-box" *ngIf="state === 'Error'">
+    <p>{{ errorMessage }}</p>
+    <button class="btn-outline" (click)="state = 'Idle'">Dismiss</button>
+  </div>
+
+  <div class="idle-panel" *ngIf="state === 'Idle'">
+    <p>Ready to start the session for this booking.</p>
+    <button class="btn-primary" (click)="startCall()">Start Call</button>
+  </div>
+
+  <div class="connecting-panel" *ngIf="state === 'Connecting'">
+    <p>Connecting…</p>
+  </div>
+
+  <div class="in-call-panel" *ngIf="state === 'InCall'">
+    <p>Session in progress. Recording is active.</p>
+    <button class="btn-danger" (click)="endSession()">End Session</button>
+  </div>
+
+  <div class="ending-panel" *ngIf="state === 'Ending'">
+    <p>Closing the call…</p>
+  </div>
+
+  <div class="uploading-panel" *ngIf="state === 'Uploading'">
+    <p>Uploading recording…</p>
+  </div>
+
+  <div class="processing-panel" *ngIf="state === 'Processing'">
+    <p>Transcribing the session. This may take a few minutes.</p>
+  </div>
+
+  <div class="reviewable-panel" *ngIf="state === 'Reviewable'">
+    <p>Transcript is ready for review.</p>
+    <button class="btn-primary" (click)="goToTranscriptReview()">Review Transcript</button>
+  </div>
+
+</div>

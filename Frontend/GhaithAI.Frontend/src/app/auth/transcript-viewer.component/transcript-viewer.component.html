@@ -1,0 +1,48 @@
+<div class="transcript-viewer">
+
+  <h2>Session Transcript</h2>
+
+  <div class="error-box" *ngIf="errorMessage">
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <div class="loading-box" *ngIf="loading">
+    <p>Loading transcript…</p>
+  </div>
+
+  <div class="segments-list" *ngIf="!loading && segments.length">
+    <div class="segment" *ngFor="let segment of segments" [ngClass]="segment.speaker.toLowerCase()">
+
+      <div class="segment-meta">
+        <span class="speaker-badge" [ngClass]="segment.speaker.toLowerCase()">{{ segment.speaker }}</span>
+        <span class="timestamp">{{ formatTime(segment.startMs) }} – {{ formatTime(segment.endMs) }}</span>
+        <span class="edited-badge" *ngIf="segment.isEdited">Edited</span>
+      </div>
+
+      <div class="segment-content" *ngIf="editingSegmentId !== segment.id">
+        <p>{{ segment.content }}</p>
+        <button class="btn-text" (click)="startEdit(segment)">Edit</button>
+      </div>
+
+      <div class="segment-edit" *ngIf="editingSegmentId === segment.id">
+        <textarea [(ngModel)]="draftContent" rows="3"></textarea>
+        <div class="edit-actions">
+          <button class="btn-outline" (click)="cancelEdit()" [disabled]="saving">Cancel</button>
+          <button class="btn-primary" (click)="saveEdit(segment)" [disabled]="saving">
+            {{ saving ? 'Saving…' : 'Save' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && !segments.length">
+    <p>No transcript segments found for this session.</p>
+  </div>
+
+  <div class="footer-actions" *ngIf="!loading && segments.length">
+    <button class="btn-primary" (click)="proceedToReport()">Generate Report</button>
+  </div>
+
+</div>

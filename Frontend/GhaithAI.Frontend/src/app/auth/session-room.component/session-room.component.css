@@ -1,0 +1,261 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+:host { display: block; font-family: 'Sora', sans-serif; }
+
+/* ─── LAYOUT ─── */
+.session-room {
+  min-height: 100vh;
+  background: #0D1B3E;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  gap: 24px;
+}
+
+/* ─── STATUS BAR ─── */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  padding: 8px 20px;
+  backdrop-filter: blur(10px);
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+
+/* Badge colors per state */
+.status-badge.Idle        { background: rgba(100,116,139,0.2); color: #94A3B8; }
+.status-badge.Connecting  { background: rgba(245,158,11,0.15); color: #F59E0B; }
+.status-badge.InCall      { background: rgba(5,150,105,0.15);  color: #10B981; }
+.status-badge.Ending      { background: rgba(245,158,11,0.15); color: #F59E0B; }
+.status-badge.Uploading   { background: rgba(99,102,241,0.15); color: #818CF8; }
+.status-badge.Processing  { background: rgba(99,102,241,0.15); color: #818CF8; }
+.status-badge.Reviewable  { background: rgba(11,143,172,0.2);  color: #0B8FAC; }
+.status-badge.Error       { background: rgba(220,38,38,0.15);  color: #F87171; }
+
+.duration {
+  font-size: 14px;
+  font-weight: 700;
+  color: #10B981;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── PANELS ─── */
+.idle-panel,
+.connecting-panel,
+.in-call-panel,
+.ending-panel,
+.uploading-panel,
+.processing-panel,
+.reviewable-panel,
+.error-box {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 48px 56px;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Panel text */
+.idle-panel p,
+.connecting-panel p,
+.in-call-panel p,
+.ending-panel p,
+.uploading-panel p,
+.processing-panel p,
+.reviewable-panel p {
+  font-size: 16px;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ─── IDLE PANEL ─── */
+.idle-panel::before {
+  content: '🎙️';
+  font-size: 48px;
+}
+
+/* ─── CONNECTING ─── */
+.connecting-panel::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(245,158,11,0.2);
+  border-top-color: #F59E0B;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ─── IN CALL ─── */
+.in-call-panel {
+  border-color: rgba(16,185,129,0.2);
+  background: rgba(16,185,129,0.04);
+}
+
+.in-call-panel::before {
+  content: '';
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: #10B981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(16,185,129,0.4);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  70%  { box-shadow: 0 0 0 12px rgba(16,185,129,0); }
+  100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+}
+
+/* ─── ENDING / UPLOADING / PROCESSING ─── */
+.ending-panel::before,
+.uploading-panel::before,
+.processing-panel::before {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(99,102,241,0.2);
+  border-top-color: #818CF8;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ─── REVIEWABLE ─── */
+.reviewable-panel {
+  border-color: rgba(11,143,172,0.2);
+  background: rgba(11,143,172,0.04);
+}
+
+.reviewable-panel::before {
+  content: '✅';
+  font-size: 40px;
+}
+
+/* ─── ERROR ─── */
+.error-box {
+  border-color: rgba(220,38,38,0.2);
+  background: rgba(220,38,38,0.05);
+}
+
+.error-box::before {
+  content: '⚠️';
+  font-size: 40px;
+}
+
+.error-box p {
+  font-size: 14px;
+  color: #FCA5A5;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ─── BUTTONS ─── */
+.btn-primary {
+  padding: 13px 32px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Sora', sans-serif;
+  color: white;
+  background: #0B8FAC;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background: #076E86;
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  padding: 13px 32px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Sora', sans-serif;
+  color: white;
+  background: #DC2626;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-danger:hover {
+  background: #B91C1C;
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  padding: 10px 24px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Sora', sans-serif;
+  color: #FCA5A5;
+  background: transparent;
+  border: 1px solid rgba(220,38,38,0.3);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  background: rgba(220,38,38,0.1);
+}
+
+/* ─── SPINNER ─── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 600px) {
+  .session-room { padding: 16px; }
+  .idle-panel,
+  .connecting-panel,
+  .in-call-panel,
+  .ending-panel,
+  .uploading-panel,
+  .processing-panel,
+  .reviewable-panel,
+  .error-box { padding: 32px 24px; }
+}
