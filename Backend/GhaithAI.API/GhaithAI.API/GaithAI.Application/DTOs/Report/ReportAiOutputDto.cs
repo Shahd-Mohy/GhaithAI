@@ -21,10 +21,10 @@ namespace GhaithAI.API.GaithAI.Application.DTOs.Report
         public ReportMetaDto? Meta { get; set; }
 
         [JsonPropertyName("chiefComplaint")]
-        public object? ChiefComplaint { get; set; }
+        public ReportChiefComplaintDto? ChiefComplaint { get; set; }
 
         [JsonPropertyName("clinicalFormulation")]
-        public object? ClinicalFormulation { get; set; }
+        public ReportClinicalFormulationDto? ClinicalFormulation { get; set; }
 
         [JsonPropertyName("extractionWarnings")]
         public List<string>? ExtractionWarnings { get; set; }
@@ -64,6 +64,37 @@ namespace GhaithAI.API.GaithAI.Application.DTOs.Report
 
         [JsonPropertyName("riskNarrative")]
         public string? RiskNarrative { get; set; }
+    }
+
+    /// <summary>
+    /// Chief complaint section — extracted from the AI pipeline.
+    /// Contains the patient's primary concern and episode duration.
+    /// </summary>
+    public sealed class ReportChiefComplaintDto
+    {
+        [JsonPropertyName("primaryConcern")]
+        public string? PrimaryConcern { get; set; }
+
+        [JsonPropertyName("duration")]
+        public string? Duration { get; set; }
+
+        [JsonPropertyName("episodeType")]
+        public string? EpisodeType { get; set; }
+
+        [JsonPropertyName("secondaryComplaints")]
+        public string? SecondaryComplaints { get; set; }
+    }
+
+    /// <summary>
+    /// Clinical formulation section — contains differential diagnosis suggestions.
+    /// </summary>
+    public sealed class ReportClinicalFormulationDto
+    {
+        [JsonPropertyName("formulationNarrative")]
+        public string? FormulationNarrative { get; set; }
+
+        [JsonPropertyName("differentialConsiderations")]
+        public List<string>? DifferentialConsiderations { get; set; }
     }
 
     /// <summary>Optional metadata block returned by the AI.</summary>
