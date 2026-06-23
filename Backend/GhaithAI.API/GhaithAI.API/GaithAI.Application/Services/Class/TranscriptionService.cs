@@ -110,7 +110,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             {
                 audio_url = audioUrl,
                 speaker_labels = true,
-                language_code = "en",
+                language_code = "ar",
                 punctuate = true,
                 format_text = true
             });

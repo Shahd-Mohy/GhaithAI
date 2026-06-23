@@ -1,6 +1,5 @@
 <div class="session-room">
-
-  <audio #remoteAudio autoplay style="display:none"></audio>
+  <audio #remoteAudio autoplay style="display: none"></audio>
 
   <div class="status-bar">
     <span class="status-badge" [ngClass]="state">{{ state }}</span>
@@ -9,6 +8,7 @@
 
   <div class="error-box" *ngIf="state === 'Error'">
     <p>{{ errorMessage }}</p>
+    <p class="error-detail" *ngIf="errorDetail">{{ errorDetail }}</p>
     <button class="btn-outline" (click)="state = 'Idle'">Dismiss</button>
   </div>
 
@@ -42,5 +42,4 @@
     <p>Transcript is ready for review.</p>
     <button class="btn-primary" (click)="goToTranscriptReview()">Review Transcript</button>
   </div>
-
 </div>
