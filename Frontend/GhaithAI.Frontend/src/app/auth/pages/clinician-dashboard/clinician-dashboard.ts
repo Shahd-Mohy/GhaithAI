@@ -12,6 +12,7 @@ import { DoctorScheduleComponent } from './components/doctor-schedule/doctor-sch
 import { ClinicPatientsComponent } from './components/clinic-patients/clinic-patients';
 import { PatientsList } from './doctorPatiant/patients-list/patients-list';
 import { ScheduleService } from './services/schedule';
+import { SessionRoomComponent } from '../../session-room.component/session-room.component';
 // ── Interfaces ─────────────────────────────────────────────────────────────
 
 interface ClinicianInfo {
@@ -29,6 +30,7 @@ interface StatCard {
 }
 
 interface ScheduleSession {
+  bookingId: string;
   initials: string;
   name: string;
   type: string;
@@ -48,7 +50,7 @@ interface RiskAlert {
 @Component({
   selector: 'app-clinician-dashboard',
   standalone: true,
-  imports: [CommonModule, MyClinicComponent, DoctorScheduleComponent, ClinicPatientsComponent, PatientsList],
+  imports: [CommonModule, MyClinicComponent, DoctorScheduleComponent, ClinicPatientsComponent, PatientsList, SessionRoomComponent],
   templateUrl: './clinician-dashboard.html',
   styleUrls: ['./clinician-dashboard.css']
 })
@@ -65,6 +67,7 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
   isLoading = true;
   showUserMenu = false;
   sidebarOpen = false;   // ← controls off-canvas drawer on mobile
+  selectedBookingId = '';  // ← set when doctor clicks Start on a session
 
   clinician: ClinicianInfo = {
     name: 'Clinician',
@@ -126,6 +129,7 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
         next: (data) => {
 
           this.todaySchedule = data.map(item => ({
+            bookingId: item.bookingId,
             initials: item.patientName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
             name: item.patientName,
             type: item.sessionType,
@@ -217,6 +221,7 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
   }
 
   startSession(patient: ScheduleSession): void {
-    console.log('Starting session with', patient.name);
+    this.selectedBookingId = patient.bookingId;
+    this.activePage = 'sessions';
   }
 }

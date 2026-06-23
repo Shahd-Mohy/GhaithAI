@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface RtcOfferMessage {
   sessionId: string;
@@ -22,14 +23,16 @@ export class SessionSignalrService {
 
   private hubConnection: signalR.HubConnection | null = null;
 
-  // الفرونت إند بيستمع على الـ Subjects دي — مش بيتعامل مع الـ hub مباشرة
   readonly offerReceived$ = new Subject<RtcOfferMessage>();
   readonly answerReceived$ = new Subject<RtcAnswerMessage>();
   readonly iceCandidateReceived$ = new Subject<RtcIceCandidateMessage>();
 
   async connect(sessionId: string, accessToken: string): Promise<void> {
+    // Use the full backend base URL — relative paths go to Angular dev server (4200), not backend (53898)
+    const hubUrl = `${environment.apiUrl.replace('/api', '')}/hubs/session?sessionId=${sessionId}`;
+
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`/hubs/session?sessionId=${sessionId}`, {
+      .withUrl(hubUrl, {
         accessTokenFactory: () => accessToken
       })
       .withAutomaticReconnect()

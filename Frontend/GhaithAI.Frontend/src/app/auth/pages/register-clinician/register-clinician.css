@@ -2,6 +2,7 @@
 
 :host { display: block; font-family: 'Sora', sans-serif; font-size: 14px; }
 
+/* ─── LAYOUT ─── */
 .page { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
 
 /* ─── LEFT ─── */
@@ -43,6 +44,7 @@
   background: rgba(255,255,255,0.2);
   border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 
 .logo-icon svg { width: 18px; height: 18px; fill: white; }
@@ -97,7 +99,7 @@
 .progress { display: flex; gap: 6px; margin-bottom: 22px; }
 .prog-step { height: 4px; flex: 1; border-radius: 100px; background: #E2ECF0; transition: background 0.35s; }
 .prog-step.active { background: #7C3AED; }
-.prog-step.done { background: #7C3AED; }
+.prog-step.done   { background: #7C3AED; }
 
 /* ─── STEP HEADER ─── */
 .step-header { margin-bottom: 22px; }
@@ -107,13 +109,12 @@
 /* ─── CLINICIAN BADGE ─── */
 .clinician-badge {
   display: flex; align-items: center; gap: 8px;
-  background: rgba(124, 58, 237, 0.08);
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  background: rgba(124,58,237,0.08);
+  border: 1px solid rgba(124,58,237,0.2);
   border-radius: 9px; padding: 9px 13px;
   font-size: 13px; font-weight: 500; color: #6D28D9;
   margin-bottom: 18px;
 }
-
 .clinician-badge svg { width: 15px; height: 15px; stroke: #6D28D9; }
 
 /* ─── BACK BTN ─── */
@@ -159,7 +160,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   border-color: #7C3AED;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
 }
 
 .form-group input.is-error,
@@ -177,12 +178,12 @@
 /* ─── PASSWORD ─── */
 .input-wrap { position: relative; }
 .input-wrap input { padding-right: 40px; }
+
 .eye-btn {
   position: absolute; right: 11px; top: 50%;
   transform: translateY(-50%);
   background: none; border: none; cursor: pointer;
-  color: #64748B; padding: 3px;
-  display: flex; align-items: center;
+  color: #64748B; padding: 3px; display: flex; align-items: center;
 }
 .eye-btn svg { width: 16px; height: 16px; }
 
@@ -193,7 +194,6 @@
   text-align: center; margin-bottom: 14px;
   transition: border-color 0.2s, background 0.2s;
 }
-
 .upload-area:hover { border-color: #7C3AED; background: rgba(124,58,237,0.02); }
 .upload-area.has-file { border-style: solid; border-color: #7C3AED; background: rgba(124,58,237,0.04); }
 .upload-area.is-error { border-color: #DC2626; }
@@ -206,34 +206,25 @@
   border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
 }
-
 .upload-icon svg { width: 22px; height: 22px; stroke: #7C3AED; }
+
 .upload-title { font-size: 14px; font-weight: 600; color: #7C3AED; }
 .upload-sub { font-size: 12px; color: #94A3B8; }
 
-.file-preview {
-  display: flex; align-items: center; gap: 12px;
-  text-align: left;
-}
+.file-preview { display: flex; align-items: center; gap: 12px; text-align: left; }
 
 .file-icon {
   width: 40px; height: 40px;
-  background: rgba(124,58,237,0.1);
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  background: rgba(124,58,237,0.1); border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-
 .file-icon svg { width: 20px; height: 20px; stroke: #7C3AED; }
+
 .file-info { flex: 1; overflow: hidden; }
 .file-name { display: block; font-size: 13px; font-weight: 500; color: #0D1B3E; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .file-size { font-size: 11px; color: #64748B; }
 
-.file-remove {
-  background: none; border: none; cursor: pointer;
-  color: #DC2626; padding: 4px;
-  display: flex; align-items: center;
-}
+.file-remove { background: none; border: none; cursor: pointer; color: #DC2626; padding: 4px; display: flex; align-items: center; }
 .file-remove svg { width: 16px; height: 16px; }
 
 /* ─── INFO NOTE ─── */
@@ -243,7 +234,7 @@
   margin-bottom: 18px; padding: 9px 13px;
   background: #F4F9FB; border-radius: 7px;
 }
-.info-note svg { width: 15px; height: 15px; stroke: #0B8FAC; flex-shrink: 0; margin-top: 1px; }
+.info-note svg { width: 15px; height: 15px; stroke: #7C3AED; flex-shrink: 0; margin-top: 1px; }
 
 /* ─── API ERROR ─── */
 .api-error {
@@ -255,9 +246,7 @@
 .api-error svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 /* ─── CHECKBOX ─── */
-.checkbox-row {
-  display: flex; align-items: flex-start; gap: 9px; margin-bottom: 16px;
-}
+.checkbox-row { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 16px; }
 .checkbox-row input[type="checkbox"] {
   width: 15px; height: 15px; margin-top: 2px;
   accent-color: #7C3AED; cursor: pointer; flex-shrink: 0;
@@ -286,6 +275,7 @@
 
 /* ─── SUCCESS ─── */
 .success-panel { text-align: center; padding: 40px 20px; }
+
 .success-icon {
   width: 64px; height: 64px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
@@ -293,6 +283,7 @@
 }
 .success-icon.pending { background: rgba(245,158,11,0.1); }
 .success-icon.pending svg { width: 32px; height: 32px; stroke: #D97706; }
+
 .success-panel h2 { font-size: 22px; font-weight: 800; color: #0D1B3E; margin-bottom: 9px; }
 .success-panel p { font-size: 14px; color: #4A5568; line-height: 1.65; margin-bottom: 26px; }
 
@@ -315,3 +306,6 @@
   .right { padding: 28px 20px; min-height: auto; }
   .form-row { grid-template-columns: 1fr; }
 }
+
+/* ─── SPIN ─── */
+@keyframes spin { to { transform: rotate(360deg); } }

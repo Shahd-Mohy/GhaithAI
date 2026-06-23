@@ -360,10 +360,8 @@
     </div>
     }
     @if (activePage === 'sessions') {
-    <div class="scroll-area coming-soon">
-      <div class="coming-soon-icon">🎙️</div>
-      <h2>Sessions</h2>
-      <p>Session management coming soon.</p>
+    <div class="scroll-area">
+      <app-session-room [bookingId]="selectedBookingId"></app-session-room>
     </div>
     }
     @if (activePage === 'notes') {

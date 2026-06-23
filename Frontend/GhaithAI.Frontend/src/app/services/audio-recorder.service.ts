@@ -22,22 +22,28 @@ export class AudioRecorderService {
   }
 
   stop(): Promise<Blob> {
-    return new Promise((resolve, reject) => {
-      if (!this.recorder) {
-        reject(new Error('Recorder was never started.'));
-        return;
-      }
+  return new Promise((resolve, reject) => {
+    if (!this.recorder) {
+      // recorder was never started — return empty blob instead of hanging
+      resolve(new Blob([], { type: 'audio/webm' }));
+      return;
+    }
 
-      this.recorder.onstop = () => {
-        const blob = new Blob(this.chunks, { type: 'audio/webm' });
-        this.chunks = [];
-        this.recorder = null;
-        resolve(blob);
-      };
+    const timeout = setTimeout(() => {
+      resolve(new Blob(this.chunks, { type: 'audio/webm' }));
+    }, 3000); // 3s safety net
 
-      this.recorder.stop();
-    });
-  }
+    this.recorder.onstop = () => {
+      clearTimeout(timeout);
+      const blob = new Blob(this.chunks, { type: 'audio/webm' });
+      this.chunks = [];
+      this.recorder = null;
+      resolve(blob);
+    };
+
+    this.recorder.stop();
+  });
+}
 
   get isRecording(): boolean {
     return this.recorder?.state === 'recording';

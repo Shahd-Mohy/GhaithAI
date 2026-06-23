@@ -8,7 +8,7 @@ export type SessionTypeEnum = 'Online' | 'Offline' | 'both';
 export type DaysOfWeek = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
 
 export interface SpecialtyItem { id: string; name: string; }
-export interface LanguageItem { id: string; name: string; }
+export interface LanguageItem { id: string; name: string; } 
 
 export interface DefaultScheduleDto {
     id?: string;
