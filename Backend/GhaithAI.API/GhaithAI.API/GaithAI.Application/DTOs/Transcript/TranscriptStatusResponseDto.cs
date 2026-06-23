@@ -1,8 +1,5 @@
-﻿namespace GhaithAI.GaithAI.Application.DTOs.Transcript
+﻿public class TranscriptStatusResponseDto
 {
-    public class TranscriptStatusResponseDto
-    {
-        public Guid SessionId { get; set; }
-        public string TranscriptionStatus { get; set; }
-    }
+    public Guid SessionId { get; set; }
+    public string Status { get; set; } = "NotStarted";  
 }

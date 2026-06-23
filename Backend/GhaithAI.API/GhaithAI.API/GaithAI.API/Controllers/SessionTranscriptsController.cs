@@ -19,14 +19,14 @@ namespace GhaithAI.GaithAI.API.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> UploadAudio(
             [FromRoute] Guid sessionId,
-            [FromForm] IFormFile audioFile)
+            [FromForm] UploadAudioDto dto)
         {
-            if (audioFile == null || audioFile.Length == 0)
+            if (dto.AudioFile == null || dto.AudioFile.Length == 0)
                 return BadRequest(new { message = "Audio file is required." });
 
             try
             {
-                await _transcriptService.UploadAndTriggerAsync(sessionId, audioFile);
+                await _transcriptService.UploadAndTriggerAsync(sessionId, dto.AudioFile);
                 return StatusCode(202, new { message = "Audio received. Transcription is processing in the background." });
             }
             catch (KeyNotFoundException ex)

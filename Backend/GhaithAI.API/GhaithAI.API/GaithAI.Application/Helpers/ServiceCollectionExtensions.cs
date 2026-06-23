@@ -1,5 +1,4 @@
-
-global using GhaithAI.API.GaithAI.Application.Services.Class;
+﻿global using GhaithAI.API.GaithAI.Application.Services.Class;
 global using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository;
 global using GhaithAI.API.GaithAI.Infrastructure.Repositories.Class;
 global using GhaithAI.API.Repositories.Class;
@@ -70,7 +69,14 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<ITranscriptAggregationService, TranscriptAggregationService>();
             services.AddScoped<IClinicalSessionService, ClinicalSessionService>();
             services.AddScoped<ISessionNoteService, SessionNoteService>();
-            services.AddHttpClient<ITranscriptionService, TranscriptionService>();
+
+            // ── AssemblyAI HttpClient ──
+            services.AddHttpClient<ITranscriptionService, TranscriptionService>(client =>
+            {
+                client.BaseAddress = new Uri("https://api.assemblyai.com/");
+                client.Timeout = TimeSpan.FromMinutes(10);
+            });
+
             services.AddScoped<ISessionTranscriptService, SessionTranscriptService>();
             services.AddScoped<ISessionReportService, SessionReportService>();
 
