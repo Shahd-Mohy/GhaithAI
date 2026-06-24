@@ -147,6 +147,14 @@ export const routes: Routes = [
     import('./auth/payment-mock/payment-mock')
       .then(m => m.PaymentMockComponent)
 },
+
+{
+  path: 'payment/success',
+  canActivate: [authGuard],
+  loadComponent: () =>
+    import('./auth/payment-success.component/payment-success.component')
+      .then(m => m.PaymentSuccessComponent)
+},
 {
   path: 'payment/cancel',
   redirectTo: '/dashboard'
