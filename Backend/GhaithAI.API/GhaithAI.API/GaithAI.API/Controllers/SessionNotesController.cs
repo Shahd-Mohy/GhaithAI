@@ -3,6 +3,7 @@ using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace GhaithAI.GaithAI.API.Controllers
 {
@@ -45,6 +46,28 @@ namespace GhaithAI.GaithAI.API.Controllers
             {
                 var notes = await _noteService.GetNotesBySessionAsync(sessionId);
                 return Ok(notes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
+        }
+
+        [HttpGet("/api/sessions/notes/mine")]
+        public async Task<IActionResult> GetMyNotes()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new { message = "Invalid user." });
+
+                var notes = await _noteService.GetNotesByDoctorAsync(userId);
+                return Ok(notes);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
