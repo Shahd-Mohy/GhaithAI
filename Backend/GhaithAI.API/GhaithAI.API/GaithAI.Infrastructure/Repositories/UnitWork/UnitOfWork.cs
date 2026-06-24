@@ -34,6 +34,8 @@ namespace GhaithAI.API.Repositories.UnitWork
 
         private ISessionTranscriptRepository _sessionTranscript;
 
+        private IPaymentRepository _payment;
+
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -41,6 +43,9 @@ namespace GhaithAI.API.Repositories.UnitWork
 
         public ISessionRepository Session =>
             _session ??= new SessionRepository(_context);
+
+        public IPaymentRepository Payment =>
+            _payment ??= new PaymentRepository(_context);
 
         public IMessageRepository Message =>
             _message ??= new MessageRepository(_context);

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { timeout, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { DoctorService, PublicDoctorProfile, AvailableSlot } from '../../../../services/doctor.service';
+import { PaymentService } from '../../../../services/payment.service';
 
 @Component({
   selector: 'app-doctor-booking',
@@ -35,7 +36,7 @@ export class DoctorBookingComponent implements OnInit {
 
   minDate = new Date().toISOString().split('T')[0];
 
-  constructor(private doctorService: DoctorService, private cdr: ChangeDetectorRef) { }
+  constructor(private doctorService: DoctorService, private cdr: ChangeDetectorRef, private paymentService: PaymentService) { }
 
   ngOnInit(): void {
     this.loadProfile();
@@ -86,29 +87,42 @@ export class DoctorBookingComponent implements OnInit {
     return !!this.selectedDate && !!this.selectedSlot;
   }
 
-  book(): void {
-    if (!this.canBook) return;
 
-    this.bookingLoading = true;
-    this.bookingError = '';
 
-    this.doctorService.bookDoctor({
-      doctorId: this.doctorId,
-      bookingDate: this.selectedDate,
-      slotTime: this.selectedSlot,
-      sessionType: this.sessionType,
-      bookingNotes: this.notes
-    }).subscribe({
-      next: () => {
-        this.bookingLoading = false;
-        this.bookingSuccess = true;
-      },
-      error: (err) => {
-        this.bookingLoading = false;
-        this.bookingError = err.error?.message || 'Booking failed. Please try again.';
-      }
-    });
-  }
+book(): void {
+  if (!this.canBook) return;
+
+  this.bookingLoading = true;
+  this.bookingError = '';
+
+  // 1 - عمل الـ booking
+  this.doctorService.bookDoctor({
+    doctorId: this.doctorId,
+    bookingDate: this.selectedDate,
+    slotTime: this.selectedSlot,
+    sessionType: this.sessionType,
+    bookingNotes: this.notes
+  }).subscribe({
+    next: (res) => {
+      // 2 - بعد الـ booking، ابدأ الـ payment
+      this.paymentService.initiatePayment(res.id).subscribe({
+        next: (paymentRes) => {
+          this.bookingLoading = false;
+          // 3 - حول المريض لـ Stripe
+          this.paymentService.redirectToCheckout(paymentRes.checkoutUrl);
+        },
+        error: (err) => {
+          this.bookingLoading = false;
+          this.bookingError = err.error?.message || 'Payment initiation failed.';
+        }
+      });
+    },
+    error: (err) => {
+      this.bookingLoading = false;
+      this.bookingError = err.error?.message || 'Booking failed. Please try again.';
+    }
+  });
+}
 
   getStars(rating: number): number[] {
     return Array(5).fill(0).map((_, i) => i < Math.round(rating) ? 1 : 0);

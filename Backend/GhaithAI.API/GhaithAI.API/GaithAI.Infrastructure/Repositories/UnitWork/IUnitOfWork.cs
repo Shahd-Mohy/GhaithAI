@@ -30,6 +30,9 @@ namespace GhaithAI.API.Repositories.UnitWork
         // ✅ Transaction
         Task<IDbContextTransaction> BeginTransactionAsync();
 
+        IPaymentRepository Payment { get; }
+
+
         IClinicalSessionRepository ClinicalSession { get; }
         ISessionNoteRepository SessionNote { get; }
         ISessionTranscriptRepository SessionTranscript { get; }

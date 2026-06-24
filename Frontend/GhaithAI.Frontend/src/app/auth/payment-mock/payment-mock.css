@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+:host { display: block; font-family: 'Sora', sans-serif; }
+
+.mock-page {
+  min-height: 100vh;
+  background: #F8FAFC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.mock-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #E2ECF0;
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+/* ─── HEADER ─── */
+.mock-header {
+  background: #635BFF;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stripe-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 16px; font-weight: 700; color: white;
+}
+.stripe-logo svg { width: 40px; }
+
+.test-badge {
+  font-size: 10px; font-weight: 700;
+  background: rgba(255,255,255,0.2);
+  color: white; padding: 3px 10px;
+  border-radius: 100px; letter-spacing: 0.08em;
+}
+
+/* ─── AMOUNT ─── */
+.amount-section {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.amount-label { font-size: 12px; color: #94A3B8; margin-bottom: 4px; }
+.amount-value { font-size: 32px; font-weight: 800; color: #0D1B3E; margin-bottom: 4px; }
+.amount-desc { font-size: 13px; color: #64748B; }
+
+/* ─── FIELDS ─── */
+.card-fields { padding: 20px 24px 0; display: flex; flex-direction: column; gap: 14px; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.field-group { display: flex; flex-direction: column; gap: 5px; }
+
+.field-group label { font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.fake-input {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 13px;
+  background: #F8FAFC;
+  border: 1.5px solid #E2ECF0;
+  border-radius: 8px;
+  font-size: 14px; color: #0D1B3E;
+}
+.fake-input svg { width: 28px; height: 18px; flex-shrink: 0; }
+
+/* ─── TEST NOTE ─── */
+.test-note {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin: 16px 24px 0;
+  padding: 10px 13px;
+  background: rgba(99,91,255,0.06);
+  border: 1px solid rgba(99,91,255,0.15);
+  border-radius: 8px;
+  font-size: 12px; color: #635BFF; line-height: 1.5;
+}
+.test-note svg { width: 14px; height: 14px; stroke: #635BFF; flex-shrink: 0; margin-top: 1px; }
+
+/* ─── ERROR ─── */
+.error-msg {
+  margin: 10px 24px 0;
+  font-size: 12px; color: #DC2626;
+}
+
+/* ─── BUTTONS ─── */
+.btn-pay {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: calc(100% - 48px);
+  margin: 20px 24px 12px;
+  padding: 14px;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Sora', sans-serif;
+  color: white; background: #635BFF;
+  border: none; border-radius: 10px;
+  cursor: pointer; transition: background 0.2s;
+}
+.btn-pay:hover { background: #5146E5; }
+.btn-pay:disabled { background: #A5A3FF; cursor: not-allowed; }
+.btn-pay svg { width: 16px; height: 16px; }
+
+.btn-cancel {
+  display: block;
+  width: calc(100% - 48px);
+  margin: 0 24px 24px;
+  padding: 12px;
+  font-size: 13px; font-weight: 500;
+  font-family: 'Sora', sans-serif;
+  color: #64748B; background: transparent;
+  border: 1px solid #E2ECF0; border-radius: 10px;
+  cursor: pointer; transition: background 0.2s;
+}
+.btn-cancel:hover { background: #F8FAFC; }
+
+/* ─── SUCCESS STATE ─── */
+.success-state {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; padding: 40px 24px;
+  text-align: center;
+}
+.success-state svg { width: 48px; height: 48px; }
+.success-state p { font-size: 14px; color: #059669; font-weight: 600; }

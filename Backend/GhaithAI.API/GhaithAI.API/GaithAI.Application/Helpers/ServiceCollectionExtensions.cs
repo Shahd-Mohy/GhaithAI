@@ -75,6 +75,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<ISessionReportService, SessionReportService>();
 
             services.AddScoped<IDoctorDashboardPatiantService, DoctorDashboardPatiantService>();
+            //services.AddScoped<IStripeClient, StripeClient>();
+            services.AddScoped<IPaymentService, MockPaymentService>();
 
 
             return services;
