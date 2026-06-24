@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef , Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet, RouterModule } from '@angular/router';
@@ -43,7 +43,8 @@ export class AdminDashboardComponent implements OnInit {
   constructor(
     private adminService: AdminService,
     private tokenService: TokenService,
-    private router: Router
+    private router: Router ,
+     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -87,6 +88,7 @@ export class AdminDashboardComponent implements OnInit {
 
         this.pending = data;
         this.loading = false;
+          this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
@@ -99,6 +101,7 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.getApprovedDoctors().subscribe({
       next: (data) => {
         this.approved = data;
+          this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
@@ -110,6 +113,7 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.getRejectedDoctors().subscribe({
       next: (data) => {
         this.rejected = data;
+          this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);

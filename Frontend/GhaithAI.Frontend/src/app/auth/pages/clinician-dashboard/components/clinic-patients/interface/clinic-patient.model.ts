@@ -1,6 +1,6 @@
 export interface DoctorClinicPatientListDto {
-    id: string; // Guid
-    doctorId: string; // Guid
+    id: string;
+    doctorId: string; 
     patientFullName: string;
     patientPhone: string;
     notes: string;
@@ -13,7 +13,7 @@ export interface CreateClinicPatientDto {
 }
 
 export interface UpdateClinicPatientDto {
-    id: string; // Guid
+    id: string;
     patientFullName: string;
     patientPhone: string;
     notes?: string;

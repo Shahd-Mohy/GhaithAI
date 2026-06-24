@@ -1,4 +1,4 @@
-﻿using GhaithAI.API.DTOs.Emergency;
+using GhaithAI.API.DTOs.Emergency;
 
 namespace GhaithAI.API.DTOs.Auth
 {
@@ -28,7 +28,7 @@ namespace GhaithAI.API.DTOs.Auth
 
         public EmergencyContactDto FirstContact { get; set; }
 
-        public EmergencyContactDto SecondContact { get; set; }
+        public EmergencyContactDto? SecondContact { get; set; }
 
         // Assessment
 
