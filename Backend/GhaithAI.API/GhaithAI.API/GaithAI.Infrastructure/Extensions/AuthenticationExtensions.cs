@@ -46,7 +46,8 @@ namespace GhaithAI.API.Extensions
 
                         var path = context.HttpContext.Request.Path;
 
-                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/chat"))
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            (path.StartsWithSegments("/hubs/chat") || path.StartsWithSegments("/hubs/session")))
                         {
                             context.Token = accessToken;
                         }

@@ -51,7 +51,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             return new TranscriptStatusResponseDto
             {
                 SessionId = sessionId,
-                TranscriptionStatus = session.TranscriptionStatus?.ToString() ?? "NotStarted"
+                Status = session.TranscriptionStatus?.ToString() ?? "NotStarted"
             };
         }
 

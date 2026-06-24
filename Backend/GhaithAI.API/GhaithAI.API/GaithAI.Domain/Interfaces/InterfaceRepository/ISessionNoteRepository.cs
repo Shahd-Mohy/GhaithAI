@@ -3,5 +3,6 @@
     public interface ISessionNoteRepository : IGenericRepository<SessionNote>
     {
         Task<IEnumerable<SessionNote>> GetNotesBySessionAsync(Guid clinicalSessionId);
+        Task<List<SessionNote>> GetNotesByDoctorAsync(Guid doctorId);
     }
 }

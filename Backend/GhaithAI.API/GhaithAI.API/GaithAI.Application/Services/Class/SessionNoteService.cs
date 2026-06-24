@@ -51,6 +51,34 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             });
         }
 
+        public async Task<IEnumerable<DoctorNoteResponseDto>> GetNotesByDoctorAsync(string userId)
+        {
+            var doctorProfile = await _unitOfWork.DoctorProfile
+                .GetAllQueryableNoTracking()
+                .FirstOrDefaultAsync(d => d.UserId == userId)
+                ?? throw new KeyNotFoundException("Doctor profile not found.");
+
+            var notes = await _unitOfWork.SessionNote.GetNotesByDoctorAsync(doctorProfile.Id);
+
+            return notes.Select(n => new DoctorNoteResponseDto
+            {
+                Id = n.Id,
+                ClinicalSessionId = n.ClinicalSessionId,
+                Content = n.Content,
+                NoteType = n.NoteType.ToString(),
+                CreatedAt = n.CreatedAt,
+                UpdatedAt = n.UpdatedAt,
+
+                PatientId = n.ClinicalSession.PatientId,
+                PatientDisplayName = !string.IsNullOrWhiteSpace(n.ClinicalSession.Patient?.FullName)
+                    ? n.ClinicalSession.Patient.FullName
+                    : n.ClinicalSession.Patient?.Email,
+
+                SessionStartedAt = n.ClinicalSession.StartedAt,
+                SessionType = n.ClinicalSession.SessionType.ToString()
+            });
+        }
+
         public async Task UpdateNoteAsync(Guid clinicalSessionId, Guid noteId, UpdateNoteDto dto)
         {
             var note = await _unitOfWork.SessionNote

@@ -1,8 +1,10 @@
-﻿namespace GhaithAI.GaithAI.Application.DTOs.Transcript
+﻿using Microsoft.AspNetCore.Http;
+
+namespace GhaithAI.GaithAI.Application.DTOs.Transcript
 {
     public class UploadAudioDto
     {
-        public IFormFile AudioFile { get; set; }
+        public IFormFile AudioFile { get; set; } = null!;
     }
 
 }

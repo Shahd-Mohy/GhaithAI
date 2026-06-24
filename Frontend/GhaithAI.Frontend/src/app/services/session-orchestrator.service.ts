@@ -34,6 +34,9 @@ export class SessionOrchestratorService implements OnDestroy {
     const localStream = await this.webrtc.getLocalStream();
 
     // 3 ─ ابدأ التسجيل الصامت
+    //     Can throw (no supported MIME type) — let it propagate to the
+    //     component's catch block so the doctor sees a real error instead
+    //     of silently recording nothing.
     this.recorder.start(localStream);
 
     // 4 ─ عمل الـ RTCPeerConnection
@@ -66,6 +69,15 @@ export class SessionOrchestratorService implements OnDestroy {
     this.cleanupSubs();
 
     return audioBlob;
+  }
+
+  // ─── Get the exact MIME type (with codec) the recorder used ──────────────
+  // The session-room component needs this to build the correct filename/
+  // extension for upload — never hardcode '.webm' separately, or the
+  // filename and the actual encoded bytes can disagree (this was the root
+  // cause of transcription silently failing).
+  getRecordingMimeType(): string {
+    return this.recorder.mimeType;
   }
 
   // ─── Get Remote Stream للـ <audio> element ────────

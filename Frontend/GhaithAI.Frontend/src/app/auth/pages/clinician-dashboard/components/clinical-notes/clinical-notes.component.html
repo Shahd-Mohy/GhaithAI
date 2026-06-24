@@ -1,0 +1,228 @@
+<div class="cn-layout">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <div class="cn-header">
+    <div>
+      <h1 class="cn-title">Clinical Notes</h1>
+      <p class="cn-subtitle">Review and manage AI-generated clinical documentation</p>
+    </div>
+    <div class="cn-header-meta" *ngIf="!loading && notes.length">
+      <span class="cn-total">{{ notes.length }} total</span>
+    </div>
+  </div>
+
+  <!-- ══════════ BODY ══════════ -->
+  <div class="cn-body">
+
+    <!-- ── LEFT PANEL ── -->
+    <div class="cn-left">
+
+      <!-- Search + Filter row -->
+      <div class="cn-toolbar">
+      <div class="cn-search-wrap">
+          <svg class="cn-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input class="cn-search" type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
+            placeholder="Search notes…" />
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="cn-loading" *ngIf="loading">
+        <div class="cn-spinner-wrap">
+          <div class="cn-spinner"></div>
+          <div class="cn-spinner-inner"></div>
+        </div>
+        <p>Loading notes…</p>
+      </div>
+
+      <!-- Error -->
+      <div class="cn-error" *ngIf="!loading && errorMessage">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <p>{{ errorMessage }}</p>
+        <button (click)="loadNotes()">Retry</button>
+      </div>
+
+      <!-- Empty -->
+      <div class="cn-empty" *ngIf="!loading && !errorMessage && !filtered.length">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        <p>No notes found</p>
+        <span *ngIf="searchQuery || activeFilter !== 'all'">Try clearing your search or filter</span>
+      </div>
+
+      <!-- Note list -->
+      <div class="cn-list" *ngIf="!loading && !errorMessage && filtered.length">
+        <div class="cn-note-card" *ngFor="let note of filtered" [class.selected]="selected?.id === note.id"
+          (click)="selectNote(note)">
+          <!-- Avatar -->
+          <div class="cn-avatar" [style.background]="avatarColor(note.patientDisplayName) + '1A'"
+            [style.color]="avatarColor(note.patientDisplayName)">
+            {{ initials(note.patientDisplayName) }}
+          </div>
+
+          <!-- Info -->
+          <div class="cn-card-info">
+            <div class="cn-card-top">
+              <span class="cn-patient-name">{{ note.patientDisplayName }}</span>
+              <span class="cn-status-badge" [class.approved]="isApproved(note)" [class.pending]="!isApproved(note)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <ng-container *ngIf="isApproved(note)">
+                    <polyline points="20 6 9 17 4 12" />
+                  </ng-container>
+                  <ng-container *ngIf="!isApproved(note)">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                  </ng-container>
+                </svg>
+                {{ isApproved(note) ? 'Approved' : 'Pending Review' }}
+              </span>
+            </div>
+            <div class="cn-card-meta">
+              <span class="cn-note-type">{{ note.noteType }}</span>
+              <span class="cn-dot">•</span>
+              <span class="cn-session-type">{{ note.sessionType }} Session</span>
+            </div>
+            <div class="cn-card-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              {{ formatDate(note.createdAt) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT PANEL ── -->
+    <div class="cn-right">
+
+      <!-- Placeholder -->
+      <div class="cn-placeholder" *ngIf="!selected">
+        <div class="cn-placeholder-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </div>
+        <p class="cn-placeholder-title">Select a note to view details</p>
+        <p class="cn-placeholder-sub">Click on any note from the list to review its contents</p>
+      </div>
+
+      <!-- Note Detail -->
+      <div class="cn-detail" *ngIf="selected">
+
+        <!-- Detail header -->
+        <div class="cn-detail-header">
+          <div class="cn-detail-avatar" [style.background]="avatarColor(selected.patientDisplayName) + '18'"
+            [style.color]="avatarColor(selected.patientDisplayName)">
+            {{ initials(selected.patientDisplayName) }}
+          </div>
+          <div class="cn-detail-info">
+            <h2 class="cn-detail-name">{{ selected.patientDisplayName }}</h2>
+            <div class="cn-detail-meta">
+              <span class="cn-tag">{{ selected.noteType }}</span>
+              <span class="cn-tag">{{ selected.sessionType }} Session</span>
+              <span class="cn-status-badge" [class.approved]="isApproved(selected)"
+                [class.pending]="!isApproved(selected)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <ng-container *ngIf="isApproved(selected)">
+                    <polyline points="20 6 9 17 4 12" />
+                  </ng-container>
+                  <ng-container *ngIf="!isApproved(selected)">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                  </ng-container>
+                </svg>
+                {{ isApproved(selected) ? 'Approved' : 'Pending Review' }}
+              </span>
+            </div>
+          </div>
+          <!-- Edit button -->
+          <button class="cn-edit-btn" type="button" (click)="startEdit()" *ngIf="!isEditing">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Edit
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="cn-divider"></div>
+
+        <!-- Timestamps -->
+        <div class="cn-timestamps">
+          <div class="cn-ts-item">
+            <span class="cn-ts-label">Created</span>
+            <span class="cn-ts-value">{{ formatDate(selected.createdAt) }}</span>
+          </div>
+          <div class="cn-ts-item" *ngIf="selected.updatedAt">
+            <span class="cn-ts-label">Last updated</span>
+            <span class="cn-ts-value">{{ formatDate(selected.updatedAt) }}</span>
+          </div>
+        </div>
+
+        <!-- Note content -->
+        <div class="cn-content-box">
+          <div class="cn-content-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            Note Content
+          </div>
+
+          <!-- VIEW MODE -->
+          <p class="cn-content-text" *ngIf="!isEditing">{{ selected.content }}</p>
+
+          <!-- EDIT MODE -->
+          <div class="cn-edit-area" *ngIf="isEditing">
+            <textarea
+              class="cn-edit-textarea"
+              [(ngModel)]="editContent"
+              rows="6"
+              placeholder="Edit note content…">
+            </textarea>
+            <p class="cn-update-error" *ngIf="updateError">{{ updateError }}</p>
+            <div class="cn-edit-actions">
+              <button class="cn-edit-cancel" type="button" (click)="cancelEdit()" [disabled]="isUpdating">
+                Cancel
+              </button>
+              <button class="cn-edit-save" type="button" (click)="saveEdit()" [disabled]="isUpdating || !editContent.trim()">
+                <span *ngIf="isUpdating" class="cn-spinner-sm"></span>
+                {{ isUpdating ? 'Saving…' : 'Save Changes' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session info -->
+        <div class="cn-session-box">
+          <div class="cn-content-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+            </svg>
+            Session Reference
+          </div>
+          <p class="cn-session-id">{{ selected.clinicalSessionId }}</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

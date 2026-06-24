@@ -171,13 +171,6 @@
           </svg>
           <span class="date-text">{{ todayLabel }}</span>
         </div>
-        <button class="start-session-btn" type="button" (click)="navigate('sessions')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" />
-            <polygon points="10 8 16 12 10 16 10 8" />
-          </svg>
-          <span class="btn-text">Start Session</span>
-        </button>
         <!-- Mobile logout shortcut -->
         <button class="logout-icon-btn" type="button" (click)="logout()" title="Sign Out">
           <svg viewBox="0 0 24 24">
@@ -280,7 +273,6 @@
               </div>
               <div class="session-info">
                 <div class="session-name">{{ session.name }}</div>
-                <div class="session-type">{{ session.type }}</div>
               </div>
               <div class="session-meta">
                 <div class="session-time">
@@ -360,17 +352,19 @@
     </div>
     }
     @if (activePage === 'sessions') {
-    <div class="scroll-area coming-soon">
-      <div class="coming-soon-icon">🎙️</div>
-      <h2>Sessions</h2>
-      <p>Session management coming soon.</p>
+    <div class="scroll-area">
+      <app-session-room
+        [bookingId]="selectedBookingId"
+        [patientName]="selectedPatient?.name || ''"
+        [patientAge]="selectedPatient?.age || ''"
+        [patientCondition]="selectedPatient?.condition || ''"
+        [prevSessionInfo]="selectedPatient?.prevSession || selectedPatient?.time || ''">
+      </app-session-room>
     </div>
     }
     @if (activePage === 'notes') {
-    <div class="scroll-area coming-soon">
-      <div class="coming-soon-icon">📋</div>
-      <h2>Clinical Notes</h2>
-      <p>Clinical notes editor coming soon.</p>
+    <div class="scroll-area">
+      <app-clinical-notes></app-clinical-notes>
     </div>
     }
     @if (activePage === 'assessments') {

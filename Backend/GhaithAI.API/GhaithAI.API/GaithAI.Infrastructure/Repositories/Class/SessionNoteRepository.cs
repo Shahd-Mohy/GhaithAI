@@ -13,5 +13,16 @@
                 .OrderBy(n => n.CreatedAt)
                 .ToListAsync();
         }
+
+        public async Task<List<SessionNote>> GetNotesByDoctorAsync(Guid doctorId)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(n => n.ClinicalSession.DoctorId == doctorId)
+                .Include(n => n.ClinicalSession)
+                    .ThenInclude(cs => cs.Patient)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+        }
     }
 }

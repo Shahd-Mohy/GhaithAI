@@ -1,48 +1,186 @@
-<div class="transcript-viewer">
+<div class="tv-page">
 
-  <h2>Session Transcript</h2>
+  <!-- ── HEADER ── -->
+  <header class="tv-header">
+    <div class="tv-header-left">
+      <button class="tv-btn-back" (click)="goBack()" title="Back to dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <div class="tv-header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="tv-title">Session Transcript</h1>
+        <p class="tv-subtitle" *ngIf="sessionId">Session ID: {{ sessionId.slice(0, 8) }}…</p>
+      </div>
+    </div>
+    <div class="tv-header-right" *ngIf="!loading && segments.length">
+      <span class="tv-segment-count">{{ segments.length }} segment{{ segments.length !== 1 ? 's' : '' }}</span>
+      <button class="tv-btn-generate" (click)="proceedToReport()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path
+            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Generate Report
+      </button>
+    </div>
+  </header>
 
-  <div class="error-box" *ngIf="errorMessage">
-    <p>{{ errorMessage }}</p>
-  </div>
+  <!-- ── MAIN ── -->
+  <main class="tv-main">
 
-  <div class="loading-box" *ngIf="loading">
-    <p>Loading transcript…</p>
-  </div>
+    <!-- LOADING -->
+    <div class="tv-loading-state" *ngIf="loading">
+      <div class="tv-spinner-wrap">
+        <div class="tv-spinner"></div>
+        <div class="tv-spinner-ring"></div>
+      </div>
+      <p class="tv-loading-label">Loading transcript…</p>
+      <p class="tv-loading-sub">Fetching session segments from the server</p>
+    </div>
 
-  <div class="segments-list" *ngIf="!loading && segments.length">
-    <div class="segment" *ngFor="let segment of segments" [ngClass]="segment.speaker.toLowerCase()">
+    <!-- ERROR -->
+    <div class="tv-error-state" *ngIf="!loading && errorMessage">
+      <div class="tv-error-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+      </div>
+      <p class="tv-error-title">Failed to load transcript</p>
+      <p class="tv-error-msg">{{ errorMessage }}</p>
+      <div class="tv-error-actions">
+        <button class="tv-btn-retry" (click)="loadSegments()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+          </svg>
+          Try Again
+          <span *ngIf="retryCount > 0" class="tv-retry-count">({{ retryCount }})</span>
+        </button>
+        <button class="tv-btn-back-error" (click)="goBack()">← Dashboard</button>
+      </div>
+    </div>
 
-      <div class="segment-meta">
-        <span class="speaker-badge" [ngClass]="segment.speaker.toLowerCase()">{{ segment.speaker }}</span>
-        <span class="timestamp">{{ formatTime(segment.startMs) }} – {{ formatTime(segment.endMs) }}</span>
-        <span class="edited-badge" *ngIf="segment.isEdited">Edited</span>
+    <!-- EMPTY -->
+    <div class="tv-empty-state" *ngIf="!loading && !errorMessage && !segments.length">
+      <div class="tv-empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 12h6m-6 4h6M7 7h1m9 0h1M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" />
+        </svg>
+      </div>
+      <p class="tv-empty-title">No transcript found</p>
+      <p class="tv-empty-sub">No segments were recorded for this session.</p>
+      <div class="tv-error-actions">
+        <button class="tv-btn-retry" (click)="loadSegments()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+          </svg>
+          Refresh
+        </button>
+        <button class="tv-btn-back-error" (click)="goBack()">← Dashboard</button>
+      </div>
+    </div>
+
+    <!-- SEGMENTS -->
+    <div class="tv-segments" *ngIf="!loading && !errorMessage && segments.length">
+
+      <!-- Legend -->
+      <div class="tv-legend">
+        <span class="tv-legend-dot tv-legend-dot--doctor"></span>
+        <span class="tv-legend-label">Doctor</span>
+        <span class="tv-legend-dot tv-legend-dot--patient"></span>
+        <span class="tv-legend-label">Patient</span>
       </div>
 
-      <div class="segment-content" *ngIf="editingSegmentId !== segment.id">
-        <p>{{ segment.content }}</p>
-        <button class="btn-text" (click)="startEdit(segment)">Edit</button>
-      </div>
+      <div class="tv-segment" *ngFor="let segment of segments" [class.tv-segment--doctor]="segment.speaker === 'Doctor'"
+        [class.tv-segment--patient]="segment.speaker === 'Patient'">
 
-      <div class="segment-edit" *ngIf="editingSegmentId === segment.id">
-        <textarea [(ngModel)]="draftContent" rows="3"></textarea>
-        <div class="edit-actions">
-          <button class="btn-outline" (click)="cancelEdit()" [disabled]="saving">Cancel</button>
-          <button class="btn-primary" (click)="saveEdit(segment)" [disabled]="saving">
-            {{ saving ? 'Saving…' : 'Save' }}
+        <!-- Meta row -->
+        <div class="tv-seg-meta">
+          <span class="tv-speaker-badge" [class.tv-speaker-badge--doctor]="segment.speaker === 'Doctor'"
+            [class.tv-speaker-badge--patient]="segment.speaker === 'Patient'">
+            <span class="tv-speaker-dot"></span>
+            {{ segment.speaker }}
+          </span>
+
+          <span class="tv-timestamp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            {{ formatTime(segment.startMs) }} – {{ formatTime(segment.endMs) }}
+          </span>
+
+          <span class="tv-confidence" *ngIf="segment.confidenceScore !== null">
+            {{ (segment.confidenceScore * 100).toFixed(0) }}% confidence
+          </span>
+
+          <span class="tv-edited-badge" *ngIf="segment.isEdited">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Edited
+          </span>
+        </div>
+
+        <!-- View mode -->
+        <div class="tv-seg-body" *ngIf="editingSegmentId !== segment.id">
+          <p class="tv-seg-text">{{ segment.content }}</p>
+          <button class="tv-btn-edit" (click)="startEdit(segment)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Edit
           </button>
         </div>
+
+        <!-- Edit mode -->
+        <div class="tv-seg-edit" *ngIf="editingSegmentId === segment.id">
+          <textarea class="tv-textarea" [(ngModel)]="draftContent" rows="4"
+            placeholder="Edit transcript text…"></textarea>
+          <div class="tv-edit-actions">
+            <button class="tv-btn-cancel" (click)="cancelEdit()" [disabled]="saving">Cancel</button>
+            <button class="tv-btn-save" (click)="saveEdit(segment)" [disabled]="saving">
+              <span class="tv-btn-spinner" *ngIf="saving"></span>
+              {{ saving ? 'Saving…' : 'Save Changes' }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom CTA -->
+      <div class="tv-footer">
+        <div class="tv-footer-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          Review all segments before generating the clinical report.
+        </div>
+        <button class="tv-btn-generate-lg" (click)="proceedToReport()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Generate Clinical Report
+        </button>
       </div>
 
     </div>
-  </div>
 
-  <div class="empty-state" *ngIf="!loading && !segments.length">
-    <p>No transcript segments found for this session.</p>
-  </div>
-
-  <div class="footer-actions" *ngIf="!loading && segments.length">
-    <button class="btn-primary" (click)="proceedToReport()">Generate Report</button>
-  </div>
-
+  </main>
 </div>

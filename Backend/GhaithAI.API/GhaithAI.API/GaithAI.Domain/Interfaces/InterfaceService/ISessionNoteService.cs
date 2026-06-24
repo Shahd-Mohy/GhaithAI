@@ -6,6 +6,7 @@ namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
     {
         Task<Guid> AddNoteAsync(Guid clinicalSessionId, AddNoteDto dto);
         Task<IEnumerable<NoteResponseDto>> GetNotesBySessionAsync(Guid clinicalSessionId);
+        Task<IEnumerable<DoctorNoteResponseDto>> GetNotesByDoctorAsync(string userId);
         Task UpdateNoteAsync(Guid clinicalSessionId, Guid noteId, UpdateNoteDto dto);
     }
 }
