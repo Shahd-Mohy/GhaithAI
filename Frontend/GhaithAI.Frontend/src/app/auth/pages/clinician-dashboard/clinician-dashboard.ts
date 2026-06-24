@@ -13,6 +13,7 @@ import { ClinicPatientsComponent } from './components/clinic-patients/clinic-pat
 import { PatientsList } from './doctorPatiant/patients-list/patients-list';
 import { ScheduleService } from './services/schedule';
 import { SessionRoomComponent } from '../../session-room.component/session-room.component';
+import { ClinicalNotesComponent } from './components/clinical-notes/clinical-notes.component';
 // ── Interfaces ─────────────────────────────────────────────────────────────
 
 interface ClinicianInfo {
@@ -50,7 +51,7 @@ interface RiskAlert {
 @Component({
   selector: 'app-clinician-dashboard',
   standalone: true,
-  imports: [CommonModule, MyClinicComponent, DoctorScheduleComponent, ClinicPatientsComponent, PatientsList, SessionRoomComponent],
+  imports: [CommonModule, MyClinicComponent, DoctorScheduleComponent, ClinicPatientsComponent, PatientsList, SessionRoomComponent, ClinicalNotesComponent],
   templateUrl: './clinician-dashboard.html',
   styleUrls: ['./clinician-dashboard.css']
 })
