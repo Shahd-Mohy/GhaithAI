@@ -37,6 +37,9 @@ interface ScheduleSession {
   type: string;
   time: string;
   color: string;
+  age?: string;
+  condition?: string;
+  prevSession?: string;
 }
 
 interface RiskAlert {
@@ -69,6 +72,7 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
   showUserMenu = false;
   sidebarOpen = false;   // ← controls off-canvas drawer on mobile
   selectedBookingId = '';  // ← set when doctor clicks Start on a session
+  selectedPatient: ScheduleSession | null = null;
 
   clinician: ClinicianInfo = {
     name: 'Clinician',
@@ -223,6 +227,7 @@ export class ClinicianDashboardComponent implements OnInit, OnDestroy {
 
   startSession(patient: ScheduleSession): void {
     this.selectedBookingId = patient.bookingId;
+    this.selectedPatient = patient;
     this.activePage = 'sessions';
   }
 }

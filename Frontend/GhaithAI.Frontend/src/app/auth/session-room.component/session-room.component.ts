@@ -4,10 +4,11 @@ import {
   Input, NgZone, ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 import { lastValueFrom } from 'rxjs';
-import { ClinicalSessionService } from '../../services/clinical-session.service';
+import { ClinicalSessionService, SessionNote } from '../../services/clinical-session.service';
 import { SessionOrchestratorService } from '../../services/session-orchestrator.service';
 import { TranscriptService } from '../../services/transcript.service';
 import { AuthService } from '../../services/auth';
@@ -32,7 +33,7 @@ type CallState =
 @Component({
   selector: 'app-session-room',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './session-room.component.html',
   styleUrls: ['./session-room.component.css']
 })
@@ -46,26 +47,125 @@ export class SessionRoomComponent implements OnInit, AfterViewInit, OnDestroy {
   errorMessage = '';
 
   // ── errorDetail ────────────────────────────────────────────────────────────
-  // NEW. Holds the specific reason the backend/speech-vendor gave for a
-  // transcription failure (e.g. "Unsupported audio codec"), when available.
-  // errorMessage stays as the human-friendly headline; errorDetail is the
-  // technical line shown underneath for debugging/support purposes. It's
-  // empty whenever the backend doesn't provide one — the UI should hide
-  // that line in that case, not show "undefined".
+  // Holds the specific reason the backend/speech-vendor gave for a
+  // transcription failure, when available.
   errorDetail = '';
 
   // bookingId comes from the parent dashboard via [bookingId]="selectedBookingId"
-  // It identifies which appointment this session belongs to.
   @Input() bookingId = '';
 
+  // Patient display info — populated from @Input() passed by parent
+  @Input() patientName = 'Patient';
+  @Input() patientAge = '';
+  @Input() patientCondition = '';
+  @Input() prevSessionInfo = '';
+
+  get patientInitials(): string {
+    return this.patientName
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase() || 'PT';
+  }
+
   // sessionId is returned by the backend when we call startSession().
-  // It's the GUID of the ClinicalSession row created in the DB.
-  // We store it here and use it for every subsequent API call in this flow.
   sessionId = '';
+
+  // sessionNotes — current text in the textarea
+  sessionNotes = '';
+
+  // ── Notes list (loaded from API and updated locally) ────────────────────────
+  notes: SessionNote[] = [];
+  isSavingNote = false;
+  notesError = '';
+
+  // ── Inline edit state ────────────────────────────────────────────────
+  editingNoteId: string | null = null;
+  editingContent = '';
+  isUpdatingNote = false;
+
+  startEdit(note: SessionNote): void {
+    this.editingNoteId = note.id;
+    this.editingContent = note.content;
+  }
+
+  cancelEdit(): void {
+    this.editingNoteId = null;
+    this.editingContent = '';
+  }
+
+  saveEdit(note: SessionNote): void {
+    const content = this.editingContent.trim();
+    if (!content || this.isUpdatingNote) return;
+    this.isUpdatingNote = true;
+    this.cdr.detectChanges();
+
+    this.clinicalSessionService.updateNote(note.clinicalSessionId, note.id, content).subscribe({
+      next: () => {
+        this.ngZone.run(() => {
+          this.notes = this.notes.map(n =>
+            n.id === note.id ? { ...n, content, updatedAt: new Date().toISOString() } : n
+          );
+          this.editingNoteId = null;
+          this.editingContent = '';
+          this.isUpdatingNote = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: () => {
+        this.ngZone.run(() => {
+          this.isUpdatingNote = false;
+          this.cdr.detectChanges();
+        });
+      }
+    });
+  }
+
+  clearNotes(): void { this.sessionNotes = ''; }
 
   callDurationSeconds = 0;
   private timerSub: Subscription | null = null;
   private pollSub: Subscription | null = null;
+
+  // ── UI labels ─────────────────────────────────────────────────────────────
+  get stateLabel(): string {
+    const map: Record<CallState, string> = {
+      Idle: 'Ready',
+      Connecting: 'Connecting…',
+      InCall: 'In Call',
+      Ending: 'Ending…',
+      Uploading: 'Uploading…',
+      Processing: 'Processing…',
+      Reviewable: 'Review Ready',
+      Error: 'Error'
+    };
+    return map[this.state] ?? this.state;
+  }
+
+  get timerStatusLabel(): string {
+    if (this.state === 'Idle') return 'Ready to record';
+    if (this.state === 'InCall') return 'Recording in progress';
+    if (this.state === 'Connecting') return 'Connecting…';
+    if (this.state === 'Ending') return 'Closing session…';
+    if (this.state === 'Uploading') return 'Uploading…';
+    if (this.state === 'Processing') return 'Transcribing…';
+    if (this.state === 'Reviewable') return 'Session complete';
+    return '';
+  }
+
+  // handleCancel delegates to the correct action based on current state
+  handleCancel(): void {
+    if (this.state === 'InCall') {
+      this.endSession();
+    } else if (this.state === 'Reviewable') {
+      this.goToTranscriptReview();
+    } else {
+      // For Idle / Error states, go back to dashboard
+      this.router.navigate(['/clinician-dashboard']);
+    }
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -146,6 +246,9 @@ export class SessionRoomComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // Store the session GUID — every call from here on needs it.
         this.sessionId = sessionRes!.id;
+
+        // Load any existing notes for this session
+        this.loadNotes();
 
         // ── 1b. Connect SignalR + get microphone + start WebRTC + start recording ─
         // The orchestrator handles all of this in the right order.
@@ -272,14 +375,67 @@ export class SessionRoomComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate(['/clinical-session', this.sessionId, 'transcript']);
   }
 
+  // ── Notes: Load all notes for this session ───────────────────────────────────
+  loadNotes(): void {
+    if (!this.sessionId) return;
+    this.clinicalSessionService.getNotes(this.sessionId).subscribe({
+      next: (list) => {
+        this.ngZone.run(() => {
+          this.notes = list;
+          this.cdr.detectChanges();
+        });
+      },
+      error: () => { /* silently ignore — notes panel will just be empty */ }
+    });
+  }
+
+  // ── Notes: Save the current textarea content as a new note ──────────────────
+  saveNote(): void {
+    const content = this.sessionNotes.trim();
+    if (!content || !this.sessionId || this.isSavingNote) return;
+
+    this.isSavingNote = true;
+    this.notesError = '';
+    this.cdr.detectChanges();
+
+    this.clinicalSessionService.addNote(this.sessionId, content).subscribe({
+      next: (res) => {
+        this.ngZone.run(() => {
+          // Build a local note object so the UI updates immediately
+          const newNote: SessionNote = {
+            id: res.id,
+            clinicalSessionId: this.sessionId,
+            content,
+            noteType: 'Quick',
+            createdAt: new Date().toISOString(),
+            updatedAt: null
+          };
+          this.notes = [...this.notes, newNote];
+          this.sessionNotes = '';   // clear textarea
+          this.isSavingNote = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: () => {
+        this.ngZone.run(() => {
+          this.notesError = 'Failed to save note. Please try again.';
+          this.isSavingNote = false;
+          this.cdr.detectChanges();
+        });
+      }
+    });
+  }
+
   // ── Timer helpers ─────────────────────────────────────────────────────────────
   private startDurationTimer(): void {
     this.callDurationSeconds = 0;
     // interval(1000) emits a number every second.
-    // We wrap the increment in ngZone.run() so the displayed time actually updates.
+    // ngZone.run() ensures Angular tracks the change; cdr.detectChanges() forces
+    // an immediate DOM update every tick so the timer visually counts up.
     this.timerSub = interval(1000).subscribe(() => {
       this.ngZone.run(() => {
         this.callDurationSeconds++;
+        this.cdr.detectChanges();
       });
     });
   }

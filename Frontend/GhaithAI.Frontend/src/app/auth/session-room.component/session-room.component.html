@@ -1,45 +1,279 @@
-<div class="session-room">
+<div class="session-page">
   <audio #remoteAudio autoplay style="display: none"></audio>
 
-  <div class="status-bar">
-    <span class="status-badge" [ngClass]="state">{{ state }}</span>
-    <span *ngIf="state === 'InCall'" class="duration">{{ callDurationDisplay }}</span>
+  <!-- ── PAGE HEADER ── -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polygon points="10 8 16 12 10 16 10 8"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="page-title">New Session</h1>
+      </div>
+    </div>
+    <div class="header-right">
+      <!-- Status Badge -->
+      <div class="status-pill" [ngClass]="state">
+        <span class="status-dot"></span>
+        <span class="status-text">{{ stateLabel }}</span>
+        <span *ngIf="state === 'InCall'" class="status-duration">{{ callDurationDisplay }}</span>
+      </div>
+      <!-- Cancel / Dismiss -->
+      <button class="cancel-btn" (click)="handleCancel()" type="button">
+        {{ state === 'InCall' ? 'End Session' : state === 'Reviewable' ? 'Done' : 'Cancel' }}
+      </button>
+    </div>
   </div>
 
-  <div class="error-box" *ngIf="state === 'Error'">
-    <p>{{ errorMessage }}</p>
-    <p class="error-detail" *ngIf="errorDetail">{{ errorDetail }}</p>
-    <button class="btn-outline" (click)="state = 'Idle'">Dismiss</button>
+  <!-- ── ERROR BANNER ── -->
+  <div class="error-banner" *ngIf="state === 'Error'">
+    <div class="error-icon">⚠️</div>
+    <div class="error-content">
+      <p class="error-msg">{{ errorMessage }}</p>
+      <p class="error-detail" *ngIf="errorDetail">{{ errorDetail }}</p>
+    </div>
+    <button class="btn-dismiss" (click)="state = 'Idle'" type="button">Dismiss</button>
   </div>
 
-  <div class="idle-panel" *ngIf="state === 'Idle'">
-    <p>Ready to start the session for this booking.</p>
-    <button class="btn-primary" (click)="startCall()">Start Call</button>
-  </div>
+  <!-- ── TWO-COLUMN LAYOUT ── -->
+  <div class="session-grid">
 
-  <div class="connecting-panel" *ngIf="state === 'Connecting'">
-    <p>Connecting…</p>
-  </div>
+    <!-- ── LEFT COLUMN ── -->
+    <div class="left-col">
 
-  <div class="in-call-panel" *ngIf="state === 'InCall'">
-    <p>Session in progress. Recording is active.</p>
-    <button class="btn-danger" (click)="endSession()">End Session</button>
-  </div>
+      <!-- Patient Information Card -->
+      <div class="card patient-card">
+        <h2 class="card-title">Patient Information</h2>
+        <div class="patient-row">
+          <div class="patient-avatar-big">{{ patientInitials }}</div>
+          <div class="patient-details">
+            <div class="patient-name">{{ patientName }}</div>
+            <div class="patient-condition">{{ patientCondition }}</div>
+          </div>
+        </div>
+        <div class="prev-session-box" *ngIf="prevSessionInfo">
+          <div class="prev-label">Previous Session</div>
+          <div class="prev-value">{{ prevSessionInfo }}</div>
+        </div>
+      </div>
 
-  <div class="ending-panel" *ngIf="state === 'Ending'">
-    <p>Closing the call…</p>
-  </div>
+      <!-- Recording Controls Card -->
+      <div class="card controls-card">
+        <h2 class="card-title">Recording Controls</h2>
 
-  <div class="uploading-panel" *ngIf="state === 'Uploading'">
-    <p>Uploading recording…</p>
-  </div>
+        <!-- Timer -->
+        <div class="timer-display">
+          <span class="timer-text">{{ callDurationDisplay }}</span>
+        </div>
+        <p class="timer-status">{{ timerStatusLabel }}</p>
 
-  <div class="processing-panel" *ngIf="state === 'Processing'">
-    <p>Transcribing the session. This may take a few minutes.</p>
-  </div>
+        <!-- Action Button -->
+        <div class="control-btn-wrap">
+          <!-- IDLE → Start Call -->
+          <button
+            *ngIf="state === 'Idle'"
+            class="mic-btn mic-btn--idle"
+            (click)="startCall()"
+            type="button"
+            title="Start recording">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>
+            </svg>
+          </button>
 
-  <div class="reviewable-panel" *ngIf="state === 'Reviewable'">
-    <p>Transcript is ready for review.</p>
-    <button class="btn-primary" (click)="goToTranscriptReview()">Review Transcript</button>
+          <!-- CONNECTING / ENDING / UPLOADING / PROCESSING → spinner -->
+          <div *ngIf="state === 'Connecting' || state === 'Ending' || state === 'Uploading' || state === 'Processing'"
+               class="mic-btn mic-btn--busy">
+            <div class="spinner"></div>
+          </div>
+
+          <!-- IN CALL → end session button -->
+          <button
+            *ngIf="state === 'InCall'"
+            class="mic-btn mic-btn--active"
+            (click)="endSession()"
+            type="button"
+            title="End session">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>
+            </svg>
+          </button>
+
+          <!-- REVIEWABLE → go to review -->
+          <button
+            *ngIf="state === 'Reviewable'"
+            class="mic-btn mic-btn--done"
+            (click)="goToTranscriptReview()"
+            type="button"
+            title="Review transcript">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Consent badge -->
+        <div class="consent-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Patient consent for recording confirmed
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── RIGHT COLUMN ── -->
+    <div class="right-col">
+      <div class="card notes-card">
+
+        <!-- Notes Card Header -->
+        <div class="notes-header">
+          <div class="notes-header-left">
+            <div class="notes-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="card-title" style="margin:0">Session Notes</h2>
+              <p class="notes-sub">Add notes during the session — they're saved individually</p>
+            </div>
+          </div>
+          <div class="notes-header-right">
+            <!-- Recording state indicator -->
+            <div class="rec-badge" *ngIf="state === 'InCall'">
+              <span class="rec-dot"></span>
+              <span>Recording</span>
+            </div>
+            <div class="timer-chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>{{ callDurationDisplay }}</span>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Notes Editor Area -->
+        <div class="notes-editor-wrap">
+          <textarea
+            class="notes-editor"
+            [(ngModel)]="sessionNotes"
+            placeholder="Start typing your clinical notes here…
+
+• Chief complaint and presenting symptoms
+• Mental status examination findings
+• Risk assessment observations
+• Treatment adjustments and plan
+• Follow-up actions"
+            rows="8"
+            [class.notes-editor--recording]="state === 'InCall'">
+          </textarea>
+
+          <!-- Idle hint overlay shown only when no notes yet -->
+          <div class="notes-hint" *ngIf="state === 'Idle' && !sessionNotes">
+            <div class="notes-hint-inner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+              <p>Start the session or type notes directly</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reviewable: transcript-ready banner sits ABOVE the footer, notes still visible -->
+        <div class="transcript-ready-banner" *ngIf="state === 'Reviewable'">
+          <div class="ready-icon">✅</div>
+          <div class="ready-text">
+            <p class="ready-title">Transcript ready for review</p>
+            <p class="ready-sub">Your session notes are saved. Review the AI-generated transcript below.</p>
+          </div>
+          <button class="btn-review" (click)="goToTranscriptReview()" type="button">
+            Review Transcript →
+          </button>
+        </div>
+
+        <!-- Notes Footer Actions -->
+        <div class="notes-footer">
+          <div class="notes-footer-left">
+            <span class="notes-count" *ngIf="sessionNotes">{{ sessionNotes.length }} characters</span>
+            <span class="notes-saved" *ngIf="!sessionNotes">{{ notes.length > 0 ? notes.length + ' note(s) saved' : 'No notes yet' }}</span>
+          </div>
+          <div class="notes-footer-right">
+            <button class="notes-action-btn" type="button" [disabled]="!sessionNotes || isSavingNote" (click)="clearNotes()">
+              Clear
+            </button>
+            <button class="notes-save-btn" type="button" [disabled]="!sessionNotes || isSavingNote" (click)="saveNote()">
+              <span *ngIf="isSavingNote" class="btn-spinner"></span>
+              {{ isSavingNote ? 'Saving…' : 'Save Note' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Save error -->
+        <p class="notes-save-error" *ngIf="notesError">{{ notesError }}</p>
+
+        <!-- ── Saved Notes List ── -->
+        <div class="saved-notes-list" *ngIf="notes.length > 0">
+          <div class="saved-notes-heading">Saved Notes ({{ notes.length }})</div>
+          <div class="saved-note-item" *ngFor="let note of notes">
+
+            <!-- ── VIEW MODE ── -->
+            <ng-container *ngIf="editingNoteId !== note.id">
+              <div class="saved-note-content">{{ note.content }}</div>
+              <div class="saved-note-right">
+                <span class="saved-note-meta">{{ note.createdAt | date:'HH:mm' }}</span>
+                <button class="note-edit-btn" type="button" (click)="startEdit(note)" title="Edit note">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Edit
+                </button>
+              </div>
+            </ng-container>
+
+            <!-- ── EDIT MODE ── -->
+            <ng-container *ngIf="editingNoteId === note.id">
+              <div class="note-edit-wrap">
+                <textarea
+                  class="note-edit-textarea"
+                  [(ngModel)]="editingContent"
+                  rows="3"
+                  placeholder="Edit your note…">
+                </textarea>
+                <div class="note-edit-actions">
+                  <button class="note-edit-cancel" type="button" (click)="cancelEdit()" [disabled]="isUpdatingNote">
+                    Cancel
+                  </button>
+                  <button class="note-edit-save" type="button" (click)="saveEdit(note)" [disabled]="isUpdatingNote || !editingContent.trim()">
+                    <span *ngIf="isUpdatingNote" class="btn-spinner"></span>
+                    {{ isUpdatingNote ? 'Saving…' : 'Save' }}
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+
+          </div>
+        </div>
+
+        <!-- Processing state overlay (absolute, covers editor while busy) -->
+        <div class="notes-overlay" *ngIf="state === 'Uploading' || state === 'Processing' || state === 'Ending'">
+          <div class="processing-spinner"></div>
+          <p class="processing-title">{{ state === 'Uploading' ? 'Uploading recording…' : state === 'Ending' ? 'Closing the call…' : 'Transcribing the session…' }}</p>
+          <p class="processing-sub">Notes are saved. Please wait.</p>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </div>
+
