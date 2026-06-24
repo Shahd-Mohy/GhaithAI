@@ -27,4 +27,12 @@ export class ClinicalNotesService {
   getMine(): Observable<ClinicalNote[]> {
     return this.http.get<ClinicalNote[]>(`${this.base}/notes/mine`);
   }
+
+  /** PUT /api/sessions/{sessionId}/notes/{noteId} */
+  updateNote(sessionId: string, noteId: string, content: string): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(
+      `${this.base}/${sessionId}/notes/${noteId}`,
+      { content }
+    );
+  }
 }

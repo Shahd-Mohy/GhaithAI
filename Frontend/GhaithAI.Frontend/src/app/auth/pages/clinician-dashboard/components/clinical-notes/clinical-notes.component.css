@@ -635,3 +635,161 @@
         min-height: 400px;
     }
 }
+
+/* ── Edit UI ─────────────────────────────────────────────────── */
+
+/* Detail header needs flex to align Edit button to the right */
+.cn-detail-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.cn-detail-header .cn-detail-avatar {
+    flex-shrink: 0;
+}
+
+.cn-detail-header .cn-detail-info {
+    flex: 1;
+}
+
+/* Edit button in detail header */
+.cn-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: #0B8FAC;
+    background: rgba(11, 143, 172, 0.07);
+    border: 1px solid rgba(11, 143, 172, 0.22);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.cn-edit-btn:hover {
+    background: rgba(11, 143, 172, 0.14);
+    border-color: rgba(11, 143, 172, 0.38);
+}
+
+/* Edit textarea area */
+.cn-edit-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.cn-edit-textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1.5px solid #0B8FAC;
+    border-radius: 10px;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-size: 13.5px;
+    color: #334155;
+    line-height: 1.7;
+    resize: vertical;
+    box-sizing: border-box;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(11, 143, 172, 0.08);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cn-edit-textarea:focus {
+    border-color: #0B8FAC;
+    box-shadow: 0 0 0 4px rgba(11, 143, 172, 0.12);
+}
+
+/* Error message */
+.cn-update-error {
+    font-size: 12px;
+    color: #DC2626;
+    margin: 0;
+}
+
+/* Action row */
+.cn-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.cn-edit-cancel {
+    padding: 7px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: #64748b;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cn-edit-cancel:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+.cn-edit-cancel:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cn-edit-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: #fff;
+    background: linear-gradient(135deg, #0B8FAC, #0EA5C2);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(11, 143, 172, 0.28);
+}
+
+.cn-edit-save:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(11, 143, 172, 0.38);
+}
+
+.cn-edit-save:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Inline spinner inside Save button */
+.cn-spinner-sm {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: cn-spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes cn-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

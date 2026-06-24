@@ -15,6 +15,21 @@ export interface EndSessionResponse {
   durationMinutes: number;
 }
 
+// ── Session Notes ─────────────────────────────────────────────
+export interface SessionNote {
+  id: string;
+  clinicalSessionId: string;
+  content: string;
+  noteType: string;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface AddNoteResponse {
+  id: string;
+  message: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ClinicalSessionService {
 
@@ -46,6 +61,27 @@ export class ClinicalSessionService {
       { observe: 'response' }
     ).pipe(
       map(res => res.body as EndSessionResponse)
+    );
+  }
+
+  // GET /api/sessions/{sessionId}/notes
+  getNotes(sessionId: string): Observable<SessionNote[]> {
+    return this.http.get<SessionNote[]>(`${this.baseUrl}/${sessionId}/notes`);
+  }
+
+  // POST /api/sessions/{sessionId}/notes
+  addNote(sessionId: string, content: string, noteType: string = 'Quick'): Observable<AddNoteResponse> {
+    return this.http.post<AddNoteResponse>(
+      `${this.baseUrl}/${sessionId}/notes`,
+      { content, noteType }
+    );
+  }
+
+  // PUT /api/sessions/{sessionId}/notes/{noteId}
+  updateNote(sessionId: string, noteId: string, content: string): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(
+      `${this.baseUrl}/${sessionId}/notes/${noteId}`,
+      { content }
     );
   }
 }

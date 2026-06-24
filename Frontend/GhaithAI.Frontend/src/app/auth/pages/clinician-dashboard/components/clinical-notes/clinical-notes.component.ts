@@ -26,6 +26,12 @@ export class ClinicalNotesComponent implements OnInit, OnDestroy {
   searchQuery = '';
   activeFilter: 'all' | 'pending' | 'approved' = 'all';
 
+  // ── Edit state ───────────────────────────────────────────────────
+  isEditing = false;
+  editContent = '';
+  isUpdating = false;
+  updateError = '';
+
   private sub: Subscription | null = null;
 
   constructor(
@@ -77,9 +83,9 @@ export class ClinicalNotesComponent implements OnInit, OnDestroy {
     let list = [...this.notes];
 
     if (this.activeFilter === 'pending') {
-      list = list.filter(n => !n.updatedAt);
+      list = []; // all notes are approved — no pending
     } else if (this.activeFilter === 'approved') {
-      list = list.filter(n => !!n.updatedAt);
+      list = list; // all notes are approved
     }
 
     if (this.searchQuery.trim()) {
@@ -110,11 +116,62 @@ export class ClinicalNotesComponent implements OnInit, OnDestroy {
 
   selectNote(note: ClinicalNote): void {
     this.selected = note;
+    this.isEditing = false;   // close any open edit when switching notes
+    this.editContent = '';
+    this.updateError = '';
   }
 
-  /** Status derived from updatedAt field — null means it was never edited/approved */
-  isApproved(note: ClinicalNote): boolean {
-    return !!note.updatedAt;
+  startEdit(): void {
+    if (!this.selected) return;
+    this.editContent = this.selected.content;
+    this.isEditing = true;
+    this.updateError = '';
+  }
+
+  cancelEdit(): void {
+    this.isEditing = false;
+    this.editContent = '';
+    this.updateError = '';
+  }
+
+  saveEdit(): void {
+    if (!this.selected || !this.editContent.trim() || this.isUpdating) return;
+    this.isUpdating = true;
+    this.updateError = '';
+    this.cdr.detectChanges();
+
+    const content = this.editContent.trim();
+    this.svc.updateNote(this.selected.clinicalSessionId, this.selected.id, content).subscribe({
+      next: () => {
+        this.ngZone.run(() => {
+          // Update in the notes array
+          this.notes = this.notes.map(n =>
+            n.id === this.selected!.id
+              ? { ...n, content, updatedAt: new Date().toISOString() }
+              : n
+          );
+          // Update the selected note
+          this.selected = { ...this.selected!, content, updatedAt: new Date().toISOString() };
+          this.applyFilter();
+          this.isEditing = false;
+          this.editContent = '';
+          this.isUpdating = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: () => {
+        this.ngZone.run(() => {
+          this.updateError = 'Failed to save. Please try again.';
+          this.isUpdating = false;
+          this.cdr.detectChanges();
+        });
+      }
+    });
+  }
+
+  /** All notes are treated as Approved */
+  isApproved(_note: ClinicalNote): boolean {
+    return true;
   }
 
   /** Initials from patient display name */
@@ -147,6 +204,6 @@ export class ClinicalNotesComponent implements OnInit, OnDestroy {
   }
 
   pendingCount(): number {
-    return this.notes.filter(n => !n.updatedAt).length;
+    return 0; // all notes are approved
   }
 }
