@@ -29,12 +29,12 @@ export class PaymentService {
     return this.http.post<PaymentInitiatedResponse>(`${this.baseUrl}/initiate`, { bookingId });
   }
 
-  confirmMockPayment(sessionId: string): Observable<PaymentStatusResponse> {
-    return this.http.post<PaymentStatusResponse>(
-      `${this.baseUrl}/mock-confirm`,
-      { sessionId }
-    );
-  }
+confirmMockPayment(paymentId: string): Observable<any> {
+  return this.http.post(
+    `${this.baseUrl}/${paymentId}/mock-confirm`,
+    {}
+  );
+}
 
   getPaymentStatus(bookingId: string): Observable<PaymentStatusResponse> {
     return this.http.get<PaymentStatusResponse>(`${this.baseUrl}/${bookingId}/status`);
