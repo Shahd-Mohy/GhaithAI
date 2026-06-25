@@ -1,0 +1,122 @@
+.notification-wrapper {
+  position: relative;
+  z-index: 1050;
+}
+
+.notification-icon-btn {
+  transition: transform 0.2s ease;
+  color: #333;
+}
+
+.notification-icon-btn:hover {
+  transform: scale(1.1);
+  color: #0d6efd;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: -10px; /* Aligns dropdown slightly to the right of the bell */
+  width: 350px;
+  background-color: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transform-origin: top right;
+  animation: slideDown 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.notification-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: 20px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #fff;
+  filter: drop-shadow(0 -2px 2px rgba(0,0,0,0.05));
+}
+
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1; 
+  border-radius: 4px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8; 
+}
+
+.notification-item {
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa !important;
+}
+
+.notification-item:hover .delete-btn {
+  opacity: 1;
+}
+
+.notification-icon-circle {
+  width: 40px;
+  height: 40px;
+  background-color: #f8f9fa;
+  font-size: 1.1rem;
+}
+
+.fs-7 {
+  font-size: 0.875rem;
+}
+
+.fs-8 {
+  font-size: 0.75rem;
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+}
+
+.delete-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  height: max-content;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive for mobile */
+@media (max-width: 576px) {
+  .notification-dropdown {
+    position: fixed;
+    top: 60px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+  }
+  .notification-dropdown::before {
+    display: none;
+  }
+}

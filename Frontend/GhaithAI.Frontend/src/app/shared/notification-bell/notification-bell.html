@@ -1,0 +1,65 @@
+<div class="notification-wrapper position-relative d-inline-block me-3">
+  <button 
+    class="btn btn-link position-relative text-dark p-0 notification-icon-btn" 
+    (click)="toggleDropdown()"
+    aria-label="Notifications">
+    <i class="bi bi-bell fs-5"></i>
+    <span *ngIf="unreadCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm">
+      {{unreadCount > 99 ? '99+' : unreadCount}}
+      <span class="visually-hidden">unread messages</span>
+    </span>
+  </button>
+
+  <div *ngIf="isDropdownOpen" class="notification-dropdown shadow-lg rounded bg-white">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+      <h6 class="m-0 fw-bold">Notifications</h6>
+      <button *ngIf="unreadCount > 0" class="btn btn-sm btn-link text-decoration-none p-0 text-primary fs-7" (click)="markAllAsRead($event)">
+        Mark all as read
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="notification-list" style="max-height: 400px; overflow-y: auto;">
+      <div *ngIf="notifications.length === 0" class="p-4 text-center text-muted">
+        <i class="bi bi-bell-slash fs-3 d-block mb-2"></i>
+        <small>No notifications yet</small>
+      </div>
+
+      <div *ngFor="let n of notifications" 
+           class="notification-item p-3 border-bottom position-relative" 
+           [class.bg-light]="!n.isRead"
+           (click)="markAsRead(n, $event)">
+        
+        <div class="d-flex">
+          <!-- Icon -->
+          <div class="notification-icon-circle me-3 flex-shrink-0 d-flex justify-content-center align-items-center rounded-circle bg-white shadow-sm border">
+            <i class="bi {{getIconForType(n.type)}}"></i>
+          </div>
+
+          <!-- Content -->
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between">
+              <h6 class="mb-1 fs-7 fw-bold" [class.text-dark]="!n.isRead" [class.text-muted]="n.isRead">{{n.title}}</h6>
+              <small class="text-muted fs-8">{{n.createdAt | date:'short'}}</small>
+            </div>
+            <p class="mb-0 fs-7 text-secondary">{{n.body}}</p>
+          </div>
+          
+          <!-- Delete Button -->
+          <button class="btn btn-sm btn-link text-danger p-0 ms-2 delete-btn" (click)="deleteNotification(n.id, $event)">
+            <i class="bi bi-x fs-5"></i>
+          </button>
+        </div>
+        
+        <!-- Unread Dot -->
+        <span *ngIf="!n.isRead" class="position-absolute unread-dot bg-primary rounded-circle"></span>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="p-2 border-top text-center">
+      <a routerLink="/notifications" class="text-decoration-none fs-7 text-primary fw-medium" (click)="isDropdownOpen = false">View All</a>
+    </div>
+  </div>
+</div>
