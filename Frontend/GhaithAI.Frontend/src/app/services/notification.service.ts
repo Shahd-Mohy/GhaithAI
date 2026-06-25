@@ -13,7 +13,7 @@ import { tap } from 'rxjs/operators';
 })
 export class NotificationService {
   private hubConnection: signalR.HubConnection | null = null;
-  private readonly apiUrl = `${environment.apiUrl}/api/notifications`;
+  private readonly apiUrl = `${environment.apiUrl}/notifications`;
   
   private notificationsSubject = new BehaviorSubject<NotificationDto[]>([]);
   public notifications$ = this.notificationsSubject.asObservable();
@@ -34,7 +34,7 @@ export class NotificationService {
     if (!token) return;
 
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`${environment.apiUrl}/hubs/notifications`, {
+      .withUrl(`${environment.apiUrl.replace('/api', '')}/hubs/notifications`, {
         accessTokenFactory: () => token
       })
       .withAutomaticReconnect()
