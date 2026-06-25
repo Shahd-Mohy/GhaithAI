@@ -1,4 +1,4 @@
-﻿using GhaithAI.GaithAI.Application.DTOs.Booking;
+using GhaithAI.GaithAI.Application.DTOs.Booking;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.EntityFrameworkCore;
 using GhaithAI.GaithAI.Domain.Entities;
@@ -10,12 +10,14 @@ namespace GhaithAI.GaithAI.Application.Services.Class
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IClinicPatientService _patientService;
+        private readonly INotificationService _notificationService;
 
-        public BookingService(IUnitOfWork unitOfWork, IMapper mapper, IClinicPatientService patientService)
+        public BookingService(IUnitOfWork unitOfWork, IMapper mapper, IClinicPatientService patientService, INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _patientService = patientService;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<DoctorBookingResponseDto>> GetDoctorBookingsPagedAsync(
@@ -65,6 +67,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
         public async Task<Guid> CreateClinicBookingAsync(string userId, CreateClinicBookingDto dto)
         {
             var doctorId = await GetDoctorIdByUserIdAsync(userId);
+            var doctorProfile = await _unitOfWork.DoctorProfile.GetByIdAsync(doctorId);
             bool isSlotBusy = await _unitOfWork.Booking.GetAllQueryableNoTracking()
                 .AnyAsync(b => b.DoctorId == doctorId &&
                                b.SlotTime == dto.SlotTime &&
@@ -125,6 +128,14 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             {
                 throw new Exception("An unexpected error occurred while saving the booking data.");
             }
+
+            // Notification for Doctor
+            await _notificationService.SendAsync(
+                doctorProfile.UserId,
+                GhaithAI.GaithAI.Domain.Enums.NotificationType.NewBooking,
+                "New Booking Scheduled",
+                $"A new booking has been scheduled for {dto.BookingDate.ToShortDateString()} at {dto.SlotTime}.",
+                booking.Id);
 
             return booking.Id;
         }
@@ -190,6 +201,22 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             if (result <= 0)
                 throw new Exception("An unexpected error occurred while saving the booking data.");
+
+            // Notification for Patient
+            await _notificationService.SendAsync(
+                userId,
+                GhaithAI.GaithAI.Domain.Enums.NotificationType.BookingConfirmed,
+                "Booking Confirmed",
+                $"Your booking with Dr. {doctor.FullName} on {dto.BookingDate.ToShortDateString()} at {dto.SlotTime} is confirmed.",
+                booking.Id);
+
+            // Notification for Doctor
+            await _notificationService.SendAsync(
+                doctor.UserId,
+                GhaithAI.GaithAI.Domain.Enums.NotificationType.NewBooking,
+                "New Appointment",
+                $"You have a new appointment on {dto.BookingDate.ToShortDateString()} at {dto.SlotTime}.",
+                booking.Id);
 
             return booking.Id;
         }
@@ -278,6 +305,27 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             if (result <= 0)
                 throw new Exception("An unexpected error occurred while cancelling the booking.");
+
+            var doctor = await _unitOfWork.DoctorProfile.GetByIdAsync(booking.DoctorId);
+
+            // Notification for Patient
+            await _notificationService.SendAsync(
+                userId,
+                GhaithAI.GaithAI.Domain.Enums.NotificationType.BookingCancelled,
+                "Booking Cancelled",
+                $"Your booking on {booking.BookingDate.ToShortDateString()} at {booking.SlotTime} has been cancelled.",
+                booking.Id);
+
+            // Notification for Doctor
+            if (doctor != null)
+            {
+                await _notificationService.SendAsync(
+                    doctor.UserId,
+                    GhaithAI.GaithAI.Domain.Enums.NotificationType.BookingCancelledByPatient,
+                    "Appointment Cancelled",
+                    $"The appointment on {booking.BookingDate.ToShortDateString()} at {booking.SlotTime} has been cancelled by the patient.",
+                    booking.Id);
+            }
         }
 
         // ─── Get Available Slots ──────────────────────────

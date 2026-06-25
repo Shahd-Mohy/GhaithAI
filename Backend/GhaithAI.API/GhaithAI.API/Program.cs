@@ -13,8 +13,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using GhaithAI.API.BackgroundJobs;
+using GhaithAI.API.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// QuestPDF — Community license (free for projects with revenue < $1M USD)
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -30,6 +35,7 @@ builder.Services.AddMailService(builder.Configuration);
 
 //builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddSignalR();
+builder.Services.AddHostedService<NotificationJob>();
 
 // إعدادات الـ Langflow والـ HttpClient الخاص به (Chat)
 builder.Services.Configure<LangflowSettings>(builder.Configuration.GetSection("Langflow"));
@@ -110,7 +116,7 @@ builder.Services.AddAuthentication(options =>
             var path = context.HttpContext.Request.Path;
 
             if (!string.IsNullOrEmpty(accessToken) &&
-                (path.StartsWithSegments("/hubs/chat") || path.StartsWithSegments("/hubs/session")))
+                (path.StartsWithSegments("/hubs/chat") || path.StartsWithSegments("/hubs/session") || path.StartsWithSegments("/hubs/notifications")))
             {
                 context.Token = accessToken;
             }
@@ -165,6 +171,7 @@ app.MapControllers();
 
 app.MapHub<ChatHub>("/hubs/chat");
 app.MapHub<SessionHub>("/hubs/session");
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 using (var scope = app.Services.CreateScope())
 {

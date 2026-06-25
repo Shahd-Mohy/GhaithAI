@@ -1,4 +1,4 @@
-﻿global using GhaithAI.API.GaithAI.Application.Services.Class;
+global using GhaithAI.API.GaithAI.Application.Services.Class;
 global using GhaithAI.API.GaithAI.Domain.Interfaces.InterfaceRepository;
 global using GhaithAI.API.GaithAI.Infrastructure.Repositories.Class;
 global using GhaithAI.API.Repositories.Class;
@@ -82,11 +82,13 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
 
             services.AddScoped<ISessionTranscriptService, SessionTranscriptService>();
             services.AddScoped<ISessionReportService, SessionReportService>();
+            services.AddScoped<ISessionReportPdfService, SessionReportPdfService>();
 
             services.AddScoped<IDoctorDashboardPatiantService, DoctorDashboardPatiantService>();
             services.AddScoped<IStripeClient, StripeClient>();
             services.AddScoped<IPaymentService, PaymentService>();
 
+            services.AddScoped<INotificationService, NotificationService>();
 
             return services;
         }

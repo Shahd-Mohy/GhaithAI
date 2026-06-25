@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+:host { display: block; font-family: 'Sora', sans-serif; font-size: 14px; }
+
+/* ── Page ── */
+.report-page { padding: 24px; background: #F8FAFC; min-height: 100vh; }
+
+/* ── Loading / Error ── */
+.loading-box { text-align: center; padding: 80px 20px; }
+.loading-box p { font-size: 13px; color: #64748B; margin-top: 12px; font-family: 'Sora', sans-serif; }
+.spinner { width: 32px; height: 32px; border: 3px solid #E2ECF0; border-top-color: #0B8FAC; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-box { display: flex; align-items: center; gap: 9px; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.25); border-radius: 10px; padding: 14px 16px; color: #DC2626; font-size: 13px; }
+.error-box svg { stroke: #DC2626; fill: none; flex-shrink: 0; width: 18px; height: 18px; }
+
+/* ── Header ── */
+.report-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.report-header-left { display: flex; align-items: center; gap: 10px; }
+.report-header-left h1 { font-size: 20px; font-weight: 800; color: #0D1B3E; letter-spacing: -0.5px; }
+.report-header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.version-badge { font-size: 11px; font-weight: 600; color: #475569; background: #E2ECF0; border-radius: 6px; padding: 2px 8px; }
+.status-badge { font-size: 11px; font-weight: 600; border-radius: 6px; padding: 3px 10px; }
+.status-badge.draft    { color: #92400E; background: #FEF3C7; }
+.status-badge.approved { color: #065F46; background: #D1FAE5; }
+.status-badge.locked   { color: #1E3A5F; background: #DBEAFE; }
+
+/* ── Buttons ── */
+.btn-outline, .btn-secondary, .btn-approve, .btn-lock, .btn-save, .btn-cancel {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; font-family: 'Sora', sans-serif;
+  border-radius: 8px; padding: 8px 14px; cursor: pointer; border: none; transition: all 0.2s;
+}
+.btn-outline   { color: #0B8FAC; background: white; border: 1.5px solid #0B8FAC; }
+.btn-outline:hover { background: rgba(11,143,172,0.06); }
+.btn-secondary { color: #0D1B3E; background: #E2ECF0; }
+.btn-secondary:hover { background: #CBD5E1; }
+.btn-approve   { color: white; background: #059669; }
+.btn-approve:hover { background: #047857; }
+.btn-lock      { color: white; background: #0D1B3E; }
+.btn-lock:hover { background: #1a3a5c; }
+.btn-save      { color: white; background: #0B8FAC; }
+.btn-save:hover { background: #076E86; }
+.btn-cancel    { color: #64748B; background: #F1F5F9; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Feedback ── */
+.feedback-success { background: #D1FAE5; border: 1px solid #6EE7B7; color: #065F46; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; }
+.feedback-error   { background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.25); color: #DC2626; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; }
+
+/* ── Layout ── */
+.report-body { display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .report-body { grid-template-columns: 1fr; } }
+
+/* ── Cards ── */
+.card { background: white; border: 1.5px solid #E2ECF0; border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #0D1B3E; }
+.section-title { font-size: 12px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.06em; }
+.card-body { padding: 14px 16px; }
+
+/* ── Risk ── */
+.risk-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 5px; color: white; }
+.risk-low    .card-header { background: #065F46; } .risk-low    .risk-badge { background: #059669; }
+.risk-medium .card-header { background: #92400E; } .risk-medium .risk-badge { background: #D97706; }
+.risk-high   .card-header { background: #9A3412; } .risk-high   .risk-badge { background: #EA580C; }
+.risk-critical .card-header { background: #7F1D1D; } .risk-critical .risk-badge { background: #DC2626; }
+.si-alert { display: inline-block; font-size: 12px; font-weight: 700; color: #B91C1C; background: #FEE2E2; border-radius: 6px; padding: 3px 10px; margin-bottom: 8px; }
+.si-none  { font-size: 12px; color: #065F46; font-weight: 600; }
+.risk-narrative { font-size: 12px; color: #475569; line-height: 1.6; margin-top: 10px; border-top: 1px solid #F1F5F9; padding-top: 10px; }
+
+/* ── Info rows ── */
+.info-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+.info-label { font-size: 11px; color: #94A3B8; flex-shrink: 0; }
+.info-value { font-size: 12px; font-weight: 600; color: #0D1B3E; text-align: right; }
+.diff-list { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px; }
+.diff-list li { font-size: 12px; color: #334155; line-height: 1.5; }
+.meta-card .card-header { background: #475569; }
+
+/* ── SOAP ── */
+.soap-card { margin-bottom: 0; }
+.locked-note { display: flex; align-items: center; gap: 4px; font-size: 11px; color: rgba(255,255,255,0.7); }
+.soap-section { margin-bottom: 18px; }
+.soap-section:last-child { margin-bottom: 0; }
+.soap-label { font-size: 11px; font-weight: 700; color: #0B8FAC; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.soap-text { font-size: 13px; color: #334155; line-height: 1.7; margin: 0; }
+.soap-edit textarea { width: 100%; font-size: 13px; font-family: 'Sora', sans-serif; color: #0D1B3E; border: 1.5px solid #E2ECF0; border-radius: 8px; padding: 10px 12px; resize: vertical; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+.soap-edit textarea:focus { border-color: #0B8FAC; box-shadow: 0 0 0 3px rgba(11,143,172,0.1); }
+.save-error { font-size: 12px; color: #DC2626; margin-bottom: 10px; }
+.edit-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 12px; border-top: 1px solid #F1F5F9; }

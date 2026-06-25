@@ -26,6 +26,7 @@ namespace GhaithAI.API.Repositories.UnitWork
         // ✅ الناقصين
         //IGenericRepository<ClinicalSession> ClinicalSession { get; }
         IGenericRepository<MoodLog> MoodLog { get; }
+        INotificationRepository Notification { get; }
 
         // ✅ Transaction
         Task<IDbContextTransaction> BeginTransactionAsync();

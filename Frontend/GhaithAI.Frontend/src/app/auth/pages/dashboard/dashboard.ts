@@ -19,6 +19,7 @@ import { DashboardRefreshService } from '../../../services/dashboard-refresh.ser
 import { PatientSessionRoomComponent } from '../../../auth/patient-session-room.component/patient-session-room.component';
 
 import { ProfessionalsComponent } from "../professionals/professionals";
+import { NotificationBellComponent } from '../../../shared/notification-bell/notification-bell';
 
 interface QuickAction {
   name: string; desc: string; page: string; colorClass: string; icon: string;
@@ -27,7 +28,7 @@ interface QuickAction {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, SelfHelpComponent, MoodTrackerComponent, JournalComponent, ProfessionalsComponent, PatientSessionRoomComponent],
+  imports: [CommonModule, RouterLink, SelfHelpComponent, MoodTrackerComponent, JournalComponent, ProfessionalsComponent, PatientSessionRoomComponent, NotificationBellComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })

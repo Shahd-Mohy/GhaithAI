@@ -160,6 +160,30 @@ export const routes: Routes = [
       import('./auth/patient-session-room.component/patient-session-room.component')
         .then(m => m.PatientSessionRoomComponent)
   },
-
+{
+  path: 'payment/success',
+  canActivate: [authGuard],
+  loadComponent: () =>
+    import('./auth/payment-success.component/payment-success.component')
+      .then(m => m.PaymentSuccessComponent)
+},
+{
+  path: 'payment/cancel',
+  redirectTo: '/dashboard'
+},
+{
+  path: 'clinical-session/:sessionId/report',
+  canActivate: [authGuard],
+  loadComponent: () =>
+    import('./auth/session-report/session-report')
+      .then(m => m.SessionReportComponent)
+},
+{
+  path: 'session/:sessionId/report',
+  canActivate: [authGuard],
+  loadComponent: () =>
+    import('./auth/session-report/session-report')
+      .then(m => m.SessionReportComponent)
+},
   { path: '**', redirectTo: '' }
 ];
