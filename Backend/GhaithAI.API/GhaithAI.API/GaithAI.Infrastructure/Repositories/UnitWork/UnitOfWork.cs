@@ -33,6 +33,7 @@ namespace GhaithAI.API.Repositories.UnitWork
         private ISessionNoteRepository _sessionNote;
 
         private ISessionTranscriptRepository _sessionTranscript;
+        private INotificationRepository _notification;
 
         private IPaymentRepository _payment;
 
@@ -99,6 +100,9 @@ namespace GhaithAI.API.Repositories.UnitWork
 
         public IGenericRepository<MoodLog> MoodLog =>
             _moodLog ??= new GenericRepository<MoodLog>(_context);
+
+        public INotificationRepository Notification =>
+            _notification ??= new NotificationRepository(_context);
 
         // ✅ Transaction
         public async Task<IDbContextTransaction> BeginTransactionAsync()
