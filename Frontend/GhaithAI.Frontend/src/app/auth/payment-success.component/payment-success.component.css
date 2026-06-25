@@ -1,55 +1,420 @@
-  @keyframes spin { to { transform: rotate(360deg); } }
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
 
-  .success-page {
-    min-height: 100vh; background: #F8FAFC;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Sora', sans-serif; padding: 24px;
-  }
+:host {
+  display: block;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+}
 
-  .loading-state {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 16px; color: #64748B; font-size: 14px;
-  }
+/* ─── LAYOUT ─── */
+.page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
 
-  .success-content {
-    background: white; border-radius: 20px;
-    border: 1px solid #E2ECF0; padding: 56px 48px;
-    text-align: center; max-width: 480px; width: 100%;
-    animation: fadeIn 0.4s ease;
-  }
+/* ─── LEFT PANEL ─── */
+.left {
+  background: #0B8FAC;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+.left::before {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  right: -80px;
+  width: 320px;
+  height: 320px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+}
 
-  .success-icon {
-    width: 72px; height: 72px;
-    background: rgba(5,150,105,0.1); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 24px;
-  }
-  .success-icon svg { width: 36px; height: 36px; }
+.left::after {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: -60px;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 50%;
+}
 
-  h1 { font-size: 24px; font-weight: 800; color: #0D1B3E; margin-bottom: 12px; }
-  p  { font-size: 14px; color: #64748B; line-height: 1.65; margin-bottom: 32px; }
+.left-logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  position: relative;
+  z-index: 1;
+}
 
-  .actions { display: flex; flex-direction: column; gap: 10px; }
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 
-  .btn-primary {
-    padding: 13px; font-size: 14px; font-weight: 600;
-    font-family: 'Sora', sans-serif; color: white;
-    background: #0B8FAC; border: none; border-radius: 10px;
-    cursor: pointer; transition: background 0.2s;
-  }
-  .btn-primary:hover { background: #076E86; }
+.logo-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
 
-  .btn-outline {
-    padding: 13px; font-size: 14px; font-weight: 500;
-    font-family: 'Sora', sans-serif; color: #0B8FAC;
-    background: transparent; border: 1.5px solid #0B8FAC;
-    border-radius: 10px; cursor: pointer;
-    text-decoration: none; display: block;
-    transition: background 0.2s;
-  }
-  .btn-outline:hover { background: rgba(11,143,172,0.05); }
+.logo-txt {
+  font-size: 17px;
+  font-weight: 700;
+  color: white;
+  font-family: 'Sora', sans-serif;
+}
+
+.left-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.left-content h2 {
+  font-size: clamp(22px, 2.5vw, 30px);
+  font-weight: 800;
+  color: white;
+  line-height: 1.2;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+  font-family: 'Sora', sans-serif;
+}
+
+.left-content p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.65;
+  margin-bottom: 32px;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ─── BOOKING SUMMARY CARD (LEFT) ─── */
+.booking-summary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.skeleton-box {
+  height: 160px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.summary-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: white;
+  fill: none;
+}
+
+.summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summary-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: 'Sora', sans-serif;
+}
+
+.summary-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  font-family: 'Sora', sans-serif;
+}
+
+.summary-divider {
+  height: 0.5px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-total-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  font-family: 'Sora', sans-serif;
+}
+
+.summary-total-amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+  font-family: 'Sora', sans-serif;
+}
+
+.left-foot {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  position: relative;
+  z-index: 1;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ─── RIGHT PANEL ─── */
+.right {
+  background: white;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 36px;
+  min-height: 100vh;
+}
+
+.form-box {
+  width: 100%;
+  max-width: 440px;
+}
+
+/* ─── SUCCESS ICON ─── */
+.success-icon-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.success-circle {
+  width: 72px;
+  height: 72px;
+  background: rgba(5, 150, 105, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.success-circle svg {
+  width: 32px;
+  height: 32px;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ─── STEP HEADER ─── */
+.step-header {
+  margin-bottom: 24px;
+}
+
+.step-header h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0D1B3E;
+  margin-bottom: 5px;
+  letter-spacing: -0.5px;
+  font-family: 'Sora', sans-serif;
+}
+
+.step-header p {
+  font-size: 13px;
+  color: #64748B;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ─── RECEIPT CARD ─── */
+.receipt-card {
+  background: #F8FAFC;
+  border: 1.5px solid #E2ECF0;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.receipt-label {
+  font-size: 12px;
+  color: #64748B;
+  font-family: 'Sora', sans-serif;
+}
+
+.receipt-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0D1B3E;
+  font-family: 'Sora', sans-serif;
+}
+
+.receipt-value.mono {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #475569;
+}
+
+.receipt-divider {
+  height: 0.5px;
+  background: #E2ECF0;
+  margin: 4px 0;
+}
+
+.badge-paid {
+  font-size: 11px;
+  font-weight: 600;
+  color: #065F46;
+  background: #D1FAE5;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ─── BUTTONS ─── */
+.btn-submit {
+  width: 100%;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Sora', sans-serif;
+  color: #ffffff;
+  background: #0B8FAC;
+  border: none;
+  cursor: pointer;
+  border-radius: 9px;
+  transition: background 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.btn-submit:hover { background: #076E86; transform: translateY(-1px); }
+
+.btn-outline {
+  width: 100%;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Sora', sans-serif;
+  color: #0B8FAC;
+  background: transparent;
+  border: 1.5px solid #0B8FAC;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-outline:hover { background: rgba(11, 143, 172, 0.05); }
+
+/* ─── ERROR BOX ─── */
+.api-error-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 9px;
+  padding: 11px 13px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #DC2626;
+  line-height: 1.5;
+  font-family: 'Sora', sans-serif;
+}
+
+.api-error-box svg {
+  width: 16px;
+  height: 16px;
+  stroke: #DC2626;
+  fill: none;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ─── LOADING ─── */
+.loading-box {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading-box p {
+  font-size: 13px;
+  color: #64748B;
+  font-family: 'Sora', sans-serif;
+  margin-top: 12px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E2ECF0;
+  border-top-color: #0B8FAC;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .page { grid-template-columns: 1fr; }
+  .left { min-height: 200px; padding: 28px; }
+  .left-content { display: none; }
+  .right { padding: 28px 20px; min-height: auto; }
+}

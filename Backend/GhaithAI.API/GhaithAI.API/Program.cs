@@ -159,11 +159,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAngular");
 app.UseStaticFiles();
-app.Use(async (context, next) =>
-{
-    context.Request.EnableBuffering();
-    await next();
-});
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

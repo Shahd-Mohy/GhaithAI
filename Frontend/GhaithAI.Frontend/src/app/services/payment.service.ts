@@ -25,19 +25,28 @@ export class PaymentService {
 
   constructor(private http: HttpClient) {}
 
+  // POST /api/payments/initiate
   initiatePayment(bookingId: string): Observable<PaymentInitiatedResponse> {
-    return this.http.post<PaymentInitiatedResponse>(`${this.baseUrl}/initiate`, { bookingId });
+    return this.http.post<PaymentInitiatedResponse>(
+      `${this.baseUrl}/initiate`,
+      { bookingId }
+    );
   }
 
-confirmMockPayment(paymentId: string): Observable<any> {
-  return this.http.post(
-    `${this.baseUrl}/${paymentId}/mock-confirm`,
-    {}
-  );
-}
+  // GET /api/payments/confirm?session_id=xxx
+  // بيتكلم بعد redirect من Stripe
+  confirmPayment(sessionId: string): Observable<PaymentStatusResponse> {
+    return this.http.get<PaymentStatusResponse>(
+      `${this.baseUrl}/confirm`,
+      { params: { session_id: sessionId } }
+    );
+  }
 
+  // GET /api/payments/status/{bookingId}
   getPaymentStatus(bookingId: string): Observable<PaymentStatusResponse> {
-    return this.http.get<PaymentStatusResponse>(`${this.baseUrl}/${bookingId}/status`);
+    return this.http.get<PaymentStatusResponse>(
+      `${this.baseUrl}/status/${bookingId}`
+    );
   }
 
   redirectToCheckout(url: string): void {

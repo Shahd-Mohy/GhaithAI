@@ -141,14 +141,6 @@ export const routes: Routes = [
   },
 
 {
-  path: 'payment/mock',
-  canActivate: [authGuard],
-  loadComponent: () =>
-    import('./auth/payment-mock/payment-mock')
-      .then(m => m.PaymentMockComponent)
-},
-
-{
   path: 'payment/success',
   canActivate: [authGuard],
   loadComponent: () =>

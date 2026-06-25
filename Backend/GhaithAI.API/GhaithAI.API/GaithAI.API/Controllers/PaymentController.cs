@@ -1,10 +1,10 @@
-﻿using System.Security.Claims;
-using GhaithAI.GaithAI.Application.DTOs.Payment;
+﻿using GhaithAI.GaithAI.Application.DTOs.Payment;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
-namespace GhaithAI.API.Controllers
+namespace GhaithAI.GaithAI.API.Controllers
 {
     [ApiController]
     [Route("api/payments")]
@@ -18,39 +18,58 @@ namespace GhaithAI.API.Controllers
             _paymentService = paymentService;
         }
 
-        private string CurrentUserId =>
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-
-        // POST /api/payments/initiate
+        // POST api/payments/initiate
         [HttpPost("initiate")]
-        [Authorize(Roles = "User")]
         public async Task<IActionResult> Initiate([FromBody] InitiatePaymentDto dto)
         {
-            var result = await _paymentService.InitiateAsync(dto.BookingId, CurrentUserId);
-            return Ok(result);
+            var patientId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            try
+            {
+                var result = await _paymentService.InitiateAsync(dto.BookingId, patientId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
         }
 
-        // POST /api/payments/mock-confirm
-        // [AllowAnonymous] عشان الـ mock page مش عندها token
-        [HttpPost("mock-confirm")]
-        [AllowAnonymous]
-        public async Task<IActionResult> MockConfirm([FromBody] MockConfirmDto dto)
+        // GET api/payments/confirm?session_id=cs_test_xxx
+        // الـ Frontend بيكلمه بعد redirect من Stripe
+        [HttpGet("confirm")]
+        public async Task<IActionResult> Confirm([FromQuery] string session_id)
         {
-            var result = await _paymentService.MockConfirmAsync(dto.SessionId);
-            return Ok(result);
+            if (string.IsNullOrEmpty(session_id))
+                return BadRequest(new { message = "session_id is required." });
+            try
+            {
+                var result = await _paymentService.ConfirmPaymentAsync(session_id);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
         }
 
-        // GET /api/payments/{bookingId}/status
-        [HttpGet("{bookingId}/status")]
+        // GET api/payments/status/{bookingId}
+        [HttpGet("status/{bookingId}")]
         public async Task<IActionResult> GetStatus(Guid bookingId)
         {
-            var result = await _paymentService.GetStatusByBookingIdAsync(bookingId);
-            return Ok(result);
+            try
+            {
+                var result = await _paymentService.GetStatusByBookingIdAsync(bookingId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
         }
-    }
 
-    public class MockConfirmDto
-    {
-        public string SessionId { get; set; }
+        // POST api/payments/mock-confirm/{sessionId}  ← Testing فقط
+        [HttpPost("mock-confirm/{sessionId}")]
+        public async Task<IActionResult> MockConfirm(string sessionId)
+        {
+            try
+            {
+                var result = await _paymentService.MockConfirmAsync(sessionId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+        }
     }
 }

@@ -10,6 +10,9 @@ using GhaithAI.API.Services;
 using GhaithAI.GaithAI.Application.Services;
 using GhaithAI.GaithAI.Application.Services.Class;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
+using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
+using GhaithAI.GaithAI.Infrastructure.Services;
+using GhaithAI.GaithAI.Application.Services;
 
 namespace GhaithAI.API.GaithAI.Application.Helpers
 {
@@ -81,8 +84,8 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
             services.AddScoped<ISessionReportService, SessionReportService>();
 
             services.AddScoped<IDoctorDashboardPatiantService, DoctorDashboardPatiantService>();
-            //services.AddScoped<IStripeClient, StripeClient>();
-            services.AddScoped<IPaymentService, MockPaymentService>();
+            services.AddScoped<IStripeClient, StripeClient>();
+            services.AddScoped<IPaymentService, PaymentService>();
 
 
             return services;
