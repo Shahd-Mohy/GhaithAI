@@ -1,0 +1,201 @@
+<div class="report-page">
+
+  <!-- ── Loading ── -->
+  <div *ngIf="loading" class="loading-box">
+    <div class="spinner"></div>
+    <p>Loading clinical report…</p>
+  </div>
+
+  <!-- ── Generating (AI processing) ── -->
+<div class="loading-box" *ngIf="generating">
+  <div class="spinner"></div>
+  <p>Generating clinical report…</p>
+  <p style="font-size:12px; color:#94A3B8; margin-top:4px;">
+    AI is analyzing the transcript. This may take 20–30 seconds.
+  </p>
+</div>
+
+  <!-- ── Error ── -->
+  <div *ngIf="!loading && error" class="error-box">
+    <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+    {{ error }}
+  </div>
+
+  <!-- ── Report ── -->
+  <ng-container *ngIf="!loading && !error && report">
+
+    <!-- Header bar -->
+    <div class="report-header">
+      <div class="report-header-left">
+        <h1>Clinical Session Report</h1>
+        <span class="version-badge">v{{ report.versionNumber }}</span>
+        <span class="status-badge" [ngClass]="report.status.toLowerCase()">
+          {{ report.status }}
+        </span>
+      </div>
+      <div class="report-header-right">
+        <!-- Export PDF -->
+        <button class="btn-outline" (click)="exportPdf()" [disabled]="exporting">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+          {{ exporting ? 'Exporting…' : 'Export PDF' }}
+        </button>
+
+        <!-- Edit SOAP -->
+        <button class="btn-secondary" (click)="startEdit()"
+          *ngIf="!editing && !isLocked">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit SOAP
+        </button>
+
+        <!-- Approve -->
+        <button class="btn-approve" (click)="approve()"
+          *ngIf="isDraft && !editing" [disabled]="approving">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M20 6L9 17l-5-5"/></svg>
+          {{ approving ? 'Approving…' : 'Approve' }}
+        </button>
+
+        <!-- Lock -->
+        <button class="btn-lock" (click)="lock()"
+          *ngIf="isApproved && !editing" [disabled]="locking">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          {{ locking ? 'Locking…' : 'Lock Report' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Action feedback -->
+    <div class="feedback-success" *ngIf="actionSuccess">✓ {{ actionSuccess }}</div>
+    <div class="feedback-error"   *ngIf="actionError">✗ {{ actionError }}</div>
+
+    <div class="report-body">
+
+      <!-- ══ LEFT COLUMN ══ -->
+      <div class="col-left">
+
+        <!-- Risk Assessment -->
+        <div class="card" [ngClass]="riskColor">
+          <div class="card-header risk-header">
+            <span class="section-title">Risk Assessment</span>
+            <span class="risk-badge">{{ report.riskTier }}</span>
+          </div>
+          <div class="card-body">
+            <div class="risk-si" *ngIf="report.siPresent">
+              <span class="si-alert">⚠ Suicidal Ideation Identified</span>
+              <p *ngIf="report.suicidalIdeationDetails">{{ report.suicidalIdeationDetails }}</p>
+            </div>
+            <div class="risk-si si-none" *ngIf="!report.siPresent">
+              ✓ No suicidal ideation identified
+            </div>
+            <p class="risk-narrative" *ngIf="report.riskNarrative">{{ report.riskNarrative }}</p>
+          </div>
+        </div>
+
+        <!-- Chief Complaint -->
+        <div class="card" *ngIf="report.chiefComplaintPrimary">
+          <div class="card-header"><span class="section-title">Chief Complaint</span></div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="info-label">Primary</span>
+              <span class="info-value">{{ report.chiefComplaintPrimary }}</span>
+            </div>
+            <div class="info-row" *ngIf="report.chiefComplaintDuration">
+              <span class="info-label">Duration</span>
+              <span class="info-value">{{ report.chiefComplaintDuration }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Differential Considerations -->
+        <div class="card" *ngIf="report.differentialConsiderations?.length">
+          <div class="card-header"><span class="section-title">Differential Considerations</span></div>
+          <div class="card-body">
+            <ol class="diff-list">
+              <li *ngFor="let item of report.differentialConsiderations">{{ item }}</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Meta -->
+        <div class="card meta-card">
+          <div class="card-body">
+            <div class="info-row">
+              <span class="info-label">Generated</span>
+              <span class="info-value">{{ report.generatedAt | date:'medium' }}</span>
+            </div>
+            <div class="info-row" *ngIf="report.approvedAt">
+              <span class="info-label">Approved</span>
+              <span class="info-value">{{ report.approvedAt | date:'medium' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ RIGHT COLUMN — SOAP ══ -->
+      <div class="col-right">
+        <div class="card soap-card">
+          <div class="card-header">
+            <span class="section-title">SOAP Note</span>
+            <span class="locked-note" *ngIf="isLocked">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              Locked
+            </span>
+          </div>
+
+          <!-- View mode -->
+          <div class="card-body soap-view" *ngIf="!editing">
+            <div class="soap-section">
+              <div class="soap-label">S · Subjective</div>
+              <p class="soap-text">{{ report.soapSubjective || '—' }}</p>
+            </div>
+            <div class="soap-section">
+              <div class="soap-label">O · Objective</div>
+              <p class="soap-text">{{ report.soapObjective || '—' }}</p>
+            </div>
+            <div class="soap-section">
+              <div class="soap-label">A · Assessment</div>
+              <p class="soap-text">{{ report.soapAssessment || '—' }}</p>
+            </div>
+            <div class="soap-section">
+              <div class="soap-label">P · Plan</div>
+              <p class="soap-text">{{ report.soapPlan || '—' }}</p>
+            </div>
+          </div>
+
+          <!-- Edit mode -->
+          <div class="card-body soap-edit" *ngIf="editing">
+            <div class="soap-section">
+              <div class="soap-label">S · Subjective</div>
+              <textarea [(ngModel)]="soap.subjective" rows="4" placeholder="Subjective findings…"></textarea>
+            </div>
+            <div class="soap-section">
+              <div class="soap-label">O · Objective</div>
+              <textarea [(ngModel)]="soap.objective" rows="4" placeholder="Objective observations…"></textarea>
+            </div>
+            <div class="soap-section">
+              <div class="soap-label">A · Assessment</div>
+              <textarea [(ngModel)]="soap.assessment" rows="4" placeholder="Clinical assessment…"></textarea>
+            </div>
+            <div class="soap-section">
+              <div class="soap-label">P · Plan</div>
+              <textarea [(ngModel)]="soap.plan" rows="4" placeholder="Treatment plan…"></textarea>
+            </div>
+
+            <div class="save-error" *ngIf="saveError">{{ saveError }}</div>
+            <div class="edit-actions">
+              <button class="btn-cancel" (click)="cancelEdit()" [disabled]="saving">Cancel</button>
+              <button class="btn-save" (click)="saveEdit()" [disabled]="saving">
+                {{ saving ? 'Saving…' : 'Save Changes' }}
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- end right col -->
+
+    </div>
+    <!-- end report-body -->
+
+  </ng-container>
+</div>

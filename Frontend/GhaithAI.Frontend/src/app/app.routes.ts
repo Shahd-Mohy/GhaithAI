@@ -151,6 +151,20 @@ export const routes: Routes = [
   path: 'payment/cancel',
   redirectTo: '/dashboard'
 },
+{
+  path: 'clinical-session/:sessionId/report',
+  canActivate: [authGuard],
+  loadComponent: () =>
+    import('./auth/session-report/session-report')
+      .then(m => m.SessionReportComponent)
+},
+{
+  path: 'session/:sessionId/report',
+  canActivate: [authGuard],
+  loadComponent: () =>
+    import('./auth/session-report/session-report')
+      .then(m => m.SessionReportComponent)
+},
 
   { path: '**', redirectTo: '' }
 ];
