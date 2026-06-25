@@ -140,17 +140,26 @@ export const routes: Routes = [
     ]
   },
 
-{
-  path: 'payment/success',
-  canActivate: [authGuard],
-  loadComponent: () =>
-    import('./auth/payment-success.component/payment-success.component')
-      .then(m => m.PaymentSuccessComponent)
-},
-{
-  path: 'payment/cancel',
-  redirectTo: '/dashboard'
-},
+  {
+    path: 'payment/success',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./auth/payment-success.component/payment-success.component')
+        .then(m => m.PaymentSuccessComponent)
+  },
+  {
+    path: 'payment/cancel',
+    redirectTo: '/dashboard'
+  },
+
+  // ✅ Patient Session Room — deep-link: /session/:sessionId
+  {
+    path: 'session/:sessionId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./auth/patient-session-room.component/patient-session-room.component')
+        .then(m => m.PatientSessionRoomComponent)
+  },
 
   { path: '**', redirectTo: '' }
 ];

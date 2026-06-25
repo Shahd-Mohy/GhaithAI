@@ -55,6 +55,25 @@ namespace GhaithAI.GaithAI.API.Controllers
             }
         }
 
+        // GET /api/sessions/by-booking/{bookingId}
+        [HttpGet("by-booking/{bookingId:guid}")]
+        public async Task<IActionResult> GetSessionByBookingId([FromRoute] Guid bookingId)
+        {
+            try
+            {
+                var session = await _sessionService.GetSessionByBookingIdAsync(bookingId);
+                return Ok(session);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
+            }
+        }
+
         [HttpPut("{id:guid}/end")]
         public async Task<IActionResult> EndSession([FromRoute] Guid id)
         {

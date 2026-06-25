@@ -61,12 +61,13 @@
       <div class="nav-section-label" style="margin-top:24px">Get Help</div>
 
 
-     <a class="nav-item" [class.active]="isActive('professionals')" (click)="navigate('professionals')">
-  <svg viewBox="0 0 24 24">
-    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-  </svg>
-  Find Professional
-</a>
+      <a class="nav-item" [class.active]="isActive('professionals')" (click)="navigate('professionals')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+        </svg>
+        Find Professional
+      </a>
 
 
 
@@ -76,6 +77,15 @@
             d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
         </svg>
         Crisis Support
+      </a>
+
+      <!-- My Appointment nav item -->
+      <a class="nav-item" [class.active]="isActive('session')" (click)="openSession()">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2z" />
+        </svg>
+        My Appointment
       </a>
     </nav>
 
@@ -89,22 +99,23 @@
 
 
     <div class="sidebar-user">
-  <div class="user-details">
-    <div class="user-avatar">
-      {{ vm ? vm.displayName.charAt(0).toUpperCase() : 'W' }}
-    </div>
-    <div class="user-info">
-      <div class="user-name">{{ vm ? vm.displayName.split(' ')[0] : 'Welcome' }}</div>
-      <div class="user-plan">Free Plan</div>
-    </div>
-  </div>
+      <div class="user-details">
+        <div class="user-avatar">
+          {{ vm ? vm.displayName.charAt(0).toUpperCase() : 'W' }}
+        </div>
+        <div class="user-info">
+          <div class="user-name">{{ vm ? vm.displayName.split(' ')[0] : 'Welcome' }}</div>
+          <div class="user-plan">Free Plan</div>
+        </div>
+      </div>
 
-  <button class="logout-btn" (click)="logout()" title="Logout">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-      <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-    </svg>
-  </button>
-</div>
+      <button class="logout-btn" (click)="logout()" title="Logout">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path
+            d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+        </svg>
+      </button>
+    </div>
   </aside>
 
   <!-- ── MAIN ── -->
@@ -366,14 +377,20 @@
     </div>
     }
     @if (activePage === 'professionals') {
-  <div class="scroll-area">
-    <app-professionals></app-professionals>
-  </div>
-}
+    <div class="scroll-area">
+      <app-professionals></app-professionals>
+    </div>
+    }
     @if (activePage === 'crisis') {
     <div class="scroll-area" style="padding: 24px; color: #DC2626;">
       <h2>Crisis Support Page Coming Soon...</h2>
       <p>If you are in immediate danger, please call your local emergency services.</p>
+    </div>
+    }
+
+    @if (activePage === 'session') {
+    <div class="scroll-area" style="padding: 24px;">
+      <app-patient-session-room [sessionId]="activeSessionId"></app-patient-session-room>
     </div>
     }
 

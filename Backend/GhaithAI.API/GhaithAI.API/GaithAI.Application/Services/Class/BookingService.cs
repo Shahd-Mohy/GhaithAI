@@ -57,7 +57,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 .Take(pageSize)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<DoctorBookingResponseDto>>(items); 
+            return _mapper.Map<IEnumerable<DoctorBookingResponseDto>>(items);
         }
 
 
@@ -212,6 +212,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 var filterLower = timeFilter.Trim().ToLower();
                 query = filterLower switch
                 {
+                    "today" => query.Where(b => b.BookingDate == today),
                     "upcoming" => query.Where(b =>
                         b.BookingDate >= today &&
                         b.Status != BookingStatus.Cancelled),
@@ -363,8 +364,8 @@ namespace GhaithAI.GaithAI.Application.Services.Class
              .Where(b => b.DoctorId == doctorId
                       && b.BookingDate.Date == today
                       && b.Status != BookingStatus.Cancelled
-                      && b.SlotTime >= DateTime.Now.TimeOfDay) 
-             .OrderBy(b => b.SlotTime) 
+                      && b.SlotTime >= DateTime.Now.TimeOfDay)
+             .OrderBy(b => b.SlotTime)
              .Take(6)
              .ToListAsync();
             return _mapper.Map<IEnumerable<ScheduleItemDto>>(bookings);

@@ -1,0 +1,687 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:host {
+  display: block;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ─── PAGE WRAPPER ─── */
+.session-page {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 100%;
+}
+
+/* ─── PAGE HEADER ─── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #0B8FAC, #06B6D4);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.header-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ─── STATUS PILL ─── */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-pill.Idle {
+  background: #F1F5F9;
+  border-color: #E2E8F0;
+  color: #64748B;
+}
+
+.status-pill.Idle .status-dot {
+  background: #94A3B8;
+}
+
+.status-pill.Connecting {
+  background: #FFFBEB;
+  border-color: #FDE68A;
+  color: #92400E;
+}
+
+.status-pill.Connecting .status-dot {
+  background: #F59E0B;
+  animation: pulse-dot 1s infinite;
+}
+
+.status-pill.Waiting {
+  background: #EEF2FF;
+  border-color: #C7D2FE;
+  color: #3730A3;
+}
+
+.status-pill.Waiting .status-dot {
+  background: #6366F1;
+  animation: pulse-dot 1.2s infinite;
+}
+
+.status-pill.InCall {
+  background: #ECFDF5;
+  border-color: #A7F3D0;
+  color: #065F46;
+}
+
+.status-pill.InCall .status-dot {
+  background: #10B981;
+  animation: pulse-dot 1.5s infinite;
+}
+
+.status-pill.Ending {
+  background: #FFFBEB;
+  border-color: #FDE68A;
+  color: #92400E;
+}
+
+.status-pill.Ending .status-dot {
+  background: #F59E0B;
+}
+
+.status-pill.Ended {
+  background: #F1F5F9;
+  border-color: #E2E8F0;
+  color: #475569;
+}
+
+.status-pill.Ended .status-dot {
+  background: #94A3B8;
+}
+
+.status-pill.Error {
+  background: #FEF2F2;
+  border-color: #FECACA;
+  color: #991B1B;
+}
+
+.status-pill.Error .status-dot {
+  background: #EF4444;
+}
+
+.status-duration {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  padding-left: 4px;
+  border-left: 1px solid rgba(16, 185, 129, 0.3);
+  margin-left: 4px;
+}
+
+@keyframes pulse-dot {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ─── ERROR BANNER ─── */
+.error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 14px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-icon {
+  font-size: 22px;
+}
+
+.error-content {
+  flex: 1;
+}
+
+.error-msg {
+  font-size: 14px;
+  color: #991B1B;
+  font-weight: 600;
+  margin: 0;
+}
+
+.btn-dismiss {
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #991B1B;
+  background: transparent;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-dismiss:hover {
+  background: #FEE2E2;
+}
+
+/* ─── CENTERED CALL LAYOUT ─── */
+.call-grid {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  padding-top: 24px;
+}
+
+/* ─── CARD BASE ─── */
+.card {
+  background: white;
+  border: 1px solid #E8EDF5;
+  border-radius: 18px;
+  padding: 32px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.call-card {
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+/* ─── DOCTOR INFO ─── */
+.patient-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.patient-avatar-big {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0B8FAC22, #0B8FAC44);
+  color: #0B8FAC;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid #0B8FAC22;
+}
+
+.patient-details {
+  text-align: center;
+}
+
+.patient-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 3px;
+}
+
+.patient-condition {
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+/* ─── TIMER ─── */
+.timer-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 4px;
+}
+
+.timer-text {
+  font-size: 44px;
+  font-weight: 800;
+  color: #0F172A;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 4px;
+  line-height: 1;
+}
+
+.timer-status {
+  font-size: 13px;
+  color: #94A3B8;
+  margin: 0 0 20px;
+  font-weight: 500;
+  min-height: 18px;
+}
+
+/* ─── CALL BUTTON ─── */
+.control-btn-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.mic-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.mic-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+.mic-btn--idle {
+  background: linear-gradient(135deg, #0B8FAC, #0EA5C2);
+  color: white;
+  box-shadow: 0 4px 20px rgba(11, 143, 172, 0.35);
+}
+
+.mic-btn--idle:hover {
+  background: linear-gradient(135deg, #076E86, #0B8FAC);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(11, 143, 172, 0.45);
+}
+
+.mic-btn--active {
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+  color: white;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.35);
+  animation: pulse-ring 1.5s infinite;
+}
+
+.mic-btn--active:hover {
+  transform: translateY(-2px);
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35), 0 4px 20px rgba(239, 68, 68, 0.35);
+  }
+
+  70% {
+    box-shadow: 0 0 0 14px rgba(239, 68, 68, 0), 0 4px 20px rgba(239, 68, 68, 0.35);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 4px 20px rgba(239, 68, 68, 0.35);
+  }
+}
+
+.mic-btn--busy {
+  background: #F1F5F9;
+  border: 2px solid #E2E8F0;
+  cursor: default;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(11, 143, 172, 0.15);
+  border-top-color: #0B8FAC;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Waiting state — patient has joined, doctor hasn't yet */
+.mic-btn--waiting {
+  background: #EEF2FF;
+  border: 2px solid #C7D2FE;
+  cursor: default;
+}
+
+.waiting-pulse {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #6366F1;
+  animation: waiting-breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes waiting-breathe {
+
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+/* ─── ENDED STATE ─── */
+.ended-box {
+  padding: 8px 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ready-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.ready-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 4px;
+}
+
+.ready-sub {
+  font-size: 13px;
+  color: #64748B;
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
+/* ─── LOADING STATE ─── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 0;
+}
+
+.loading-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(11, 143, 172, 0.15);
+  border-top-color: #0B8FAC;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-label {
+  font-size: 14px;
+  color: #64748B;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ─── NO SESSION STATE ─── */
+.no-session-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 0 8px;
+  text-align: center;
+}
+
+.no-session-icon {
+  font-size: 48px;
+  margin-bottom: 4px;
+}
+
+.no-session-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.no-session-desc {
+  font-size: 13px;
+  color: #64748B;
+  margin: 0 0 16px;
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+.no-session-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+}
+
+.retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  color: white;
+  background: linear-gradient(135deg, #0B8FAC, #0EA5C2);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(11, 143, 172, 0.3);
+}
+
+.retry-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(11, 143, 172, 0.4);
+}
+
+.back-btn-sm {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  color: #64748B;
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn-sm:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+/* Waiting button is clickable (leave call) */
+.mic-btn--waiting {
+  cursor: pointer;
+}
+
+/* ─── PRIVACY BADGE ─── */
+.consent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 100px;
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* Status pill for new states */
+.status-pill.LoadingSession {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+  color: #94A3B8;
+}
+
+.status-pill.LoadingSession .status-dot {
+  background: #CBD5E1;
+  animation: pulse-dot 1s infinite;
+}
+
+.status-pill.NoSession {
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+  color: #1D4ED8;
+}
+
+.status-pill.NoSession .status-dot {
+  background: #3B82F6;
+  animation: pulse-dot 1.4s infinite;
+}
+
+/* ─── WAITING RING (incoming-call style) ─── */
+.waiting-ring {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 12px auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.waiting-ring-icon {
+  font-size: 36px;
+  z-index: 2;
+  position: relative;
+  animation: icon-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes icon-breathe {
+  0%, 100% { transform: scale(0.92); }
+  50%       { transform: scale(1.08); }
+}
+
+.waiting-ring-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #0B8FAC;
+  opacity: 0;
+  animation: orbit 2.4s ease-in-out infinite;
+}
+
+.dot-1 { animation-delay: 0s;    top: 0;   left: 50%; transform: translateX(-50%); }
+.dot-2 { animation-delay: 0.8s;  bottom: 6px; left: 8px; }
+.dot-3 { animation-delay: 1.6s;  bottom: 6px; right: 8px; }
+
+@keyframes orbit {
+  0%   { opacity: 0;   transform: scale(0.6); }
+  20%  { opacity: 1;   transform: scale(1); }
+  80%  { opacity: 1;   transform: scale(1); }
+  100% { opacity: 0;   transform: scale(0.6); }
+}
+
+/* ─── AUTO-CHECK BADGE ─── */
+.auto-check-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1D4ED8;
+  margin-bottom: 4px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3B82F6;
+  flex-shrink: 0;
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 480px) {
+  .card {
+    padding: 24px;
+  }
+
+  .timer-text {
+    font-size: 36px;
+  }
+}
