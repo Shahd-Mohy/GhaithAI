@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component  ,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -67,7 +67,8 @@ export class RegisterClinicianComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router ,
+      private cdr: ChangeDetectorRef
   ) { }
 
   // ─── Helpers ──────────────────────────────────────────
@@ -287,12 +288,14 @@ export class RegisterClinicianComponent {
     };
 
     this.submitting = true;
+     this.cdr.detectChanges(); 
 
     this.authService.registerClinician(payload).subscribe({
 
       next: () => {
         this.submitting = false;
         this.submitted = true;
+         this.cdr.detectChanges(); 
       },
 
       error: (err) => {
@@ -304,6 +307,7 @@ export class RegisterClinicianComponent {
           this.errors['email'] = true;
           this.errorMessages['email'] = 'This email is already registered';
           this.goToStep(1);
+          this.cdr.detectChanges();
           return;
         }
 
@@ -314,6 +318,7 @@ export class RegisterClinicianComponent {
         } else {
           this.apiError = 'Registration failed. Please try again.';
         }
+        this.cdr.detectChanges();
       }
     });
   }

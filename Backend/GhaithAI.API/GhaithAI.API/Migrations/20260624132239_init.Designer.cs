@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GhaithAI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260624114507_addPayment")]
-    partial class addPayment
+    [Migration("20260624132239_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

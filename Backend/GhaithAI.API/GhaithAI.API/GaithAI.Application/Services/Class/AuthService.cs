@@ -170,7 +170,7 @@ namespace GhaithAI.API.Services
                 .FirstOrDefaultAsync(x => x.Email == dto.Email);
 
             if (user == null)
-                throw new Exception("Invalid Email");
+                throw new Exception("Invalid Email or Password");
 
             if (user.DoctorsProfile != null)
             {
@@ -202,7 +202,7 @@ namespace GhaithAI.API.Services
                     dto.Password);
 
             if (!valid)
-                throw new Exception("Invalid Password");
+                throw new Exception("Invalid Email or Password");
 
             user.LastLoginAt = DateTime.UtcNow;
 
