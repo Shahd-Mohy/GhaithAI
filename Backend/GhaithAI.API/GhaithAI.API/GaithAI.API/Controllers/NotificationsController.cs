@@ -56,5 +56,41 @@ namespace GhaithAI.API.Controllers
             await _notificationService.DeleteNotificationAsync(id, UserId);
             return NoContent();
         }
+
+        [HttpPost("mock")]
+        public async Task<IActionResult> TriggerMockNotifications()
+        {
+            var userId = UserId;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest("User ID not found in claims.");
+            }
+
+            // 1. Session Report Ready
+            await _notificationService.SendAsync(
+                userId, 
+                GhaithAI.GaithAI.Domain.Enums.NotificationType.SessionReportReady,
+                "Session Report Ready 📄",
+                "Your last session report has been generated successfully. You can review the insights and recommendations now."
+            );
+
+            // 2. Appointment Reminder
+            await _notificationService.SendAsync(
+                userId, 
+                GhaithAI.GaithAI.Domain.Enums.NotificationType.AppointmentReminder,
+                "Appointment Reminder ⏰",
+                "Reminder: You have an upcoming support session in 24 hours with Dr. Ahmed El-Sherif."
+            );
+
+            // 3. Booking Confirmed
+            await _notificationService.SendAsync(
+                userId, 
+                GhaithAI.GaithAI.Domain.Enums.NotificationType.BookingConfirmed,
+                "Booking Confirmed ✅",
+                "Congratulations! Your appointment booking has been approved and confirmed by the clinician."
+            );
+
+            return Ok(new { message = "Mock notifications sent successfully!" });
+        }
     }
 }
