@@ -1,4 +1,4 @@
-﻿using GhaithAI.GaithAI.Application.DTOs.Admin;
+using GhaithAI.GaithAI.Application.DTOs.Admin;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 
 namespace GhaithAI.GaithAI.Application.Services.Class
@@ -6,10 +6,12 @@ namespace GhaithAI.GaithAI.Application.Services.Class
     public class AdminService : IAdminService
     {
         private readonly ApplicationDbContext _context;
+        private readonly INotificationService _notificationService;
 
-        public AdminService(ApplicationDbContext context)
+        public AdminService(ApplicationDbContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         public async Task<List<DoctorProfileDTO>> GetPendingDoctorsAsync()
@@ -70,6 +72,16 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 doctor.User.IsActive = true;
 
             await _context.SaveChangesAsync();
+
+            if (doctor.User != null)
+            {
+                await _notificationService.SendAsync(
+                    doctor.User.Id,
+                    GhaithAI.GaithAI.Domain.Enums.NotificationType.ProfileApproved,
+                    "Profile Approved",
+                    "Congratulations! Your doctor profile has been approved. You can now start receiving bookings.",
+                    doctor.Id);
+            }
         }
 
         public async Task RejectDoctorAsync(Guid id, string reason)
@@ -84,6 +96,16 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             doctor.RejectionReason = reason;
 
             await _context.SaveChangesAsync();
+
+            if (doctor.User != null)
+            {
+                await _notificationService.SendAsync(
+                    doctor.User.Id,
+                    GhaithAI.GaithAI.Domain.Enums.NotificationType.ProfileRejected,
+                    "Profile Rejected",
+                    $"Your doctor profile has been rejected. Reason: {reason}",
+                    doctor.Id);
+            }
         }
 
         private DoctorProfileDTO MapToDTO(DoctorsProfile d) => new DoctorProfileDTO
