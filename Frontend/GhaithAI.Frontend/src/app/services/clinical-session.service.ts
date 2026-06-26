@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -97,6 +97,15 @@ export class ClinicalSessionService {
   // Used by the patient dashboard to find any active/recent session.
   getMyActiveSessions(): Observable<SessionResponse[]> {
     return this.http.get<SessionResponse[]>(`${this.baseUrl}/my`);
+  }
+
+  // GET /api/sessions/doctor
+  // Returns clinical sessions owned by the current authenticated clinician.
+  getDoctorSessions(status?: string, date?: string): Observable<SessionResponse[]> {
+    let params = new HttpParams();
+    if (status) params = params.set('status', status);
+    if (date) params = params.set('date', date);
+    return this.http.get<SessionResponse[]>(`${this.baseUrl}/doctor`, { params });
   }
 
   endSession(sessionId: string): Observable<EndSessionResponse> {
