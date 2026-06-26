@@ -55,6 +55,8 @@ export class SessionOrchestratorService implements OnDestroy {
 
     if (role === 'doctor') {
       await this.webrtc.createOffer();
+    } else {
+      await this.signalr.notifyPatientReady(sessionId);
     }
   }
 
@@ -94,7 +96,13 @@ export class SessionOrchestratorService implements OnDestroy {
       await this.webrtc.addRemoteIceCandidate(msg.candidate);
     });
 
-    this.subs.push(offerSub, answerSub, iceSub);
+    const patientReadySub = this.signalr.patientReady$.subscribe(async (msg) => {
+      if (this.role !== 'doctor') return;
+      if (msg.sessionId !== this.sessionId) return;
+      await this.webrtc.createOffer();
+    });
+
+    this.subs.push(offerSub, answerSub, iceSub, patientReadySub);
   }
 
   private cleanupSubs(): void {

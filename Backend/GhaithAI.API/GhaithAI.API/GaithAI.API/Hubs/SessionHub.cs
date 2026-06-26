@@ -7,6 +7,9 @@ public class SessionHub : Hub
     public async Task JoinSession(string sessionId)
         => await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
 
+    public async Task PatientReady(string sessionId)
+        => await Clients.OthersInGroup(sessionId).SendAsync("PatientReady", new { sessionId });
+
     public async Task SendOffer(string sessionId, string sdp)
         => await Clients.OthersInGroup(sessionId).SendAsync("ReceiveOffer", new { sessionId, sdp });
 

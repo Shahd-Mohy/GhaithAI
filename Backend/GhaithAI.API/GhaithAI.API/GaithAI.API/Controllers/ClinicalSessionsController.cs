@@ -64,9 +64,9 @@ namespace GhaithAI.GaithAI.API.Controllers
                 var session = await _sessionService.GetSessionByBookingIdAsync(bookingId);
                 return Ok(session);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return Ok(null);
             }
             catch (Exception ex)
             {

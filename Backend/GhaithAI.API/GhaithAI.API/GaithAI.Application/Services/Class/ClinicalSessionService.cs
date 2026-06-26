@@ -17,6 +17,15 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             var booking = await _unitOfWork.Booking.GetByIdAsync(dto.BookingId)
                 ?? throw new KeyNotFoundException("Booking not found.");
 
+            var existingSession = await _unitOfWork.ClinicalSession
+                .GetAllQueryableNoTracking()
+                .FirstOrDefaultAsync(s =>
+                    s.BookingId == dto.BookingId &&
+                    s.Status != ClinicalSessionStatus.Completed);
+
+            if (existingSession != null)
+                return existingSession.Id;
+
             var session = new ClinicalSession
             {
                 Id = Guid.NewGuid(),

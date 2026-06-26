@@ -66,6 +66,16 @@ export class WebrtcService {
 
   async createOffer(): Promise<void> {
     if (!this.peerConnection) throw new Error('Peer connection not initialised.');
+
+    if (this.peerConnection.localDescription?.type === 'offer') {
+      await this.signalr.sendOffer(this.sessionId, this.peerConnection.localDescription.sdp);
+      return;
+    }
+
+    if (this.peerConnection.signalingState !== 'stable') {
+      return;
+    }
+
     const offer = await this.peerConnection.createOffer();
     await this.peerConnection.setLocalDescription(offer);
     await this.signalr.sendOffer(this.sessionId, offer.sdp!);

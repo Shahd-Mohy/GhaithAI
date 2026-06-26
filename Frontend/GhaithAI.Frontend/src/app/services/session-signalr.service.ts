@@ -18,6 +18,10 @@ export interface RtcIceCandidateMessage {
   candidate: RTCIceCandidateInit;
 }
 
+export interface PatientReadyMessage {
+  sessionId: string;
+}
+
 @Injectable()
 export class SessionSignalrService {
 
@@ -26,6 +30,7 @@ export class SessionSignalrService {
   readonly offerReceived$ = new Subject<RtcOfferMessage>();
   readonly answerReceived$ = new Subject<RtcAnswerMessage>();
   readonly iceCandidateReceived$ = new Subject<RtcIceCandidateMessage>();
+  readonly patientReady$ = new Subject<PatientReadyMessage>();
 
   async connect(sessionId: string, accessToken: string): Promise<void> {
     const hubUrl = `${environment.apiUrl.replace('/api', '')}/hubs/session?sessionId=${sessionId}`;
@@ -67,6 +72,14 @@ export class SessionSignalrService {
     this.hubConnection.on('ReceiveIceCandidate', (msg: RtcIceCandidateMessage) => {
       this.iceCandidateReceived$.next(msg);
     });
+
+    this.hubConnection.on('PatientReady', (msg: PatientReadyMessage) => {
+      this.patientReady$.next(msg);
+    });
+  }
+
+  async notifyPatientReady(sessionId: string): Promise<void> {
+    await this.hubConnection?.invoke('PatientReady', sessionId);
   }
 
   async sendOffer(sessionId: string, sdp: string): Promise<void> {
