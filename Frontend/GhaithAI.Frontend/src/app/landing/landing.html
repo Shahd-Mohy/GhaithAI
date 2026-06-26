@@ -1,12 +1,8 @@
 <!-- ─── NAV ─── -->
 <!-- ─── NAV ─── -->
 <nav class="nav-wrap">
-
   <a routerLink="/" class="nav-logo">
-    <img
-      src="assets/logo/logo1.png"
-      alt="GhaithAI"
-      class="logo-img">
+    <img src="assets/logo/logo1.png" alt="GhaithAI" class="logo-img" />
     <span class="logo-text">GhaithAI</span>
   </a>
 
@@ -16,7 +12,6 @@
     <a href="#individuals">For Individuals</a>
     <a href="#about">About</a>
     <button (click)="testError()">تجربة الخطأ 404</button>
-
   </div>
 
   <div class="nav-actions">
@@ -28,7 +23,6 @@
       <a routerLink="/register" class="btn-nav">Get Started</a>
     </ng-template>
   </div>
-
 </nav>
 
 <!-- ─── HERO ─── -->
@@ -46,15 +40,16 @@
   </h1>
 
   <p class="hero-sub">
-    GhaithAI bridges the gap between feeling overwhelmed and getting help.
-    Whether you're a clinician seeking efficiency or an individual seeking support, we're here for you.
+    GhaithAI bridges the gap between feeling overwhelmed and getting help. Whether you're a
+    clinician seeking efficiency or an individual seeking support, we're here for you.
   </p>
 
   <div class="cta-row">
-    <a routerLink="/register" [queryParams]="{type:'individual'}" class="btn-hero">
+    <a routerLink="/register" [queryParams]="{ type: 'individual' }" class="btn-hero">
       <svg fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
         <path
-          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+        />
       </svg>
       I Need Support
     </a>
@@ -72,18 +67,25 @@
     <div class="chat-box">
       <div class="chat-hdr">
         <div class="chat-av">
-  <img src="assets/logo/logo1.png" alt="GhaithAI" class="logo-img">
-</div>
+          <img src="assets/logo/logo1.png" alt="GhaithAI" class="logo-img" />
+        </div>
         <div>
           <div class="chat-name-lbl">GhaithAI</div>
           <div class="chat-status">Online — always here for you</div>
         </div>
       </div>
       <div class="msgs">
-        <div class="m m-ai">Hi, I'm GhaithAI. I'm here to listen and support you. How are you feeling today? 💙</div>
-        <div class="m m-user">I've been feeling really anxious about work lately. It's been hard to focus.</div>
-        <div class="m m-ai">I hear you — work anxiety can feel really overwhelming, especially when it starts affecting
-          your focus. That sounds genuinely tough. Can you tell me more about what's been happening?</div>
+        <div class="m m-ai">
+          Hi, I'm GhaithAI. I'm here to listen and support you. How are you feeling today? 💙
+        </div>
+        <div class="m m-user">
+          I've been feeling really anxious about work lately. It's been hard to focus.
+        </div>
+        <div class="m m-ai">
+          I hear you — work anxiety can feel really overwhelming, especially when it starts
+          affecting your focus. That sounds genuinely tough. Can you tell me more about what's been
+          happening?
+        </div>
         <div class="typing"><span></span><span></span><span></span></div>
       </div>
     </div>
@@ -123,7 +125,10 @@
         </svg>
       </div>
       <h3>For Individuals</h3>
-      <p>A private, stigma-free space to talk, reflect, and find support — available anytime you need it.</p>
+      <p>
+        A private, stigma-free space to talk, reflect, and find support — available anytime you need
+        it.
+      </p>
       <ul class="feat-list">
         <li>AI emotional listener trained on CBT &amp; ACT</li>
         <li>Daily mood tracking &amp; weekly insights</li>
@@ -139,7 +144,10 @@
         </svg>
       </div>
       <h3>For Clinicians</h3>
-      <p>An AI clinical companion that handles documentation so you can focus entirely on your patients.</p>
+      <p>
+        An AI clinical companion that handles documentation so you can focus entirely on your
+        patients.
+      </p>
       <ul class="feat-list">
         <li>Live session recording &amp; AI transcription</li>
         <li>Auto-generated SOAP &amp; DAP notes</li>
@@ -160,31 +168,48 @@
   <div class="steps">
     <div class="step">
       <span class="step-n">01</span>
-      <div class="step-ic"><svg viewBox="0 0 24 24">
+      <div class="step-ic">
+        <svg viewBox="0 0 24 24">
           <path
-            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-        </svg></div>
+            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+          />
+        </svg>
+      </div>
       <h4>Create your account</h4>
-      <p>Quick 3-step setup. Choose your path — individual support or clinician mode. Privacy-first, always.</p>
+      <p>
+        Quick 3-step setup. Choose your path — individual support or clinician mode. Privacy-first,
+        always.
+      </p>
     </div>
     <div class="step">
       <span class="step-n">02</span>
-      <div class="step-ic"><svg viewBox="0 0 24 24">
+      <div class="step-ic">
+        <svg viewBox="0 0 24 24">
           <path
-            d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
-        </svg></div>
+            d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"
+          />
+        </svg>
+      </div>
       <h4>Talk to your AI companion</h4>
-      <p>Start a conversation anytime. Our AI listens with empathy, never judges, and helps you explore your feelings
-        safely.</p>
+      <p>
+        Start a conversation anytime. Our AI listens with empathy, never judges, and helps you
+        explore your feelings safely.
+      </p>
     </div>
     <div class="step">
       <span class="step-n">03</span>
-      <div class="step-ic"><svg viewBox="0 0 24 24">
+      <div class="step-ic">
+        <svg viewBox="0 0 24 24">
           <path
-            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
-        </svg></div>
+            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"
+          />
+        </svg>
+      </div>
       <h4>Grow &amp; connect</h4>
-      <p>Track your mood, build healthy habits, and connect with a verified professional when you're ready.</p>
+      <p>
+        Track your mood, build healthy habits, and connect with a verified professional when you're
+        ready.
+      </p>
     </div>
   </div>
 </section>
@@ -192,29 +217,46 @@
 <!-- ─── SAFETY ─── -->
 <section class="safety">
   <h2>Built with safety at the core</h2>
-  <p>GhaithAI is not a substitute for professional care. We're your first step — always pointing toward the right
-    support.</p>
+  <p>
+    GhaithAI is not a substitute for professional care. We're your first step — always pointing
+    toward the right support.
+  </p>
   <div class="s-badges">
-    <div class="s-badge"><svg viewBox="0 0 24 24">
+    <div class="s-badge">
+      <svg viewBox="0 0 24 24">
         <path
-          d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm-2 13l-4-4 1.41-1.41L10 12.17l6.59-6.59L18 7l-8 8z" />
-      </svg>HIPAA Compliant</div>
-    <div class="s-badge"><svg viewBox="0 0 24 24">
+          d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm-2 13l-4-4 1.41-1.41L10 12.17l6.59-6.59L18 7l-8 8z"
+        /></svg
+      >HIPAA Compliant
+    </div>
+    <div class="s-badge">
+      <svg viewBox="0 0 24 24">
         <path
-          d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm-2 13l-4-4 1.41-1.41L10 12.17l6.59-6.59L18 7l-8 8z" />
-      </svg>GDPR Compliant</div>
-    <div class="s-badge"><svg viewBox="0 0 24 24">
+          d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm-2 13l-4-4 1.41-1.41L10 12.17l6.59-6.59L18 7l-8 8z"
+        /></svg
+      >GDPR Compliant
+    </div>
+    <div class="s-badge">
+      <svg viewBox="0 0 24 24">
         <path
-          d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
-      </svg>AES-256 Encryption</div>
-    <div class="s-badge"><svg viewBox="0 0 24 24">
+          d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+        /></svg
+      >AES-256 Encryption
+    </div>
+    <div class="s-badge">
+      <svg viewBox="0 0 24 24">
         <path
-          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-      </svg>24/7 Crisis Path</div>
-    <div class="s-badge"><svg viewBox="0 0 24 24">
+          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+        /></svg
+      >24/7 Crisis Path
+    </div>
+    <div class="s-badge">
+      <svg viewBox="0 0 24 24">
         <path
-          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-      </svg>Egypt PDPL Law 151</div>
+          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+        /></svg
+      >Egypt PDPL Law 151
+    </div>
   </div>
 </section>
 
@@ -228,23 +270,35 @@
     <div class="test-card">
       <div class="stars">
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
       </div>
-      <p class="test-txt">"GhaithAI helped me understand what I was feeling during a really dark period. It never felt
-        clinical — just genuinely caring."</p>
+      <p class="test-txt">
+        "GhaithAI helped me understand what I was feeling during a really dark period. It never felt
+        clinical — just genuinely caring."
+      </p>
       <div class="test-auth">
         <div class="t-av">S</div>
         <div>
@@ -256,23 +310,35 @@
     <div class="test-card">
       <div class="stars">
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
       </div>
-      <p class="test-txt">"The SOAP note generation alone saves me 2 hours every day. My notes are more thorough and my
-        patients get more of my attention."</p>
+      <p class="test-txt">
+        "The SOAP note generation alone saves me 2 hours every day. My notes are more thorough and
+        my patients get more of my attention."
+      </p>
       <div class="test-auth">
         <div class="t-av t-av-purple">D</div>
         <div>
@@ -284,23 +350,35 @@
     <div class="test-card">
       <div class="stars">
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
         <svg viewBox="0 0 24 24">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          <path
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+          />
         </svg>
       </div>
-      <p class="test-txt">"The mood tracking and weekly insights showed me patterns I never noticed. My therapist said I
-        came in more self-aware than most patients."</p>
+      <p class="test-txt">
+        "The mood tracking and weekly insights showed me patterns I never noticed. My therapist said
+        I came in more self-aware than most patients."
+      </p>
       <div class="test-auth">
         <div class="t-av t-av-amber">R</div>
         <div>
@@ -317,10 +395,11 @@
   <h2>Ready to start your journey?</h2>
   <p class="cta-sub">Join thousands who've taken the first step toward better mental wellbeing.</p>
   <div class="cta-btns">
-    <a routerLink="/register" [queryParams]="{type:'individual'}" class="btn-white">
+    <a routerLink="/register" [queryParams]="{ type: 'individual' }" class="btn-white">
       <svg fill="none" stroke="#0D1B3E" stroke-width="2.5" viewBox="0 0 24 24">
         <path
-          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+        />
       </svg>
       Get Support Now
     </a>
@@ -338,17 +417,23 @@
   <div class="foot-top">
     <div>
       <div class="foot-logo">
-  <div class="foot-logo-icon">
-    <img src="assets/logo/logo1.png" alt="GhaithAI" class="logo-img">
-  </div>
-  <span class="foot-logo-text">GhaithAI</span>
-</div>
-      <p class="foot-brand-desc">AI-powered mental health support for individuals and clinicians. Not a substitute for professional care.</p>
+        <div class="foot-logo-icon">
+          <img src="assets/logo/logo1.png" alt="GhaithAI" class="logo-img" />
+        </div>
+        <span class="foot-logo-text">GhaithAI</span>
+      </div>
+      <p class="foot-brand-desc">
+        AI-powered mental health support for individuals and clinicians. Not a substitute for
+        professional care.
+      </p>
     </div>
   </div>
   <div class="foot-btm">
     <span class="foot-copy">© 2026 GhaithAI. All rights reserved.</span>
-    <span class="disc">GhaithAI is not a licensed medical practitioner, does not diagnose, and does not replace
-      professional mental health care. If you are in crisis, call your local emergency number immediately.</span>
+    <span class="disc"
+      >GhaithAI is not a licensed medical practitioner, does not diagnose, and does not replace
+      professional mental health care. If you are in crisis, call your local emergency number
+      immediately.</span
+    >
   </div>
 </footer>

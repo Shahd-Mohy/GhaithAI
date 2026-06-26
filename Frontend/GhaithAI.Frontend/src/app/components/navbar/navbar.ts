@@ -1,11 +1,8 @@
-import { Component }
-  from '@angular/core';
+import { Component } from '@angular/core';
 
-import { RouterLink }
-  from '@angular/router';
+import { RouterLink } from '@angular/router';
 
-import { AuthService }
-from '../../services/auth';
+import { AuthService } from '../../services/auth';
 
 import { NotificationBellComponent } from '../../shared/notification-bell/notification-bell';
 import { CommonModule } from '@angular/common';
@@ -15,24 +12,16 @@ import { CommonModule } from '@angular/common';
 
   standalone: true,
 
-  imports: [
-    RouterLink,
-    CommonModule,
-    NotificationBellComponent
-  ],
+  imports: [RouterLink, CommonModule, NotificationBellComponent],
 
   templateUrl: './navbar.html',
 
-  styleUrls: ['./navbar.css']
+  styleUrls: ['./navbar.css'],
 })
 export class NavbarComponent {
-
-  constructor(
-    public authService: AuthService
-  ) { }
+  constructor(public authService: AuthService) {}
 
   logout() {
-
     this.authService.logout();
   }
 }
