@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/internal/Observable';
+import { environment } from '../../environments/environment';
 
 export interface GhaithExercise {
   id: string;
@@ -17,7 +18,7 @@ export interface GhaithExercise {
 })
 export class SelfHelp {
 
-  private apiUrl = 'https://localhost:53898/api/SelfHelp';
+  private apiUrl = `${environment.apiUrl}/SelfHelp`;
 
   constructor(private http: HttpClient) { }
 

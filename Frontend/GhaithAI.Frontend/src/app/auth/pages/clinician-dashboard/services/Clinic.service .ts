@@ -83,7 +83,7 @@ export class ClinicService {
     private readonly http = inject(HttpClient);
     private readonly authService = inject(AuthService);
 
-    // environment.apiUrl = 'https://localhost:53898/api'
+    // environment.apiUrl already ends with /api.
     // It already ends with /api — do NOT add /api again in any path below
     private readonly base = environment.apiUrl;
 
@@ -91,7 +91,7 @@ export class ClinicService {
         return new HttpHeaders({ Authorization: `Bearer ${this.authService.getToken()}` });
     }
 
-    // GET https://localhost:53898/api/BaseSpecialty/getAll/dropDown
+    // GET {environment.apiUrl}/BaseSpecialty/getAll/dropDown
     getAllSpecialties(): Observable<SpecialtyItem[]> {
         return this.http
             .get<{ id: string; specialtyName: string }[]>(
@@ -100,7 +100,7 @@ export class ClinicService {
             .pipe(map(list => list.map(i => ({ id: i.id, name: i.specialtyName }))));
     }
 
-    // GET https://localhost:53898/api/BaseLanguage/Dropdown
+    // GET {environment.apiUrl}/BaseLanguage/Dropdown
     getAllLanguages(): Observable<LanguageItem[]> {
         return this.http
             .get<{ id: string; languageName: string }[]>(
@@ -109,7 +109,7 @@ export class ClinicService {
             .pipe(map(list => list.map(i => ({ id: i.id, name: i.languageName }))));
     }
 
-    // GET https://localhost:53898/api/doctor/clinic/profile
+    // GET {environment.apiUrl}/doctor/clinic/profile
     getProfile(): Observable<DoctorClinicProfileDto> {
         return this.http.get<DoctorClinicProfileDto>(
             `${this.base}/doctor/clinic/profile`,
@@ -117,7 +117,7 @@ export class ClinicService {
         );
     }
 
-    // PUT https://localhost:53898/api/doctor/clinic/profile
+    // PUT {environment.apiUrl}/doctor/clinic/profile
     updateProfile(dto: UpdateDoctorClinicProfileDto): Observable<DoctorClinicProfileDto> {
         return this.http.put<DoctorClinicProfileDto>(
             `${this.base}/doctor/clinic/profile`,
@@ -126,7 +126,7 @@ export class ClinicService {
         );
     }
 
-    // PATCH https://localhost:53898/api/doctor/clinic/profile/public-listing
+    // PATCH {environment.apiUrl}/doctor/clinic/profile/public-listing
     setPublicListing(isPublicListed: boolean): Observable<DoctorClinicProfileDto> {
         return this.http.patch<DoctorClinicProfileDto>(
             `${this.base}/doctor/clinic/profile/public-listing`,
@@ -135,7 +135,7 @@ export class ClinicService {
         );
     }
 
-    // GET https://localhost:53898/api/doctor/clinic/schedule/custom
+    // GET {environment.apiUrl}/doctor/clinic/schedule/custom
     getCustomSchedules(from?: string, to?: string): Observable<CustomScheduleDto[]> {
         let params = new HttpParams();
         if (from) params = params.set('from', from);
@@ -146,7 +146,7 @@ export class ClinicService {
         );
     }
 
-    // POST https://localhost:53898/api/doctor/clinic/schedule/custom
+    // POST {environment.apiUrl}/doctor/clinic/schedule/custom
     addCustomSchedule(dto: UpsertCustomScheduleDto): Observable<CustomScheduleDto> {
         return this.http.post<CustomScheduleDto>(
             `${this.base}/doctor/clinic/schedule/custom`,
@@ -155,7 +155,7 @@ export class ClinicService {
         );
     }
 
-    // PUT https://localhost:53898/api/doctor/clinic/schedule/custom/{id}
+    // PUT {environment.apiUrl}/doctor/clinic/schedule/custom/{id}
     updateCustomSchedule(id: string, dto: UpsertCustomScheduleDto): Observable<CustomScheduleDto> {
         return this.http.put<CustomScheduleDto>(
             `${this.base}/doctor/clinic/schedule/custom/${id}`,
@@ -164,7 +164,7 @@ export class ClinicService {
         );
     }
 
-    // DELETE https://localhost:53898/api/doctor/clinic/schedule/custom/{id}
+    // DELETE {environment.apiUrl}/doctor/clinic/schedule/custom/{id}
     deleteCustomSchedule(id: string): Observable<void> {
         return this.http.delete<void>(
             `${this.base}/doctor/clinic/schedule/custom/${id}`,

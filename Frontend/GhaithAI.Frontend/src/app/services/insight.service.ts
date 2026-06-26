@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 // ── DTOs ─────────────────────────────────────────────────────────────────────
 
@@ -112,7 +113,7 @@ function resolveDisplayName(): string {
 export class InsightService {
 
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://localhost:53898/api';
+  private readonly baseUrl = environment.apiUrl;
 
   getDashboard(): Observable<DashboardViewModel> {
     return this.http

@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthService } from './auth';
+import { environment } from '../../environments/environment';
 
 // ─── Response envelope shapes ────────────────────────────────────────────────
 
@@ -78,7 +79,7 @@ export interface UpdateJournalRequest {
 })
 export class JournalService {
 
-  private readonly baseUrl = 'https://localhost:53898/api/Journal';
+  private readonly baseUrl = `${environment.apiUrl}/Journal`;
 
   constructor(
     private http: HttpClient,

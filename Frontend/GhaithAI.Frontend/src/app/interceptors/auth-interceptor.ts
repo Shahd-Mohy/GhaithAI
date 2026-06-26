@@ -12,17 +12,16 @@ HttpInterceptorFn =
       'token'
     );
 
-  if(token){
-
-    req =
-      req.clone({
-
-        setHeaders:{
+  req =
+    req.clone({
+      setHeaders:{
+        'ngrok-skip-browser-warning': 'true',
+        ...(token ? {
           Authorization:
           `Bearer ${token}`
-        }
-      });
-  }
+        } : {})
+      }
+    });
 
   return next(req);
 };

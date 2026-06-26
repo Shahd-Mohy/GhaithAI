@@ -143,10 +143,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
+        var frontendUrl = builder.Configuration["FrontendUrl"]
+            ?? "https://cee8-197-59-191-24.ngrok-free.app";
+
         policy.AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()
-              .WithOrigins("http://localhost:4200");
+              .WithOrigins(frontendUrl);
     });
 });
 
