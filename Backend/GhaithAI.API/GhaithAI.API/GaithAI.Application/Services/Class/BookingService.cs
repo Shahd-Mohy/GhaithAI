@@ -2,6 +2,7 @@
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.EntityFrameworkCore;
 using GhaithAI.GaithAI.Domain.Entities;
+using GhaithAI.GaithAI.Domain.Exceptions;
 
 namespace GhaithAI.GaithAI.Application.Services.Class
 {
@@ -72,7 +73,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             if (isSlotBusy)
             {
-                throw new InvalidOperationException("This time slot is already booked. Please choose another time.");
+                throw new ConflictException("This time slot is already booked. Please choose another time.");
             }
 
             Guid finalClinicPatientId;

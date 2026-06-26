@@ -1,4 +1,4 @@
-using GhaithAI.API.Configurations;
+﻿using GhaithAI.API.Configurations;
 using GhaithAI.API.Extensions;
 using GhaithAI.API.GaithAI.API.Configurations;
 using GhaithAI.API.GaithAI.API.Hubs;
@@ -7,6 +7,7 @@ using GhaithAI.API.GaithAI.Application.Services.Class;
 using GhaithAI.API.Interfaces.InterfaceService;
 using GhaithAI.API.Seeders;
 using GhaithAI.API.Services;
+using GhaithAI.GaithAI.API.Middlewares;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using GhaithAI.GaithAI.Infrastructure.Seeders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -164,6 +165,9 @@ app.Use(async (context, next) =>
     context.Request.EnableBuffering();
     await next();
 });
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
