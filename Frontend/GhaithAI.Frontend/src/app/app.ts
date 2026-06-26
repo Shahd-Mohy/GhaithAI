@@ -1,12 +1,13 @@
 import { Component }
-from '@angular/core';
+  from '@angular/core';
 
 import {
   RouterOutlet
 } from '@angular/router';
 
 import { NavbarComponent }
-from './components/navbar/navbar';
+  from './components/navbar/navbar';
+import { NotifecationException } from './components/NotifecationException/notifecation-exception/notifecation-exception';
 
 @Component({
   selector: 'app-root',
@@ -14,9 +15,9 @@ from './components/navbar/navbar';
   standalone: true,
 
   imports: [
-    RouterOutlet
+    RouterOutlet, NotifecationException
   ],
 
   templateUrl: './app.html'
 })
-export class AppComponent {}
+export class AppComponent { }

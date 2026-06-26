@@ -1,8 +1,8 @@
 import { Component }
-from '@angular/core';
+  from '@angular/core';
 
 import { RouterLink }
-from '@angular/router';
+  from '@angular/router';
 
 import { AuthService }
 from '../../services/auth';
@@ -29,7 +29,7 @@ export class NavbarComponent {
 
   constructor(
     public authService: AuthService
-  ) {}
+  ) { }
 
   logout() {
 

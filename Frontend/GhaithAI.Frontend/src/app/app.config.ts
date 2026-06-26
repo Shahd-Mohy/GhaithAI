@@ -24,13 +24,11 @@ import {
 } from '@abacritt/angularx-social-login';
 
 import { BrowserAnimationsModule }
-from '@angular/platform-browser/animations';
+  from '@angular/platform-browser/animations';
 
-import { ToastrModule }
-from 'ngx-toastr';
 
 import { NgxSpinnerModule }
-from 'ngx-spinner';
+  from 'ngx-spinner';
 
 import { routes } from './app.routes';
 
@@ -38,6 +36,7 @@ import {
   authInterceptor
 } from './interceptors/auth-interceptor';
 
+import { errorInterceptor } from './interceptors/error.interceptor';
 export const appConfig: ApplicationConfig = {
 
   providers: [
@@ -50,38 +49,40 @@ export const appConfig: ApplicationConfig = {
 
     provideHttpClient(
       withInterceptors([
-        authInterceptor
+        authInterceptor,
+        errorInterceptor
       ])
     ),
 
     importProvidersFrom(
-     BrowserAnimationsModule,
-  ToastrModule.forRoot(),
-  NgxSpinnerModule,
-  SocialLoginModule
+      BrowserAnimationsModule,
+      NgxSpinnerModule,
+      SocialLoginModule
     ),
 
     {
-  provide: 'SocialAuthServiceConfig' as any,
+      provide: 'SocialAuthServiceConfig' as any,
 
-  useValue: {
-    autoLogin: false,
+      useValue: {
+        autoLogin: false,
 
-    providers: [
-      {
-        id: GoogleLoginProvider.PROVIDER_ID,
+        providers: [
+          {
+            id: GoogleLoginProvider.PROVIDER_ID,
 
-        provider: new GoogleLoginProvider(
-          '617722058922-o8hffsc1rv8gqos8shl57gogjig6uh7o.apps.googleusercontent.com'
-        )
+            provider: new GoogleLoginProvider(
+              '617722058922-o8hffsc1rv8gqos8shl57gogjig6uh7o.apps.googleusercontent.com'
+            )
+          }
+        ],
+
+        onError: (err: any) => {
+          console.error(err);
+        }
       }
-    ],
-
-    onError: (err: any) => {
-      console.error(err);
-    }
-  }
 
     }
+
+
   ]
 };
