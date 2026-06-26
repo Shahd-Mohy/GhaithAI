@@ -1,12 +1,11 @@
 import { Component }
-from '@angular/core';
+  from '@angular/core';
 
 import { RouterLink }
-from '@angular/router';
+  from '@angular/router';
 
 import { AuthService }
-from '../../services/auth';
-
+  from '../../services/auth';
 @Component({
   selector: 'app-navbar',
 
@@ -24,7 +23,7 @@ export class NavbarComponent {
 
   constructor(
     public authService: AuthService
-  ) {}
+  ) { }
 
   logout() {
 

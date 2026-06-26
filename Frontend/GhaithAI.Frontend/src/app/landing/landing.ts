@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-landing',
@@ -12,6 +13,8 @@ import { AuthService } from '../services/auth';
 })
 export class LandingComponent {
 
-  constructor(public auth: AuthService) {}
-
+  constructor(public auth: AuthService, private http: HttpClient) { }
+  testError() {
+    this.http.get('https://localhost:53898/api/TestException/server-error').subscribe();
+  }
 }

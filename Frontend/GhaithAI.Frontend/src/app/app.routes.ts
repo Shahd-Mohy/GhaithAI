@@ -4,11 +4,12 @@ import { authGuard } from './guards/auth-guard';
 import { adminGuard } from './guards/admin-guard';
 import { clinicianGuard } from './guards/clinician-guard';
 import { ExerciseDetailsComponent } from './selfHelp/exercise-details-component/exercise-details-component';
+import { ServerError } from './components/ServerError/server-error/server-error';
 
 export const routes: Routes = [
 
   { path: '', component: LandingComponent },
-
+  { path: 'server-error', component: ServerError },
   {
     path: 'login',
     loadComponent: () => import('./auth/pages/login/login').then(m => m.LoginComponent)
@@ -140,25 +141,25 @@ export const routes: Routes = [
     ]
   },
 
-{
-  path: 'payment/mock',
-  canActivate: [authGuard],
-  loadComponent: () =>
-    import('./auth/payment-mock/payment-mock')
-      .then(m => m.PaymentMockComponent)
-},
+  {
+    path: 'payment/mock',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./auth/payment-mock/payment-mock')
+        .then(m => m.PaymentMockComponent)
+  },
 
-{
-  path: 'payment/success',
-  canActivate: [authGuard],
-  loadComponent: () =>
-    import('./auth/payment-success.component/payment-success.component')
-      .then(m => m.PaymentSuccessComponent)
-},
-{
-  path: 'payment/cancel',
-  redirectTo: '/dashboard'
-},
+  {
+    path: 'payment/success',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./auth/payment-success.component/payment-success.component')
+        .then(m => m.PaymentSuccessComponent)
+  },
+  {
+    path: 'payment/cancel',
+    redirectTo: '/dashboard'
+  },
 
   { path: '**', redirectTo: '' }
 ];
