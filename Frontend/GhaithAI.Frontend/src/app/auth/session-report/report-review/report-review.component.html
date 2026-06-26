@@ -1,0 +1,241 @@
+<section class="rr-shell" [class.embedded]="embedded">
+  <div *ngIf="loading" class="rr-state">
+    <div class="rr-spinner"></div>
+    <p>Loading clinical report</p>
+  </div>
+
+  <div *ngIf="!loading && loadError" class="rr-alert danger">
+    <strong>Unable to open report</strong>
+    <span>{{ loadError }}</span>
+  </div>
+
+  <ng-container *ngIf="!loading && !loadError">
+    <header class="rr-header">
+      <div class="rr-patient">
+        <div class="rr-avatar">{{ initials(patientLabel) }}</div>
+        <div>
+          <div class="rr-kicker">Clinical report</div>
+          <h2>{{ patientLabel }}</h2>
+          <div class="rr-meta">
+            <span>{{ session?.sessionType || 'Session' }}</span>
+            <span>{{ session?.startedAt | date:'mediumDate' }}</span>
+            <span>{{ formatDuration(session?.durationMinutes) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rr-actions" *ngIf="report">
+        <span class="rr-status" [ngClass]="report.status.toLowerCase()">{{ report.status }}</span>
+        <span class="rr-version">v{{ report.versionNumber }}</span>
+        <span class="rr-risk" [ngClass]="riskClass">{{ report.riskTier || 'Low' }}</span>
+
+        <button type="button" class="rr-btn ghost" (click)="exportPdf()" [disabled]="exporting">
+          {{ exporting ? 'Exporting' : 'Export PDF' }}
+        </button>
+        <button type="button" class="rr-btn secondary" *ngIf="!editing && !isLocked" (click)="startEdit()">
+          Edit SOAP
+        </button>
+        <button type="button" class="rr-btn approve" *ngIf="isDraft && !editing" (click)="approveReport()" [disabled]="approving">
+          {{ approving ? 'Approving' : 'Approve' }}
+        </button>
+        <button type="button" class="rr-btn lock" *ngIf="isApproved && !editing" (click)="lockReport()" [disabled]="locking">
+          {{ locking ? 'Locking' : 'Lock' }}
+        </button>
+      </div>
+    </header>
+
+    <div *ngIf="actionSuccess" class="rr-alert success">{{ actionSuccess }}</div>
+    <div *ngIf="actionError" class="rr-alert danger">{{ actionError }}</div>
+
+    <div *ngIf="noReport" class="rr-empty-report">
+      <div>
+        <h3>No report generated yet</h3>
+        <p>This session can be turned into a structured SOAP report after transcript processing is complete.</p>
+        <div *ngIf="generateError" class="rr-alert danger">{{ generateError }}</div>
+      </div>
+      <button type="button" class="rr-btn primary" (click)="generateReport()" [disabled]="generating || !session">
+        {{ generating ? 'Generating report' : 'Generate report' }}
+      </button>
+    </div>
+
+    <div *ngIf="generating" class="rr-state inline">
+      <div class="rr-spinner"></div>
+      <p>Analyzing transcript and building the clinical summary</p>
+    </div>
+
+    <div class="rr-grid" *ngIf="report">
+      <aside class="rr-context">
+        <article class="rr-card risk-card" [ngClass]="riskClass">
+          <div class="rr-card-head">
+            <span>Risk Assessment</span>
+            <strong>{{ report.riskTier || 'Low' }}</strong>
+          </div>
+          <div class="rr-si yes" *ngIf="report.siPresent">
+            Suicidal ideation identified
+          </div>
+          <div class="rr-si no" *ngIf="!report.siPresent">
+            No suicidal ideation identified
+          </div>
+          <p *ngIf="report.suicidalIdeationDetails">{{ report.suicidalIdeationDetails }}</p>
+          <p *ngIf="report.riskNarrative">{{ report.riskNarrative }}</p>
+        </article>
+
+        <article class="rr-card">
+          <div class="rr-card-head"><span>Chief Complaint</span></div>
+          <dl>
+            <div>
+              <dt>Primary</dt>
+              <dd>{{ report.chiefComplaintPrimary || session?.chiefComplaint || 'Not provided' }}</dd>
+            </div>
+            <div>
+              <dt>Duration</dt>
+              <dd>{{ report.chiefComplaintDuration || 'Not provided' }}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="rr-card">
+          <div class="rr-card-head"><span>Differential</span></div>
+          <ol class="rr-list" *ngIf="report.differentialConsiderations?.length; else noDifferential">
+            <li *ngFor="let item of report.differentialConsiderations">{{ item }}</li>
+          </ol>
+          <ng-template #noDifferential>
+            <p class="rr-muted">No differential considerations recorded.</p>
+          </ng-template>
+        </article>
+
+        <article class="rr-card">
+          <div class="rr-card-head"><span>Session Metadata</span></div>
+          <dl>
+            <div>
+              <dt>Started</dt>
+              <dd>{{ session?.startedAt | date:'short' }}</dd>
+            </div>
+            <div>
+              <dt>Ended</dt>
+              <dd>{{ session?.endedAt ? (session?.endedAt | date:'short') : 'Open' }}</dd>
+            </div>
+            <div>
+              <dt>Generated</dt>
+              <dd>{{ report.generatedAt | date:'short' }}</dd>
+            </div>
+            <div *ngIf="report.approvedAt">
+              <dt>Approved</dt>
+              <dd>{{ report.approvedAt | date:'short' }}</dd>
+            </div>
+          </dl>
+        </article>
+      </aside>
+
+      <main class="rr-soap">
+        <article class="rr-card soap-card">
+          <div class="rr-card-head soap-head">
+            <span>SOAP Note</span>
+            <small *ngIf="isLocked">Read-only locked report</small>
+          </div>
+
+          <div class="rr-soap-view" *ngIf="!editing">
+            <section>
+              <h3>S - Subjective</h3>
+              <p>{{ report.soapSubjective || 'No subjective note available.' }}</p>
+            </section>
+            <section>
+              <h3>O - Objective</h3>
+              <p>{{ report.soapObjective || 'No objective note available.' }}</p>
+            </section>
+            <section>
+              <h3>A - Assessment</h3>
+              <p>{{ report.soapAssessment || 'No assessment note available.' }}</p>
+            </section>
+            <section>
+              <h3>P - Plan</h3>
+              <p>{{ report.soapPlan || 'No plan note available.' }}</p>
+            </section>
+          </div>
+
+          <form class="rr-soap-edit" *ngIf="editing" (ngSubmit)="saveEdit()">
+            <label>
+              <span>S - Subjective</span>
+              <textarea rows="5" [(ngModel)]="soap.subjective" name="subjective"></textarea>
+            </label>
+            <label>
+              <span>O - Objective</span>
+              <textarea rows="5" [(ngModel)]="soap.objective" name="objective"></textarea>
+            </label>
+            <label>
+              <span>A - Assessment</span>
+              <textarea rows="5" [(ngModel)]="soap.assessment" name="assessment"></textarea>
+            </label>
+            <label>
+              <span>P - Plan</span>
+              <textarea rows="5" [(ngModel)]="soap.plan" name="plan"></textarea>
+            </label>
+            <label>
+              <span>Change note</span>
+              <input type="text" [(ngModel)]="changeNote" name="changeNote" placeholder="Optional version note">
+            </label>
+
+            <div *ngIf="saveError" class="rr-alert danger">{{ saveError }}</div>
+            <div class="rr-edit-actions">
+              <button type="button" class="rr-btn ghost" (click)="cancelEdit()" [disabled]="saving">Cancel</button>
+              <button type="submit" class="rr-btn primary" [disabled]="saving">
+                {{ saving ? 'Saving' : 'Save SOAP' }}
+              </button>
+            </div>
+          </form>
+        </article>
+      </main>
+
+      <aside class="rr-evidence">
+        <div class="rr-tabs">
+          <button type="button" [class.active]="activeTab === 'notes'" (click)="setTab('notes')">Notes</button>
+          <button type="button" [class.active]="activeTab === 'transcript'" (click)="setTab('transcript')">Transcript</button>
+          <button type="button" [class.active]="activeTab === 'versions'" (click)="setTab('versions')">Versions</button>
+        </div>
+
+        <div class="rr-tab-panel" *ngIf="activeTab === 'notes'">
+          <div *ngIf="notesLoading" class="rr-mini-state">Loading notes</div>
+          <div *ngIf="notesError" class="rr-alert danger">{{ notesError }}</div>
+          <div *ngIf="!notesLoading && !notesError && !notes.length" class="rr-empty-small">No notes for this session.</div>
+          <article class="rr-note" *ngFor="let note of notes">
+            <strong>{{ note.noteType }}</strong>
+            <p>{{ note.content }}</p>
+            <small>{{ note.createdAt | date:'short' }}</small>
+          </article>
+        </div>
+
+        <div class="rr-tab-panel" *ngIf="activeTab === 'transcript'">
+          <div *ngIf="transcriptLoading" class="rr-mini-state">Loading transcript</div>
+          <div *ngIf="transcriptError" class="rr-alert danger">{{ transcriptError }}</div>
+          <div *ngIf="!transcriptLoading && !transcriptError && !transcript.length" class="rr-empty-small">No transcript segments yet.</div>
+          <article class="rr-segment" *ngFor="let segment of transcript">
+            <div>
+              <strong>{{ segment.speaker }}</strong>
+              <small>{{ transcriptTime(segment.startMs) }}</small>
+            </div>
+            <p>{{ segment.content }}</p>
+          </article>
+        </div>
+
+        <div class="rr-tab-panel" *ngIf="activeTab === 'versions'">
+          <div *ngIf="versionsLoading" class="rr-mini-state">Loading versions</div>
+          <div *ngIf="versionsError" class="rr-alert danger">{{ versionsError }}</div>
+          <div *ngIf="!versionsLoading && !versionsError && !versions.length" class="rr-empty-small">No version history yet.</div>
+
+          <button
+            type="button"
+            class="rr-version-row"
+            *ngFor="let version of versions"
+            [class.active]="selectedVersion?.versionId === version.versionId"
+            (click)="selectVersion(version)">
+            <span>Version {{ version.versionNumber }}</span>
+            <small>{{ version.createdAt | date:'short' }}</small>
+            <em>{{ version.changeSummary || 'Saved snapshot' }}</em>
+          </button>
+
+          <pre *ngIf="selectedVersion" class="rr-snapshot">{{ prettySnapshot(selectedVersion) }}</pre>
+        </div>
+      </aside>
+    </div>
+  </ng-container>
+</section>
