@@ -141,13 +141,7 @@ export const routes: Routes = [
     ]
   },
 
-  {
-    path: 'payment/mock',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./auth/payment-mock/payment-mock')
-        .then(m => m.PaymentMockComponent)
-  },
+
 
   {
     path: 'payment/success',
@@ -159,6 +153,29 @@ export const routes: Routes = [
   {
     path: 'payment/cancel',
     redirectTo: '/dashboard'
+  },
+
+  // ✅ Patient Session Room — deep-link: /session/:sessionId
+  {
+    path: 'session/:sessionId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./auth/patient-session-room.component/patient-session-room.component')
+        .then(m => m.PatientSessionRoomComponent)
+  },
+  {
+    path: 'clinical-session/:sessionId/report',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./auth/session-report/session-report')
+        .then(m => m.SessionReportComponent)
+  },
+  {
+    path: 'session/:sessionId/report',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./auth/session-report/session-report')
+        .then(m => m.SessionReportComponent)
   },
 
   { path: '**', redirectTo: '' }

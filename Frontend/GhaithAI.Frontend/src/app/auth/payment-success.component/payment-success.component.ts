@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { PaymentService } from '../../services/payment.service';
+import { PaymentService, PaymentStatusResponse } from '../../services/payment.service';
 
 @Component({
   selector: 'app-payment-success',
@@ -13,7 +13,8 @@ import { PaymentService } from '../../services/payment.service';
 export class PaymentSuccessComponent implements OnInit {
 
   loading = true;
-  bookingId = '';
+  error   = '';
+  payment: PaymentStatusResponse | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -22,11 +23,31 @@ export class PaymentSuccessComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.bookingId = this.route.snapshot.queryParamMap.get('bookingId') ?? '';
-    setTimeout(() => { this.loading = false; }, 1500);
+    const sessionId = this.route.snapshot.queryParamMap.get('session_id');
+
+    if (!sessionId) {
+      this.error   = 'Invalid payment session.';
+      this.loading = false;
+      return;
+    }
+
+    this.paymentService.confirmPayment(sessionId).subscribe({
+      next: (res) => {
+        this.payment = res;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error   = err.error?.message || 'Failed to confirm payment.';
+        this.loading = false;
+      }
+    });
   }
 
   goToDashboard(): void {
     this.router.navigate(['/dashboard']);
+  }
+
+  goToBookings(): void {
+    this.router.navigate(['/bookings']);
   }
 }

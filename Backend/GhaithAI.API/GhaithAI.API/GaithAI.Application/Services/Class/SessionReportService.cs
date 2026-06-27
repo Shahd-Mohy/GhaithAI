@@ -20,15 +20,18 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IReportLangflowService _langflowService;
+        private readonly INotificationService _notificationService;
         private readonly ILogger<SessionReportService> _logger;
 
         public SessionReportService(
             IUnitOfWork unitOfWork,
             IReportLangflowService langflowService,
+            INotificationService notificationService,
             ILogger<SessionReportService> logger)
         {
             _unitOfWork = unitOfWork;
             _langflowService = langflowService;
+            _notificationService = notificationService;
             _logger = logger;
         }
 
@@ -64,6 +67,13 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             _logger.LogInformation(
                 "Report {ReportId} persisted for session {SessionId}",
                 report.Id, clinicalSessionId);
+
+            await _notificationService.SendAsync(
+                patientId,
+                GhaithAI.GaithAI.Domain.Enums.NotificationType.SessionReportReady,
+                "Session Report Ready",
+                "Your session report is ready and available for review.",
+                report.Id);
 
             return ToResponseDto(report, versionNumber: 1, generatedAt: report.CreatedAt);
         }

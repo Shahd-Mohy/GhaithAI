@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 import { SessionSignalrService } from './session-signalr.service';
 
-const ICE_SERVERS: RTCConfiguration = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-};
-
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class WebrtcService {
 
   private peerConnection: RTCPeerConnection | null = null;
@@ -13,7 +10,11 @@ export class WebrtcService {
   private remoteStream: MediaStream | null = null;
   private sessionId = '';
 
-  constructor(private signalr: SessionSignalrService) {}
+  private readonly ICE_SERVERS: RTCConfiguration = {
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+  };
+
+  constructor(private signalr: SessionSignalrService) { }
 
   async getLocalStream(): Promise<MediaStream> {
     this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -28,9 +29,15 @@ export class WebrtcService {
     return this.remoteStream;
   }
 
-  createPeerConnection(sessionId: string): RTCPeerConnection {
+  // remoteTrackArrived$ is passed in from SessionOrchestratorService.
+  // We emit it the moment the remote audio track lands so the patient
+  // component transitions to InCall instantly — no 500 ms polling needed.
+  createPeerConnection(
+    sessionId: string,
+    remoteTrackArrived$: Subject<MediaStream>
+  ): RTCPeerConnection {
     this.sessionId = sessionId;
-    this.peerConnection = new RTCPeerConnection(ICE_SERVERS);
+    this.peerConnection = new RTCPeerConnection(this.ICE_SERVERS);
 
     if (this.localStream) {
       this.localStream.getTracks().forEach(track => {
@@ -44,6 +51,8 @@ export class WebrtcService {
       event.streams[0].getTracks().forEach(track => {
         this.remoteStream!.addTrack(track);
       });
+      // Emit immediately — subscriber attaches this stream to <audio>
+      remoteTrackArrived$.next(this.remoteStream!);
     };
 
     this.peerConnection.onicecandidate = (event) => {
@@ -55,10 +64,8 @@ export class WebrtcService {
     return this.peerConnection;
   }
 
-  // ── Doctor side: بادئ المكالمة ──
   async createOffer(): Promise<void> {
     if (!this.peerConnection) throw new Error('Peer connection not initialised.');
-
     const offer = await this.peerConnection.createOffer();
     await this.peerConnection.setLocalDescription(offer);
     await this.signalr.sendOffer(this.sessionId, offer.sdp!);
@@ -66,16 +73,12 @@ export class WebrtcService {
 
   async handleRemoteAnswer(sdp: string): Promise<void> {
     if (!this.peerConnection) throw new Error('Peer connection not initialised.');
-
     await this.peerConnection.setRemoteDescription({ type: 'answer', sdp });
   }
 
-  // ── Patient side: مستقبل العرض ──
   async handleRemoteOfferAndAnswer(sdp: string): Promise<void> {
     if (!this.peerConnection) throw new Error('Peer connection not initialised.');
-
     await this.peerConnection.setRemoteDescription({ type: 'offer', sdp });
-
     const answer = await this.peerConnection.createAnswer();
     await this.peerConnection.setLocalDescription(answer);
     await this.signalr.sendAnswer(this.sessionId, answer.sdp!);
@@ -89,10 +92,8 @@ export class WebrtcService {
   close(): void {
     this.peerConnection?.close();
     this.peerConnection = null;
-
-    this.localStream?.getTracks().forEach(track => track.stop());
+    this.localStream?.getTracks().forEach(t => t.stop());
     this.localStream = null;
-
     this.remoteStream = null;
   }
 }

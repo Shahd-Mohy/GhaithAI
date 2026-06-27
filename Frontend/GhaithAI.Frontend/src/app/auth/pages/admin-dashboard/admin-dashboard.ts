@@ -12,6 +12,8 @@ import { TokenService } from '../../../services/token';
 
 type Tab = 'pending' | 'approved' | 'rejected';
 
+import { NotificationBellComponent } from '../../../shared/notification-bell/notification-bell';
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -19,7 +21,8 @@ type Tab = 'pending' | 'approved' | 'rejected';
     CommonModule,
     FormsModule,
     RouterOutlet,
-    RouterModule
+    RouterModule,
+    NotificationBellComponent
   ],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.css']

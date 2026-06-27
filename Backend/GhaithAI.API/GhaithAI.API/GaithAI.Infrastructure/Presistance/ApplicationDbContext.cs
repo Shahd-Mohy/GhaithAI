@@ -64,13 +64,14 @@ namespace GhaithAI.API.Presistance
         public DbSet<SessionReportVersion> SessionReportVersions { get; set; }
 
         //--------------------------------------------------------------
+        public DbSet<DoctorServiceSetting> DoctorServiceSettings { get; set; }
         public DbSet<Payment> Payments { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=GhaithAI_DB;Trusted_Connection=True;TrustServerCertificate=True;");
+                optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=GhaithAI_DB;Trusted_Connection=True;TrustServerCertificate=True;");
             }
         }
         protected override void OnModelCreating(ModelBuilder builder)

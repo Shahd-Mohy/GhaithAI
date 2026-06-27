@@ -1,7 +1,9 @@
 using GhaithAI.API.GaithAI.Application.DTOs.Report;
+using GhaithAI.API.GaithAI.Application.Services.Class;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuestPDF.Fluent;
 
 namespace GhaithAI.API.GaithAI.API.Controllers
 {
@@ -16,13 +18,16 @@ namespace GhaithAI.API.GaithAI.API.Controllers
     public class SessionReportsController : ControllerBase
     {
         private readonly ISessionReportService _reportService;
+        private readonly ISessionReportPdfService _pdfService;
         private readonly ILogger<SessionReportsController> _logger;
 
         public SessionReportsController(
             ISessionReportService reportService,
+            ISessionReportPdfService pdfService,
             ILogger<SessionReportsController> logger)
         {
             _reportService = reportService;
+            _pdfService = pdfService;
             _logger = logger;
         }
 
@@ -104,6 +109,43 @@ namespace GhaithAI.API.GaithAI.API.Controllers
             {
                 return NotFound(new { error = ex.Message });
             }
+        }
+
+        /// <summary>
+        /// Export the session report as a formatted PDF document.
+        /// PDF is generated on-the-fly from the latest saved state.
+        /// Draft reports are exported with a DRAFT watermark.
+        /// </summary>
+        [HttpGet("{reportId:guid}/export-pdf")]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ExportPdf([FromRoute] Guid reportId)
+        {
+            try
+            {
+                var pdfBytes = await _pdfService.GeneratePdfAsync(reportId);
+                var fileName = $"GhaithAI_Report_{reportId:N}.pdf";
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Preview a session report PDF from an input data transfer object without database queries.
+        /// Ideal for testing layouts and structure directly.
+        /// </summary>
+        [HttpPost("preview-pdf")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        public IActionResult PreviewPdf([FromBody] PdfReportDataDto dto)
+        {
+            var document = new SessionReportPdfDocument(dto);
+            var pdfBytes = document.GeneratePdf();
+            var fileName = "GhaithAI_Report_Preview.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
         }
 
         // Mutation

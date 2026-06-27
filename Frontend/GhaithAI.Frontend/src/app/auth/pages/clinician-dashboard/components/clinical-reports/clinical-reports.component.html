@@ -1,0 +1,114 @@
+<section class="cr-layout">
+  <header class="cr-header">
+    <div>
+      <h1>Clinical Reports</h1>
+      <p>Review, generate, approve, lock, and export session reports.</p>
+    </div>
+    <button type="button" class="cr-refresh" (click)="loadReports()" [disabled]="loading">
+      {{ loading ? 'Refreshing' : 'Refresh' }}
+    </button>
+  </header>
+
+  <div class="cr-stats">
+    <button type="button" class="cr-stat" [class.active]="statusFilter === 'all'" (click)="setStatusFilter('all')">
+      <strong>{{ countBy('all') }}</strong>
+      <span>All sessions</span>
+    </button>
+    <button type="button" class="cr-stat" [class.active]="statusFilter === 'needs-report'" (click)="setStatusFilter('needs-report')">
+      <strong>{{ countBy('needs-report') }}</strong>
+      <span>Needs report</span>
+    </button>
+    <button type="button" class="cr-stat" [class.active]="statusFilter === 'draft'" (click)="setStatusFilter('draft')">
+      <strong>{{ countBy('draft') }}</strong>
+      <span>Draft</span>
+    </button>
+    <button type="button" class="cr-stat" [class.active]="statusFilter === 'approved'" (click)="setStatusFilter('approved')">
+      <strong>{{ countBy('approved') }}</strong>
+      <span>Approved</span>
+    </button>
+    <button type="button" class="cr-stat" [class.active]="statusFilter === 'locked'" (click)="setStatusFilter('locked')">
+      <strong>{{ countBy('locked') }}</strong>
+      <span>Locked</span>
+    </button>
+  </div>
+
+  <div class="cr-body">
+    <aside class="cr-left">
+      <div class="cr-toolbar">
+        <div class="cr-search">
+          <svg viewBox="0 0 24 24">
+            <path d="M9.5 3a6.5 6.5 0 015.18 10.43l4.45 4.44-1.42 1.42-4.44-4.45A6.5 6.5 0 119.5 3zm0 2a4.5 4.5 0 100 9 4.5 4.5 0 000-9z" />
+          </svg>
+          <input type="search" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search reports">
+        </div>
+
+        <div class="cr-pills">
+          <button type="button" [class.active]="riskFilter === 'all'" (click)="setRiskFilter('all')">All risk</button>
+          <button type="button" [class.active]="riskFilter === 'low'" (click)="setRiskFilter('low')">Low</button>
+          <button type="button" [class.active]="riskFilter === 'medium'" (click)="setRiskFilter('medium')">Medium</button>
+          <button type="button" [class.active]="riskFilter === 'high'" (click)="setRiskFilter('high')">High+</button>
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="cr-state">
+        <div class="cr-spinner"></div>
+        <span>Loading reports</span>
+      </div>
+
+      <div *ngIf="!loading && errorMessage" class="cr-error">
+        <p>{{ errorMessage }}</p>
+        <button type="button" (click)="loadReports()">Try again</button>
+      </div>
+
+      <div *ngIf="!loading && !errorMessage && !filtered.length" class="cr-empty">
+        <p>No matching reports</p>
+        <span>Try another filter or refresh after sessions complete.</span>
+      </div>
+
+      <div class="cr-list" *ngIf="!loading && !errorMessage && filtered.length">
+        <button
+          type="button"
+          class="cr-card"
+          *ngFor="let item of filtered"
+          [class.selected]="selected && selected.session.id === item.session.id"
+          (click)="selectItem(item)">
+          <div class="cr-avatar">{{ initials(patientLabel(item)) }}</div>
+          <div class="cr-info">
+            <div class="cr-card-top">
+              <strong>{{ patientLabel(item) }}</strong>
+              <span class="cr-status" [ngClass]="statusClass(item)">{{ reportStatus(item) }}</span>
+            </div>
+            <div class="cr-card-meta">
+              <span>{{ item.session.sessionType || 'Session' }}</span>
+              <span>{{ item.session.startedAt | date:'MMM d, h:mm a' }}</span>
+            </div>
+            <div class="cr-card-bottom">
+              <span class="cr-risk" [ngClass]="riskClass(item)">{{ riskLabel(item) }}</span>
+              <span *ngIf="item.report?.siPresent" class="cr-si">SI</span>
+            </div>
+          </div>
+        </button>
+      </div>
+    </aside>
+
+    <main class="cr-right" [class.has-report]="selected">
+      <div class="cr-placeholder" *ngIf="!selected && !loading">
+        <div class="cr-placeholder-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm-1 1.5L18.5 9H13zM8 13h8v2H8zm0 4h6v2H8z" />
+          </svg>
+        </div>
+        <h2>Select a report</h2>
+        <p>Choose a session from the list to review or generate its clinical report.</p>
+      </div>
+
+      <app-report-review
+        *ngIf="selected"
+        [sessionId]="selected.session.id"
+        [reportId]="selected.report?.reportId || null"
+        [embedded]="true"
+        (reportChanged)="onReportChanged($event)">
+      </app-report-review>
+    </main>
+  </div>
+</section>

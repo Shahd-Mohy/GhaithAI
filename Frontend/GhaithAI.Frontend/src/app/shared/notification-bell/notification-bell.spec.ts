@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PaymentMock } from './payment-mock';
+import { NotificationBell } from './notification-bell';
 
-describe('PaymentMock', () => {
-  let component: PaymentMock;
-  let fixture: ComponentFixture<PaymentMock>;
+describe('NotificationBell', () => {
+  let component: NotificationBell;
+  let fixture: ComponentFixture<NotificationBell>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PaymentMock],
+      imports: [NotificationBell],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PaymentMock);
+    fixture = TestBed.createComponent(NotificationBell);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

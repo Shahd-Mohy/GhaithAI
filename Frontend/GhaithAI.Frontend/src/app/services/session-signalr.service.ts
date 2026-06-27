@@ -18,7 +18,7 @@ export interface RtcIceCandidateMessage {
   candidate: RTCIceCandidateInit;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class SessionSignalrService {
 
   private hubConnection: signalR.HubConnection | null = null;
@@ -28,7 +28,6 @@ export class SessionSignalrService {
   readonly iceCandidateReceived$ = new Subject<RtcIceCandidateMessage>();
 
   async connect(sessionId: string, accessToken: string): Promise<void> {
-    // Use the full backend base URL — relative paths go to Angular dev server (4200), not backend (53898)
     const hubUrl = `${environment.apiUrl.replace('/api', '')}/hubs/session?sessionId=${sessionId}`;
 
     this.hubConnection = new signalR.HubConnectionBuilder()
@@ -39,8 +38,19 @@ export class SessionSignalrService {
       .build();
 
     this.registerHandlers();
-
     await this.hubConnection.start();
+
+    // ── THE MISSING STEP ─────────────────────────────────────────────────────
+    // SessionHub.JoinSession() is what actually adds this connection to the
+    // SignalR group named after sessionId. Nothing on the server does this
+    // automatically just because ?sessionId=... is in the connection URL —
+    // that query param is only there for routing/logging, SignalR itself
+    // never reads it. Without this call, SendOffer/SendAnswer/SendIceCandidate
+    // all target a group with zero members in it: the call goes out, nobody
+    // receives it, and there's no error anywhere because nothing failed —
+    // it just had no one to deliver to. Both doctor and patient must call
+    // this before either one sends anything.
+    await this.hubConnection.invoke('JoinSession', sessionId);
   }
 
   private registerHandlers(): void {

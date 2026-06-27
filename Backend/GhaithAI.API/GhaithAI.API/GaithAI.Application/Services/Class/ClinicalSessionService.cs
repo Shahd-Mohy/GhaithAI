@@ -48,6 +48,16 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             return MapToDto(session);
         }
 
+        public async Task<SessionResponseDto> GetSessionByBookingIdAsync(Guid bookingId)
+        {
+            var session = await _unitOfWork.ClinicalSession
+                .GetAllQueryableNoTracking()
+                .FirstOrDefaultAsync(s => s.BookingId == bookingId)
+                ?? throw new KeyNotFoundException("Session not started for this booking yet.");
+
+            return MapToDto(session);
+        }
+
         public async Task EndSessionAsync(Guid sessionId)
         {
             var session = await _unitOfWork.ClinicalSession

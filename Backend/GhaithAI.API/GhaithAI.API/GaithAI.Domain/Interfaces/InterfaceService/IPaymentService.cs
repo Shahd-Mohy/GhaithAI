@@ -5,6 +5,7 @@ namespace GhaithAI.GaithAI.Domain.Interfaces.InterfaceService
     public interface IPaymentService
     {
         Task<PaymentInitiatedResponseDto> InitiateAsync(Guid bookingId, string patientId);
+        Task<PaymentStatusDto> ConfirmPaymentAsync(string sessionId);
         Task<PaymentStatusDto> MockConfirmAsync(string sessionId);
         Task<PaymentStatusDto> GetStatusByBookingIdAsync(Guid bookingId);
     }

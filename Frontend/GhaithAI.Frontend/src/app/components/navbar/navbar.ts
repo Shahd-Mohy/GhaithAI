@@ -6,13 +6,19 @@ import { RouterLink }
 
 import { AuthService }
   from '../../services/auth';
+
+import { NotificationBellComponent } from '../../shared/notification-bell/notification-bell';
+import { CommonModule } from '@angular/common';
+
 @Component({
   selector: 'app-navbar',
 
   standalone: true,
 
   imports: [
-    RouterLink
+    RouterLink,
+    CommonModule,
+    NotificationBellComponent
   ],
 
   templateUrl: './navbar.html',

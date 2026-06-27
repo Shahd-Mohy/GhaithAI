@@ -206,4 +206,9 @@ Docs/Frontend
 Docs/AI_Master_Reference
 Docs/GhaithAI_Frontend_And_Workflow_Reference.md
 Docs/AI_Prompt_Template.md
+Docs/GhaithAI_SRS.pdfBackend/GhaithAI.API/GhaithAI.API/wwwroot/uploads/doctors/*.pdf 
 Docs/GhaithAI_SRS.pdf
+Docs/GhaithAI_Session_Report_Sample.pdf
+Docs/SystemPrompts/*
+Docs/ModelComparisons/*
+Docs/ghaith-ai-ui-design/*
