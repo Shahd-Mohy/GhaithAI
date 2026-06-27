@@ -1,9 +1,9 @@
+using GhaithAI.API.BackgroundJobs;
 using GhaithAI.API.Configurations;
 using GhaithAI.API.Extensions;
 using GhaithAI.API.GaithAI.API.Configurations;
 using GhaithAI.API.GaithAI.API.Hubs;
 using GhaithAI.API.GaithAI.Application.Helpers;
-using GhaithAI.API.GaithAI.Application.Services.Class;
 using GhaithAI.API.Interfaces.InterfaceService;
 using GhaithAI.API.Seeders;
 using GhaithAI.API.Services;
@@ -145,7 +145,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular", policy =>
     {
         var frontendUrl = builder.Configuration["FrontendUrl"]
-            ?? "https://cee8-197-59-191-24.ngrok-free.app";
+            ?? "https://f5b5-197-59-178-222.ngrok-free.app";
 
         policy.AllowAnyHeader()
               .AllowAnyMethod()

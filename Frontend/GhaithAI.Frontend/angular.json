@@ -76,7 +76,7 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "allowedHosts": [
-              "cee8-197-59-191-24.ngrok-free.app"
+              ".ngrok-free.app"
             ]
           },
           "configurations": {
