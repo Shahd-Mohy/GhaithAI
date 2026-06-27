@@ -15,10 +15,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using GhaithAI.API.BackgroundJobs;
 using GhaithAI.API.SignalR;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// QuestPDF — Community license (free for projects with revenue < $1M USD)
+// QuestPDF — Community license
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 // Add services to the container.
@@ -26,41 +27,34 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerDocumentation();
 
-// تسجيل الطبقات والـ Extensions من ملف الهيلبر
+// تسجيل الطبقات والـ Extensions
 builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddMapping();
 builder.Services.AddMailService(builder.Configuration);
 
-//builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<NotificationJob>();
 
-// إعدادات الـ Langflow والـ HttpClient الخاص به (Chat)
+// إعدادات الـ Langflow
 builder.Services.Configure<LangflowSettings>(builder.Configuration.GetSection("Langflow"));
 builder.Services.AddHttpClient<ILangflowService, LangflowService>((serviceProvider, client) =>
 {
     var settings = serviceProvider.GetRequiredService<IOptions<LangflowSettings>>().Value;
-
     if (string.IsNullOrEmpty(settings.BaseUrl))
         throw new InvalidOperationException("Langflow BaseUrl is missing from appsettings.json");
-
     client.BaseAddress = new Uri(settings.BaseUrl.EndsWith("/") ? settings.BaseUrl : settings.BaseUrl + "/");
 });
 
-// إعدادات الـ Langflow Report Flow والـ HttpClient الخاص به
+// إعدادات الـ Langflow Report Flow
 builder.Services.Configure<LangflowReportSettings>(builder.Configuration.GetSection("LangflowReport"));
 builder.Services.AddHttpClient<IReportLangflowService, ReportLangflowService>((serviceProvider, client) =>
 {
     var settings = serviceProvider.GetRequiredService<IOptions<LangflowReportSettings>>().Value;
-
     if (string.IsNullOrEmpty(settings.BaseUrl))
         throw new InvalidOperationException("LangflowReport BaseUrl is missing from appsettings.json");
-
     client.BaseAddress = new Uri(settings.BaseUrl.EndsWith("/") ? settings.BaseUrl : settings.BaseUrl + "/");
-
-    // الـ Report flow ممكن تاخد وقت أطول بسبب الـ 3 LLMs — نزود الـ timeout
     client.Timeout = TimeSpan.FromMinutes(5);
 });
 
@@ -74,21 +68,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddAuthorization();
 
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//.AddJwtBearer(options =>
-//{
-//    options.TokenValidationParameters = new TokenValidationParameters
-//    {
-//        ValidateIssuer = true,
-//        ValidateAudience = true,
-//        ValidateLifetime = true,
-//        ValidateIssuerSigningKey = true,
-//        ValidIssuer = builder.Configuration["JWT:Issuer"],
-//        ValidAudience = builder.Configuration["JWT:Audience"],
-//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
-//    };
-//});
-// 🛡️ تسجيل الـ Authentication مرة واحدة فقط هنا لمنع إيرور الـ Scheme Already Exists
+// إعدادات الـ Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -112,15 +92,15 @@ builder.Services.AddAuthentication(options =>
         OnMessageReceived = context =>
         {
             var accessToken = context.Request.Query["access_token"];
-
             var path = context.HttpContext.Request.Path;
 
             if (!string.IsNullOrEmpty(accessToken) &&
-                (path.StartsWithSegments("/hubs/chat") || path.StartsWithSegments("/hubs/session") || path.StartsWithSegments("/hubs/notifications")))
+                (path.StartsWithSegments("/hubs/chat") || 
+                 path.StartsWithSegments("/hubs/session") || 
+                 path.StartsWithSegments("/hubs/notifications")))
             {
                 context.Token = accessToken;
             }
-
             return Task.CompletedTask;
         }
     };
@@ -129,16 +109,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // ✅ يحل الـ circular reference
-        options.JsonSerializerOptions.ReferenceHandler =
-            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-
-        // ✅ enum كـ string
-        options.JsonSerializerOptions.Converters.Add(
-            new System.Text.Json.Serialization.JsonStringEnumConverter());
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
-// إعدادات الـ CORS عشان فرونت الـ Angular يربط بسلام
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -173,6 +147,7 @@ app.MapHub<ChatHub>("/hubs/chat");
 app.MapHub<SessionHub>("/hubs/session");
 app.MapHub<NotificationHub>("/hubs/notifications");
 
+// Database Seeding
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -183,9 +158,7 @@ using (var scope = app.Services.CreateScope())
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
         await CountrySeeder.SeedAsync(context);
-
         await RoleSeeder.SeedAsync(roleManager);
-
         await AdminSeeder.SeedAsync(userManager);
     }
     catch (Exception ex)

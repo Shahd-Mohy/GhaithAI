@@ -16,6 +16,7 @@ import {
   DailyMoodDTO
 } from '../../../services/insight.service';
 import { DashboardRefreshService } from '../../../services/dashboard-refresh.service';
+import { PatientSessionRoomComponent } from '../../../auth/patient-session-room.component/patient-session-room.component';
 
 import { ProfessionalsComponent } from "../professionals/professionals";
 import { NotificationBellComponent } from '../../../shared/notification-bell/notification-bell';
@@ -27,7 +28,7 @@ interface QuickAction {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, SelfHelpComponent, MoodTrackerComponent, JournalComponent, ProfessionalsComponent, NotificationBellComponent],
+  imports: [CommonModule, RouterLink, SelfHelpComponent, MoodTrackerComponent, JournalComponent, ProfessionalsComponent, PatientSessionRoomComponent, NotificationBellComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
@@ -46,6 +47,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ── state ────────────────────────────────────────────────────────
   activePage = 'home';
+  /** sessionId forwarded to <app-patient-session-room> when page === 'session' */
+  activeSessionId = '';
   selectedMood: string | null = null;
   isLoading = true;
   hasError = false;
@@ -100,6 +103,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       if (params['page']) this.activePage = params['page'];
+      // Restore sessionId when navigating back via browser history
+      if (params['sessionId']) this.activeSessionId = params['sessionId'];
     });
 
     // Initial load
@@ -142,7 +147,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── navigation ───────────────────────────────────────────────────
-  navigate(page: string): void {
+  navigate(page: string, sessionId?: string): void {
     if (page === 'chat') {
       this.router.navigate(['/support/chat']); return;
     }
@@ -153,16 +158,31 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const previousPage = this.activePage;
     this.activePage = page;
 
+    // When opening the session page, store the sessionId so the component can use it
+    if (page === 'session' && sessionId) {
+      this.activeSessionId = sessionId;
+    }
+
     // Also reload when user explicitly navigates back to home
     if (page === 'home' && previousPage !== 'home') {
       this.loadDashboard();
     }
 
+    const queryParams: Record<string, string> = { page };
+    if (page === 'session' && this.activeSessionId) {
+      queryParams['sessionId'] = this.activeSessionId;
+    }
+
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { page },
+      queryParams,
       queryParamsHandling: 'merge'
     });
+  }
+
+  /** Called from the "My Appointment" nav item — opens the session panel. */
+  openSession(): void {
+    this.navigate('session');
   }
 
   selectMood(key: string): void { this.selectedMood = key; }

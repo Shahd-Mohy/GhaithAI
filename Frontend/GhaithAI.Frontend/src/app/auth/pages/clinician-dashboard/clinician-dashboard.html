@@ -61,6 +61,13 @@
         </svg>
         Clinical Notes
       </a>
+      <a class="nav-item" [class.active]="isActive('reports')" (click)="navigate('reports')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h6v2H8v-2z" />
+        </svg>
+        Reports
+      </a>
       <a class="nav-item" [class.active]="isActive('assessments')" (click)="navigate('assessments')">
         <svg viewBox="0 0 24 24">
           <path
@@ -364,6 +371,11 @@
     @if (activePage === 'notes') {
     <div class="scroll-area">
       <app-clinical-notes></app-clinical-notes>
+    </div>
+    }
+    @if (activePage === 'reports') {
+    <div class="scroll-area">
+      <app-clinical-reports></app-clinical-reports>
     </div>
     }
     @if (activePage === 'assessments') {

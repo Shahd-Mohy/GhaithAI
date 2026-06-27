@@ -116,7 +116,7 @@ export class DoctorService {
   getAvailableSlots(doctorId: string, date: string): Observable<AvailableSlot[]> {
     // Build a from/to range covering the full selected day
     const from = `${date}T00:00:00`;
-    const to   = `${date}T23:59:59`;
+    const to = `${date}T23:59:59`;
     return this.http.get<AvailableSlot[]>(
       `${this.baseUrl}/professionals/${doctorId}/available-slots`,
       { params: { from, to } }

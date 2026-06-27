@@ -1,0 +1,56 @@
+<div class="server-error-wrapper">
+  <div class="error-card glass">
+    <!-- Calm animated illustration area -->
+    <div class="illustration-area">
+      <div class="pulse-ring-outer">
+        <div class="pulse-ring-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+            stroke="currentColor" class="error-svg">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.35-7.24 9.75 9.75 0 0 0-3.18-10.25l-.22-.16a.75.75 0 0 0-1.07.18L11.5 6.75l-1.68-1.68a.75.75 0 0 0-1.06 0l-4.5 4.5a.75.75 0 0 0 0 1.06l1.68 1.68L2.25 15Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v3.75m0 3.75h.008v.008H12V18Z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Code / Badge -->
+    <div class="status-badge">
+      <span class="badge-text">Service Temporarily Unavailable • 500</span>
+    </div>
+
+    <!-- Main Message -->
+    <h1 class="error-heading">We are here with you... Back in a moment</h1>
+
+    <p class="error-desc-main">
+      It seems our servers are taking a brief moment to rest and recalibrate. Don't worry, our team is working with care
+      and dedication to resolve this minor issue so you can continue your journey with us safely.
+    </p>
+
+    <p class="error-desc-sub text-muted">
+      All your data and privacy remain completely secure. Thank you for your patience and understanding.
+    </p>
+
+    <hr class="divider">
+
+    <!-- Secondary Reassurance -->
+    <div class="english-reassurance">
+      <h2 class="eng-heading">Taking a brief breath...</h2>
+      <p class="eng-text">
+        Our system is experiencing a temporary connection issue. Our team is already resolving it. Please rest assured
+        your data is secure.
+      </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-section">
+      <button class="btn-hero-style" (click)="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
+          class="btn-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+        </svg>
+        Go Back
+      </button>
+    </div>
+  </div>
+</div>

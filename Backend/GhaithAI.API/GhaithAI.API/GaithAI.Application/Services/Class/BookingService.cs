@@ -2,6 +2,7 @@ using GhaithAI.GaithAI.Application.DTOs.Booking;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.EntityFrameworkCore;
 using GhaithAI.GaithAI.Domain.Entities;
+using GhaithAI.GaithAI.Domain.Exceptions;
 
 namespace GhaithAI.GaithAI.Application.Services.Class
 {
@@ -59,7 +60,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 .Take(pageSize)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<DoctorBookingResponseDto>>(items); 
+            return _mapper.Map<IEnumerable<DoctorBookingResponseDto>>(items);
         }
 
 
@@ -68,6 +69,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
         {
             var doctorId = await GetDoctorIdByUserIdAsync(userId);
             var doctorProfile = await _unitOfWork.DoctorProfile.GetByIdAsync(doctorId);
+
             bool isSlotBusy = await _unitOfWork.Booking.GetAllQueryableNoTracking()
                 .AnyAsync(b => b.DoctorId == doctorId &&
                                b.SlotTime == dto.SlotTime &&
@@ -75,7 +77,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             if (isSlotBusy)
             {
-                throw new InvalidOperationException("This time slot is already booked. Please choose another time.");
+                throw new ConflictException("This time slot is already booked. Please choose another time.");
             }
 
             Guid finalClinicPatientId;
@@ -130,12 +132,15 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             }
 
             // Notification for Doctor
-            await _notificationService.SendAsync(
-                doctorProfile.UserId,
-                GhaithAI.GaithAI.Domain.Enums.NotificationType.NewBooking,
-                "New Booking Scheduled",
-                $"A new booking has been scheduled for {dto.BookingDate.ToShortDateString()} at {dto.SlotTime}.",
-                booking.Id);
+            if (doctorProfile != null)
+            {
+                await _notificationService.SendAsync(
+                    doctorProfile.UserId,
+                    GhaithAI.GaithAI.Domain.Enums.NotificationType.NewBooking,
+                    "New Booking Scheduled",
+                    $"A new booking has been scheduled for {dto.BookingDate.ToShortDateString()} at {dto.SlotTime}.",
+                    booking.Id);
+            }
 
             return booking.Id;
         }
@@ -169,7 +174,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                                b.Status != BookingStatus.Cancelled);
 
             if (slotTaken)
-                throw new InvalidOperationException("This slot is already booked.");
+                throw new ConflictException("This slot is already booked.");
 
             var userHasConflict = await _unitOfWork.Booking.GetAllQueryableNoTracking()
                 .AnyAsync(b => b.PatientId == userId &&
@@ -178,7 +183,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                                b.Status != BookingStatus.Cancelled);
 
             if (userHasConflict)
-                throw new InvalidOperationException("You already have a booking at this time.");
+                throw new ConflictException("You already have a booking at this time.");
 
             var booking = new Booking
             {
@@ -239,6 +244,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 var filterLower = timeFilter.Trim().ToLower();
                 query = filterLower switch
                 {
+                    "today" => query.Where(b => b.BookingDate == today),
                     "upcoming" => query.Where(b =>
                         b.BookingDate >= today &&
                         b.Status != BookingStatus.Cancelled),
@@ -411,8 +417,8 @@ namespace GhaithAI.GaithAI.Application.Services.Class
              .Where(b => b.DoctorId == doctorId
                       && b.BookingDate.Date == today
                       && b.Status != BookingStatus.Cancelled
-                      && b.SlotTime >= DateTime.Now.TimeOfDay) 
-             .OrderBy(b => b.SlotTime) 
+                      && b.SlotTime >= DateTime.Now.TimeOfDay)
+             .OrderBy(b => b.SlotTime)
              .Take(6)
              .ToListAsync();
             return _mapper.Map<IEnumerable<ScheduleItemDto>>(bookings);

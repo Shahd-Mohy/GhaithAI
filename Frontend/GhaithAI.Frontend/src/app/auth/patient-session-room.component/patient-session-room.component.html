@@ -1,0 +1,153 @@
+<div class="session-page">
+  <audio #remoteAudio autoplay style="display: none"></audio>
+
+  <!-- ── PAGE HEADER ── -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="10 8 16 12 10 16 10 8" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="page-title">Your Appointment</h1>
+      </div>
+    </div>
+    <div class="header-right">
+      <!-- Status Badge -->
+      <div class="status-pill" [ngClass]="state">
+        <span class="status-dot"></span>
+        <span class="status-text">{{ stateLabel }}</span>
+        <span *ngIf="state === 'InCall'" class="status-duration">{{ callDurationDisplay }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ERROR BANNER ── -->
+  <div class="error-banner" *ngIf="state === 'Error'">
+    <div class="error-icon">⚠️</div>
+    <div class="error-content">
+      <p class="error-msg">{{ errorMessage }}</p>
+    </div>
+    <button class="btn-dismiss" (click)="goBack()" type="button">Back</button>
+  </div>
+
+  <!-- ── SINGLE CENTERED CALL CARD ── -->
+  <div class="call-grid" *ngIf="state !== 'Error'">
+    <div class="card call-card">
+
+      <!-- ── LOADING STATE ── -->
+      <div *ngIf="state === 'LoadingSession'" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p class="loading-label">Looking up your appointment…</p>
+      </div>
+
+      <!-- ── WAITING FOR DOCTOR STATE (auto-polling active) ── -->
+      <div *ngIf="state === 'NoSession'" class="no-session-state">
+        <!-- Animated "incoming call" dots -->
+        <div class="waiting-ring">
+          <div class="waiting-ring-dot dot-1"></div>
+          <div class="waiting-ring-dot dot-2"></div>
+          <div class="waiting-ring-dot dot-3"></div>
+          <div class="waiting-ring-icon">🩺</div>
+        </div>
+        <p class="no-session-title">Waiting for your doctor…</p>
+        <p class="no-session-desc">
+          Your doctor hasn't started the session yet.<br>
+          This page checks automatically every few seconds — no need to refresh.
+        </p>
+        <div class="auto-check-badge">
+          <span class="pulse-dot"></span>
+          Checking automatically
+        </div>
+        <div class="no-session-actions">
+          <button class="retry-btn" type="button" (click)="retry()">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+            </svg>
+            Check Now
+          </button>
+          <button class="back-btn-sm" type="button" (click)="goBack()">Back to Dashboard</button>
+        </div>
+      </div>
+
+      <!-- ── ACTIVE STATES (Idle / Connecting / Waiting / InCall / Ending / Ended) ── -->
+      <ng-container *ngIf="state !== 'LoadingSession' && state !== 'NoSession'">
+
+        <!-- Doctor Info -->
+        <div class="patient-row">
+          <div class="patient-avatar-big">{{ doctorInitials }}</div>
+          <div class="patient-details">
+            <div class="patient-name">{{ doctorName || 'Your Doctor' }}</div>
+            <div class="patient-condition">{{ statusSubLabel }}</div>
+          </div>
+        </div>
+
+        <!-- Timer (visible once in call) -->
+        <div class="timer-display" *ngIf="state === 'InCall' || state === 'Ended'">
+          <span class="timer-text">{{ callDurationDisplay }}</span>
+        </div>
+
+        <!-- Action Button -->
+        <div class="control-btn-wrap">
+
+          <!-- IDLE → Join Call -->
+          <button *ngIf="state === 'Idle'" class="mic-btn mic-btn--idle" (click)="joinCall()" type="button"
+            id="patient-join-btn" title="Join call">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z" />
+            </svg>
+          </button>
+
+          <!-- CONNECTING / ENDING → spinner -->
+          <div *ngIf="state === 'Connecting' || state === 'Ending'" class="mic-btn mic-btn--busy">
+            <div class="spinner"></div>
+          </div>
+
+          <!-- WAITING → pulsing dot (can leave) -->
+          <button *ngIf="state === 'Waiting'" class="mic-btn mic-btn--waiting" (click)="leaveCall()" type="button"
+            title="Leave call">
+            <span class="waiting-pulse"></span>
+          </button>
+
+          <!-- IN CALL → leave (pulsing red mic) -->
+          <button *ngIf="state === 'InCall'" class="mic-btn mic-btn--active" (click)="leaveCall()" type="button"
+            title="Leave call">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z" />
+            </svg>
+          </button>
+
+        </div>
+
+        <!-- Timer status label -->
+        <p class="timer-status">
+          <ng-container *ngIf="state === 'InCall'">Tap the mic to leave the call</ng-container>
+          <ng-container *ngIf="state === 'Waiting'">Tap to cancel and go back</ng-container>
+          <ng-container *ngIf="state === 'Idle'">Tap the mic to join your appointment</ng-container>
+        </p>
+
+        <!-- Ended state -->
+        <div class="ended-box" *ngIf="state === 'Ended'">
+          <div class="ready-icon">✅</div>
+          <p class="ready-title">Call ended</p>
+          <p class="ready-sub">Thanks for attending. You can close this or go back to dashboard.</p>
+          <button class="back-btn-sm" type="button" (click)="goBack()">Back to Dashboard</button>
+        </div>
+
+        <!-- Privacy note -->
+        <div class="consent-badge" *ngIf="state !== 'Ended'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          This call is private and may be recorded for clinical notes
+        </div>
+
+      </ng-container>
+
+    </div>
+  </div>
+</div>

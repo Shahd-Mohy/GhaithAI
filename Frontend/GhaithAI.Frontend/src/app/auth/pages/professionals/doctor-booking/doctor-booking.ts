@@ -89,40 +89,40 @@ export class DoctorBookingComponent implements OnInit {
 
 
 
-book(): void {
-  if (!this.canBook) return;
+  book(): void {
+    if (!this.canBook) return;
 
-  this.bookingLoading = true;
-  this.bookingError = '';
+    this.bookingLoading = true;
+    this.bookingError = '';
 
-  // 1 - عمل الـ booking
-  this.doctorService.bookDoctor({
-    doctorId: this.doctorId,
-    bookingDate: this.selectedDate,
-    slotTime: this.selectedSlot,
-    sessionType: this.sessionType,
-    bookingNotes: this.notes
-  }).subscribe({
-    next: (res) => {
-      // 2 - بعد الـ booking، ابدأ الـ payment
-      this.paymentService.initiatePayment(res.id).subscribe({
-        next: (paymentRes) => {
-          this.bookingLoading = false;
-          // 3 - حول المريض لـ Stripe
-          this.paymentService.redirectToCheckout(paymentRes.checkoutUrl);
-        },
-        error: (err) => {
-          this.bookingLoading = false;
-          this.bookingError = err.error?.message || 'Payment initiation failed.';
-        }
-      });
-    },
-    error: (err) => {
-      this.bookingLoading = false;
-      this.bookingError = err.error?.message || 'Booking failed. Please try again.';
-    }
-  });
-}
+    // 1 - عمل الـ booking
+    this.doctorService.bookDoctor({
+      doctorId: this.doctorId,
+      bookingDate: this.selectedDate,
+      slotTime: this.selectedSlot,
+      sessionType: this.sessionType,
+      bookingNotes: this.notes
+    }).subscribe({
+      next: (res) => {
+        // 2 - بعد الـ booking، ابدأ الـ payment
+        this.paymentService.initiatePayment(res.id).subscribe({
+          next: (paymentRes) => {
+            this.bookingLoading = false;
+            // 3 - حول المريض لـ Stripe
+            this.paymentService.redirectToCheckout(paymentRes.checkoutUrl);
+          },
+          error: (err) => {
+            this.bookingLoading = false;
+            this.bookingError = err.error?.message || 'Payment initiation failed.';
+          }
+        });
+      },
+      error: (err) => {
+        this.bookingLoading = false;
+        this.bookingError = err.error?.message || 'Booking failed. Please try again.';
+      }
+    });
+  }
 
   getStars(rating: number): number[] {
     return Array(5).fill(0).map((_, i) => i < Math.round(rating) ? 1 : 0);

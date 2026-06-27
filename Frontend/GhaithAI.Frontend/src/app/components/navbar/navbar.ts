@@ -1,11 +1,11 @@
 import { Component }
-from '@angular/core';
+  from '@angular/core';
 
 import { RouterLink }
-from '@angular/router';
+  from '@angular/router';
 
 import { AuthService }
-from '../../services/auth';
+  from '../../services/auth';
 
 import { NotificationBellComponent } from '../../shared/notification-bell/notification-bell';
 import { CommonModule } from '@angular/common';
@@ -29,7 +29,7 @@ export class NavbarComponent {
 
   constructor(
     public authService: AuthService
-  ) {}
+  ) { }
 
   logout() {
 
