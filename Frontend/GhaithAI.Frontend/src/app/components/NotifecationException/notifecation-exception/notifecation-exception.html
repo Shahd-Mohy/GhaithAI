@@ -1,18 +1,19 @@
 <div *ngIf="currentNotification" class="notification-toast-container" [ngClass]="currentNotification.type">
-    <div class="notification-toast">
-        <div class="toast-body">
-            <!-- Icon based on type -->
-            <i class="bi toast-icon" [ngClass]="{
+  <div class="notification-toast">
+    <div class="toast-body">
+      <!-- Icon based on type -->
+      <i class="bi toast-icon" [ngClass]="{
         'bi-exclamation-circle': currentNotification.type === 'error',
         'bi-check-circle': currentNotification.type === 'success',
-        'bi-info-circle': currentNotification.type === 'info'
+        'bi-info-circle': currentNotification.type === 'info',
+'bi-exclamation-triangle': currentNotification.type === 'warning'
       }"></i>
 
-            <span class="toast-message">{{ currentNotification.message }}</span>
-        </div>
-
-        <button class="btn-close-toast" (click)="close()" aria-label="Close">
-            <i class="bi bi-x"></i>
-        </button>
+      <span class="toast-message">{{ currentNotification.message }}</span>
     </div>
+
+    <button class="btn-close-toast" (click)="close()" aria-label="Close">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
 </div>

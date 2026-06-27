@@ -77,6 +77,24 @@
   background-color: rgba(14, 165, 233, 0.08);
 }
 
+.notification-toast-container.warning .notification-toast {
+  background-color: #FFFBEB;
+  color: #92400E;
+  border-color: rgba(245, 158, 11, 0.15);
+}
+
+.notification-toast-container.warning .toast-icon {
+  color: #D97706;
+}
+
+.notification-toast-container.warning .btn-close-toast {
+  color: #D97706;
+}
+
+.notification-toast-container.warning .btn-close-toast:hover {
+  background-color: rgba(245, 158, 11, 0.08);
+}
+
 /* Body structure */
 .toast-body {
   display: flex;

@@ -1,4 +1,5 @@
-﻿using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
+﻿using GhaithAI.GaithAI.Domain.Exceptions;
+using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
@@ -24,42 +25,52 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
         public async Task<string> RunFlowAsync(string flowId, object payload, CancellationToken ct = default)
         {
-            var requestBody = new
+            try
             {
-                input_value = JsonSerializer.Serialize(payload),
-                output_type = "chat",
-                input_type = "chat"
-            };
+                var requestBody = new
+                {
+                    input_value = JsonSerializer.Serialize(payload),
+                    output_type = "chat",
+                    input_type = "chat"
+                };
 
-            var response = await _httpClient.PostAsJsonAsync(
-                $"/api/v1/run/{flowId}", requestBody, ct);
+                var response = await _httpClient.PostAsJsonAsync(
+                    $"/api/v1/run/{flowId}", requestBody, ct);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorBody = await response.Content.ReadAsStringAsync(ct);
-                _logger.LogError("LangFlow call failed. FlowId={FlowId} Status={Status} Body={Body}",
-                    flowId, response.StatusCode, errorBody);
-                throw new Exception($"LangFlow request failed with status {response.StatusCode}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync(ct);
+                    _logger.LogError("LangFlow call failed. FlowId={FlowId} Status={Status} Body={Body}",
+                        flowId, response.StatusCode, errorBody);
+                    throw new ExternalServiceException($"LangFlow request failed with status {response.StatusCode}.");
+                }
+
+                var raw = await response.Content.ReadAsStringAsync(ct);
+
+                using var doc = JsonDocument.Parse(raw);
+
+                var outputText = doc.RootElement
+                    .GetProperty("outputs")[0]
+                    .GetProperty("outputs")[0]
+                    .GetProperty("results")
+                    .GetProperty("message")
+                    .GetProperty("text")
+                    .GetString();
+
+                if (string.IsNullOrWhiteSpace(outputText))
+                    throw new ExternalServiceException("LangFlow returned an empty output.");
+
+                return outputText;
             }
-
-            var raw = await response.Content.ReadAsStringAsync(ct);
-
-            // LangFlow بيرجع response object فيه outputs array — بنستخرج
-            // منها الناتج الفعلي اللي الـ flow بناه (الـ JSON النهائي).
-            using var doc = JsonDocument.Parse(raw);
-
-            var outputText = doc.RootElement
-                .GetProperty("outputs")[0]
-                .GetProperty("outputs")[0]
-                .GetProperty("results")
-                .GetProperty("message")
-                .GetProperty("text")
-                .GetString();
-
-            if (string.IsNullOrWhiteSpace(outputText))
-                throw new Exception("LangFlow returned an empty output.");
-
-            return outputText;
+            catch (ExternalServiceException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "LangFlow call failed for flow {FlowId}", flowId);
+                throw new ExternalServiceException("The AI service failed while processing your request.", ex);
+            }
         }
     }
 }
