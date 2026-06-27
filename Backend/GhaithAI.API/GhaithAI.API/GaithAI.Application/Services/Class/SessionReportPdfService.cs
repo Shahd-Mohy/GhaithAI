@@ -17,6 +17,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
         private readonly IUnitOfWork _unitOfWork;
         private readonly ApplicationDbContext _db;
         private readonly ILogger<SessionReportPdfService> _logger;
+        private readonly IReportLogoProvider _logoProvider;
 
         private static readonly JsonSerializerOptions _jsonOpts = new()
         {
@@ -26,11 +27,13 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
         public SessionReportPdfService(
             IUnitOfWork unitOfWork,
             ApplicationDbContext db,
-            ILogger<SessionReportPdfService> logger)
+            ILogger<SessionReportPdfService> logger,
+            IReportLogoProvider logoProvider)
         {
             _unitOfWork = unitOfWork;
             _db = db;
             _logger = logger;
+            _logoProvider = logoProvider;
         }
 
         /// <inheritdoc/>
@@ -148,7 +151,7 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             };
 
             // ── 6. Render and return PDF bytes ────────────────────────────────
-            var document = new SessionReportPdfDocument(data);
+            var document = new SessionReportPdfDocument(data, _logoProvider.LogoBytes);
             var bytes = document.GeneratePdf();
 
             _logger.LogInformation(
