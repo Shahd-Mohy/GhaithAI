@@ -7,23 +7,32 @@ using System.Text.RegularExpressions;
 
 namespace GhaithAI.API.GaithAI.Application.Services.Class
 {
+    /// <summary>
+    /// QuestPDF document that renders a clean, professional clinical session report.
+    /// Decoration is intentionally minimal: one navy accent colour, plain full-width
+    /// text, and a single thin rule under each section heading. Colour is reserved
+    /// for where it carries clinical meaning (risk tier). The square GhaithAI logo
+    /// is embedded as a letterhead mark at the top-left of the page header.
+    /// </summary>
     public sealed class SessionReportPdfDocument : IDocument
     {
         // ── Design tokens ─────────────────────────────────────────────────────
-        private static readonly string FontFamily = "Arial";
+        private const string FontFamily = "Arial";
         private const float BodySize = 10f;
-        
-        private static readonly string NavyHex = "#1B3A5C";
-        private static readonly string SecondaryBlue = "#2C4C74";
-        private static readonly string CardBgHex = "#F8FAFC";
-        private static readonly string BorderHex = "#E2E8F0";
+
+        private const string NavyHex = "#1B3A5C";
+        private const string BorderHex = "#CBD5E1";
+        private const string SlateHex = "#1E293B";
+        private const string MutedHex = "#64748B";
 
         private readonly PdfReportDataDto _data;
+        private readonly byte[]? _logoBytes;
         private readonly bool _isDraft;
 
-        public SessionReportPdfDocument(PdfReportDataDto data)
+        public SessionReportPdfDocument(PdfReportDataDto data, byte[]? logoBytes = null)
         {
             _data = data;
+            _logoBytes = logoBytes;
             _isDraft = data.Status is not "Locked" and not "Approved";
         }
 
@@ -35,69 +44,87 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             {
                 page.Size(PageSizes.A4);
                 page.Margin(40, Unit.Point);
-                page.DefaultTextStyle(x => x.FontFamily(FontFamily).FontSize(BodySize).FontColor("#1E293B"));
+                page.DefaultTextStyle(x => x.FontFamily(FontFamily).FontSize(BodySize).FontColor(SlateHex));
 
                 page.Header().Element(ComposeHeader);
                 page.Content().Element(ComposeContent);
                 page.Footer().Element(ComposeFooter);
-
-                if (_isDraft)
-                    page.Foreground()
-                        .AlignCenter()
-                        .AlignMiddle()
-                        .Text("DRAFT")
-                        .FontSize(110)
-                        .Bold()
-                        .FontColor("#F1F5F9");
             });
         }
 
         // ── PAGE HEADER ───────────────────────────────────────────────────────
         private void ComposeHeader(IContainer c)
         {
-            c.PaddingBottom(15).BorderBottom(1).BorderColor(NavyHex).PaddingBottom(5).Row(row =>
+            c.Column(col =>
             {
-                row.RelativeItem().Column(col =>
+                // Letterhead: square logo (left) + title block (center) + status/meta (right).
+                col.Item().PaddingBottom(8).Row(row =>
                 {
-                    col.Item().Text("GHAITHAI").SemiBold().FontSize(12).FontColor(NavyHex).LetterSpacing(0.05f);
-                    col.Item().Text("Clinical Session Report").Bold().FontSize(18).FontColor(NavyHex);
-                });
-                
-                row.AutoItem().AlignRight().Column(col =>
-                {
-                    if (_isDraft)
+                    if (_logoBytes is { Length: > 0 })
                     {
-                        col.Item().AlignRight().Background(SecondaryBlue).PaddingVertical(3).PaddingHorizontal(8)
-                            .Text("DRAFT · PENDING APPROVAL").Bold().FontSize(8).FontColor(Colors.White);
+                        // Square asset → square slot keeps aspect ratio correct.
+                        row.AutoItem().PaddingRight(12).Width(46).Height(46)
+                           .Image(_logoBytes).FitArea();
                     }
-                    else
+
+                    row.RelativeItem().AlignMiddle().Column(t =>
                     {
-                        col.Item().AlignRight().Background("#15803D").PaddingVertical(3).PaddingHorizontal(8)
-                            .Text("APPROVED").Bold().FontSize(8).FontColor(Colors.White);
-                    }
-                    col.Item().PaddingTop(4).AlignRight().Text($"Session Date: {_data.SessionDate:dd MMM yyyy}").FontSize(9).FontColor("#64748B");
-                    col.Item().AlignRight().Text($"Report ID: {_data.ReportId.ToString()[..8].ToUpper()}").FontSize(9).FontColor("#64748B");
+                        t.Item().Text("Clinical Session Report").SemiBold().FontSize(18).FontColor(NavyHex);
+                        t.Item().Text("GhaithAI  ·  AI-Assisted Clinical Decision Support")
+                               .FontSize(8.5f).FontColor(MutedHex);
+                    });
+
+                    row.AutoItem().AlignRight().Column(meta =>
+                    {
+                        meta.Item().AlignRight().PaddingBottom(2).Text(tag =>
+                        {
+                            if (_isDraft)
+                            {
+                                tag.Span("● DRAFT · PENDING APPROVAL").Bold().FontSize(8).FontColor("#B45309");
+                            }
+                            else
+                            {
+                                tag.Span("● APPROVED").Bold().FontSize(8).FontColor("#15803D");
+                            }
+                        });
+
+                        meta.Item().AlignRight()
+                            .Text($"Session Date: {_data.SessionDate:dd MMM yyyy}")
+                            .FontSize(8.5f).FontColor(MutedHex);
+                        meta.Item().AlignRight()
+                            .Text($"Report ID: {_data.ReportId.ToString()[..8].ToUpper()}")
+                            .FontSize(8.5f).FontColor(MutedHex);
+                    });
                 });
+
+                // CS-001 + CS-002 compliance banner — sits directly under the letterhead
+                // rule on page 1 (content flows, so it does not repeat on later pages).
+                col.Item().BorderTop(1).BorderColor(NavyHex).PaddingTop(6).PaddingBottom(2)
+                   .Text(SessionReportConstants.ComplianceHeaderDisclaimer)
+                   .FontSize(7.5f).FontColor(MutedHex);
+                col.Item()
+                   .Text(SessionReportConstants.PatientConsentProcessingNote)
+                   .FontSize(7.5f).FontColor(MutedHex).Italic();
             });
         }
 
         // ── PAGE FOOTER ───────────────────────────────────────────────────────
         private void ComposeFooter(IContainer c)
         {
-            c.PaddingTop(10).BorderTop(1f).BorderColor(BorderHex)
-                .Row(row =>
+            c.PaddingTop(8).BorderTop(1).BorderColor(BorderHex).PaddingTop(6).Row(row =>
+            {
+                row.RelativeItem()
+                  .Text(SessionReportConstants.ComplianceFooterDisclaimer)
+                  .FontSize(7f).FontColor(MutedHex);
+
+                row.AutoItem().AlignRight().Text(x =>
                 {
-                    row.RelativeItem().Text("CONFIDENTIAL · AI-Assisted Clinical Decision-Support Document. Clinician verification required.")
-                        .FontSize(7.5f).FontColor("#64748B").Bold();
-                    row.AutoItem().AlignRight()
-                        .Text(x =>
-                        {
-                            x.Span("Page ").FontSize(8).FontColor("#64748B");
-                            x.CurrentPageNumber().FontSize(8).FontColor("#64748B");
-                            x.Span(" of ").FontSize(8).FontColor("#64748B");
-                            x.TotalPages().FontSize(8).FontColor("#64748B");
-                        });
+                    x.Span("Page ").FontSize(8).FontColor(MutedHex);
+                    x.CurrentPageNumber().FontSize(8).FontColor(MutedHex);
+                    x.Span(" of ").FontSize(8).FontColor(MutedHex);
+                    x.TotalPages().FontSize(8).FontColor(MutedHex);
                 });
+            });
         }
 
         // ── MAIN CONTENT ──────────────────────────────────────────────────────
@@ -105,144 +132,159 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
         {
             c.Column(col =>
             {
-                col.Spacing(12);
+                col.Spacing(14);
 
-                // Section 1: Demographics & Baseline (NEW)
-                col.Item().PaddingTop(5).Element(ComposePatientBaseline);
-
-                // Section 2: Clinician Details
+                // Section 1: Attending Clinician (organisational context first).
                 col.Item().Element(ComposeClinicianDetails);
 
-                // Section 3: Risk Assessment (High Priority - Moved UP)
+                // Section 2: Patient Demographics & Baseline.
+                col.Item().Element(ComposePatientBaseline);
+
+                // Section 3: Risk Assessment (high priority).
                 col.Item().Element(ComposeRiskAssessment);
 
-                // Section 4: SOAP Note (Moved UP for quick review)
+                // Section 4: SOAP.
                 col.Item().Element(ComposeSoap);
 
-                // Section 5: Chief Complaint
                 if (!string.IsNullOrWhiteSpace(_data.ChiefComplaintPrimary))
                     col.Item().Element(ComposeChiefComplaint);
 
-                // Section 6: HPI (History of Presenting Illness)
                 if (!string.IsNullOrWhiteSpace(_data.HpiNarrative))
                     col.Item().Element(ComposeHpi);
 
-                // Section 7: MSE
                 if (!string.IsNullOrWhiteSpace(_data.MseSpeechAndMood))
                     col.Item().Element(ComposeMse);
 
-                // Section 8: Clinical Formulation
-                if (!string.IsNullOrWhiteSpace(_data.FormulationNarrative) || _data.DifferentialConsiderations?.Count > 0)
+                if (!string.IsNullOrWhiteSpace(_data.FormulationNarrative)
+                    || _data.DifferentialConsiderations?.Count > 0)
+                {
                     col.Item().Element(ComposeFormulation);
+                }
 
-                // Section 9: Legal Disclaimer (Moved to end of document)
-                col.Item().PaddingTop(20).Element(ComposeLegalDisclaimerBox);
+                if (!string.IsNullOrWhiteSpace(_data.PharmacologicalNote))
+                    col.Item().Element(ComposePharmacologicalNote);
             });
         }
 
         // ── SECTIONS ─────────────────────────────────────────────────────────
+
+        private void ComposeClinicianDetails(IContainer c)
+        {
+            c.Column(col =>
+            {
+                SectionHeader(col.Item(), "ATTENDING CLINICIAN");
+
+                col.Item().PaddingTop(4).Row(row =>
+                {
+                    row.RelativeItem().Text(t =>
+                    {
+                        t.Span("Clinician: ").SemiBold().FontColor(NavyHex).FontSize(9.5f);
+                        t.Span("Dr. " + _data.DoctorFullName).FontColor(SlateHex).FontSize(9.5f);
+                    });
+                    row.AutoItem().AlignRight().Text(t =>
+                    {
+                        t.Span("Specialty: ").SemiBold().FontColor(NavyHex).FontSize(9.5f);
+                        t.Span(string.IsNullOrWhiteSpace(_data.DoctorSpecialization)
+                                ? "Psychiatrist" : _data.DoctorSpecialization)
+                         .FontColor(SlateHex).FontSize(9.5f);
+                    });
+                });
+            });
+        }
 
         private void ComposePatientBaseline(IContainer c)
         {
             c.Column(col =>
             {
                 SectionHeader(col.Item(), "PATIENT DEMOGRAPHICS & BASELINE");
-                
-                col.Item().Background(CardBgHex).Border(1).BorderColor(BorderHex).Padding(10).Row(row =>
+
+                col.Item().PaddingTop(4).PaddingBottom(2).Row(row =>
                 {
-                    // Left Column: Identity
                     row.RelativeItem().Column(left =>
                     {
-                        left.Item().PaddingBottom(2).Text("IDENTITY").Bold().FontSize(8).FontColor(NavyHex);
-                        left.Item().Text($"Name: {_data.PatientFullName}").FontSize(9);
-                        left.Item().Text($"Gender: {_data.PatientGender}").FontSize(9);
-                        left.Item().Text($"Age: {_data.PatientAge?.ToString() ?? "—"}").FontSize(9);
+                        left.Spacing(5);
+                        FieldCell(left.Item(), "Name", _data.PatientFullName);
+                        FieldCell(left.Item(), "Gender", _data.PatientGender);
+                        FieldCell(left.Item(), "Age", _data.PatientAge?.ToString());
+                        FieldCell(left.Item(), "Session Type", _data.SessionType);
                     });
 
-                    // Middle Column: Intake Baseline
-                    row.RelativeItem().Column(mid =>
-                    {
-                        mid.Item().PaddingBottom(2).Text("INTAKE BASELINE").Bold().FontSize(8).FontColor(NavyHex);
-                        mid.Item().Text($"Stress Level: {_data.PatientStressLevel ?? "—"}").FontSize(9);
-                        mid.Item().Text($"Sleep Quality: {_data.PatientSleepQuality ?? "—"}").FontSize(9);
-                        
-                        var therapyStr = _data.PatientHasTherapyHistory ? "Yes" : "No";
-                        var medsStr = _data.PatientTakesMedication ? "Yes" : "No";
-                        mid.Item().Text($"Prior Therapy: {therapyStr} | Current Meds: {medsStr}").FontSize(9);
-                    });
+                    row.ConstantItem(20);
 
-                    // Right Column: Intake Concerns
                     row.RelativeItem().Column(right =>
                     {
-                        right.Item().PaddingBottom(2).Text("PRIMARY INTAKE CONCERN").Bold().FontSize(8).FontColor(NavyHex);
-                        right.Item().Text(_data.PatientConcerns ?? "—").FontSize(9).Italic().FontColor("#475569");
+                        right.Spacing(5);
+                        FieldCell(right.Item(), "Stress Level", _data.PatientStressLevel);
+                        FieldCell(right.Item(), "Sleep Quality", _data.PatientSleepQuality);
+                        FieldCell(right.Item(), "Prior Therapy", _data.PatientHasTherapyHistory ? "Yes" : "No");
+                        FieldCell(right.Item(), "Current Meds", _data.PatientTakesMedication ? "Yes" : "No");
                     });
                 });
-            });
-        }
 
-        private void ComposeClinicianDetails(IContainer c)
-        {
-            c.Background(CardBgHex).Border(1).BorderColor(BorderHex).Padding(10).Row(row =>
-            {
-                row.RelativeItem().Text(t =>
+                if (!string.IsNullOrWhiteSpace(_data.PatientConcerns))
                 {
-                    t.Span("ATTENDING CLINICIAN: ").Bold().FontSize(8).FontColor(NavyHex);
-                    t.Span($"Dr. {_data.DoctorFullName}").FontSize(9);
-                });
-                row.RelativeItem().AlignRight().Text(t =>
-                {
-                    t.Span("SPECIALTY: ").Bold().FontSize(8).FontColor(NavyHex);
-                    t.Span(string.IsNullOrWhiteSpace(_data.DoctorSpecialization) ? "Psychiatrist" : _data.DoctorSpecialization).FontSize(9);
-                });
+                    col.Item().PaddingTop(4).Text(t =>
+                    {
+                        t.Span("Primary Intake Concern: ").SemiBold().FontColor(NavyHex).FontSize(9);
+                        t.Span(_data.PatientConcerns).FontColor(SlateHex).FontSize(9).Italic();
+                    });
+                }
             });
         }
 
         private void ComposeRiskAssessment(IContainer c)
         {
+            var tier = _data.RiskTier.ToUpperInvariant();
+            var riskColor = tier switch
+            {
+                "CRITICAL" => "#B91C1C",
+                "HIGH" => "#C2410C",
+                "MEDIUM" => "#D97706",
+                _ => "#15803D"
+            };
+
+            // Escalation checklists (CS-003 / CS-004) — injected only when the tier demands it.
+            string? escalation = tier switch
+            {
+                "CRITICAL" or "HIGH" => SessionReportConstants.RedEscalationNote,
+                "MEDIUM" => SessionReportConstants.OrangeEscalationNote,
+                _ => null
+            };
+
             c.Column(col =>
             {
                 SectionHeader(col.Item(), "RISK ASSESSMENT");
-                
-                var riskColor = _data.RiskTier.ToUpperInvariant() switch
+
+                col.Item().PaddingTop(4).Text(t =>
                 {
-                    "CRITICAL" => "#B91C1C",
-                    "HIGH" => "#C2410C",
-                    "MEDIUM" => "#D97706",
-                    _ => "#15803D"
-                };
-
-                col.Item().Border(1).BorderColor(riskColor).Padding(10).Column(inner =>
-                {
-                    inner.Item().Row(row =>
-                    {
-                        row.RelativeItem().AlignMiddle().Text("OVERALL RISK TIER").Bold().FontSize(10).FontColor(riskColor);
-                        row.AutoItem().Background(riskColor).PaddingHorizontal(10).PaddingVertical(4)
-                            .Text(_data.RiskTier.ToUpperInvariant()).Bold().FontSize(12).FontColor(Colors.White);
-                    });
-
-                    inner.Item().PaddingTop(10).BorderTop(0.5f).BorderColor(BorderHex).PaddingTop(10);
-
-                    SubHeader(inner, "SUICIDAL IDEATION");
-                    var siBadgeColor = _data.SiPresent ? "#FEF2F2" : "#F0FDF4";
-                    var siTextColor = _data.SiPresent ? "#B91C1C" : "#15803D";
-                    
-                    inner.Item().PaddingBottom(6).Background(siBadgeColor).Border(1).BorderColor(siTextColor)
-                       .PaddingHorizontal(8).PaddingVertical(2).Text(_data.SiPresent ? "IDENTIFIED" : "NONE IDENTIFIED")
-                       .Bold().FontSize(9).FontColor(siTextColor);
-
-                    if (!string.IsNullOrWhiteSpace(_data.SuicidalIdeationDetails))
-                    {
-                        inner.Item().PaddingBottom(12).Background("#FEF2F2").BorderLeft(3).BorderColor("#B91C1C")
-                           .Padding(8).Element(ct => RenderTextWithTags(ct, _data.SuicidalIdeationDetails));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(_data.RiskNarrative))
-                    {
-                        SubHeader(inner, "RISK NARRATIVE & PROTECTIVE FACTORS");
-                        inner.Item().Element(ct => RenderTextWithTags(ct, _data.RiskNarrative));
-                    }
+                    t.Span("Overall Risk Tier: ").SemiBold().FontColor(NavyHex).FontSize(9.5f);
+                    t.Span(tier).Bold().FontColor(riskColor).FontSize(11);
                 });
+
+                col.Item().PaddingTop(2).Text(t =>
+                {
+                    t.Span("Suicidal Ideation: ").SemiBold().FontColor(NavyHex).FontSize(9);
+                    t.Span(_data.SiPresent ? "IDENTIFIED" : "NONE IDENTIFIED")
+                     .Bold().FontColor(_data.SiPresent ? "#B91C1C" : "#15803D").FontSize(9);
+                });
+
+                if (!string.IsNullOrWhiteSpace(_data.SuicidalIdeationDetails))
+                {
+                    SubHeader(col, "DETAILS");
+                    col.Item().Element(ct => RenderTextWithTags(ct, _data.SuicidalIdeationDetails));
+                }
+
+                if (!string.IsNullOrWhiteSpace(_data.RiskNarrative))
+                {
+                    SubHeader(col, "NARRATIVE & PROTECTIVE FACTORS");
+                    col.Item().Element(ct => RenderTextWithTags(ct, _data.RiskNarrative));
+                }
+
+                if (escalation != null)
+                {
+                    SubHeader(col, "REQUIRED CLINICIAN ACTIONS");
+                    col.Item().Element(ct => RenderMultiLine(ct, escalation, riskColor));
+                }
             });
         }
 
@@ -251,22 +293,16 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             c.Column(col =>
             {
                 SectionHeader(col.Item(), "CLINICAL SUMMARY (SOAP)");
-                col.Item().Border(1).BorderColor(BorderHex).Padding(10).Column(inner =>
+
+                col.Item().PaddingTop(4).Column(inner =>
                 {
-                    SoapSection(inner, "S · SUBJECTIVE", _data.SoapSubjective);
-                    SoapSection(inner, "O · OBJECTIVE", _data.SoapObjective);
-                    SoapSection(inner, "A · ASSESSMENT", _data.SoapAssessment);
-                    SoapSection(inner, "P · PLAN", _data.SoapPlan);
+                    inner.Spacing(6);
+                    SoapItem(inner, "S — Subjective", _data.SoapSubjective);
+                    SoapItem(inner, "O — Objective", _data.SoapObjective);
+                    SoapItem(inner, "A — Assessment", _data.SoapAssessment);
+                    SoapItem(inner, "P — Plan", _data.SoapPlan);
                 });
             });
-        }
-
-        private static void SoapSection(ColumnDescriptor col, string title, string? text)
-        {
-            if (string.IsNullOrWhiteSpace(text)) return;
-            col.Item().PaddingTop(4).Background(SecondaryBlue).PaddingHorizontal(8).PaddingVertical(3)
-               .Text(title).Bold().FontSize(8).FontColor(Colors.White);
-            col.Item().PaddingTop(4).PaddingBottom(12).Element(ct => RenderTextWithTags(ct, text));
         }
 
         private void ComposeChiefComplaint(IContainer c)
@@ -274,22 +310,14 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             c.Column(col =>
             {
                 SectionHeader(col.Item(), "CHIEF COMPLAINT");
-                col.Item().Border(1).BorderColor(BorderHex).Padding(10).Column(inner =>
+
+                col.Item().PaddingTop(4).Column(inner =>
                 {
-                    SubHeader(inner, "PRIMARY CONCERN");
-                    inner.Item().PaddingBottom(8).Element(ct => RenderTextWithTags(ct, _data.ChiefComplaintPrimary));
-
-                    SubHeader(inner, "DURATION");
-                    inner.Item().PaddingBottom(8).Element(ct => RenderTextWithTags(ct, _data.ChiefComplaintDuration));
-
-                    SubHeader(inner, "EPISODE TYPE");
-                    inner.Item().PaddingBottom(8).Element(ct => RenderTextWithTags(ct, _data.ChiefComplaintEpisodeType));
-
-                    if (!string.IsNullOrWhiteSpace(_data.ChiefComplaintSecondary))
-                    {
-                        SubHeader(inner, "SECONDARY COMPLAINTS");
-                        inner.Item().PaddingBottom(8).Element(ct => RenderTextWithTags(ct, _data.ChiefComplaintSecondary));
-                    }
+                    inner.Spacing(6);
+                    LabeledBlock(inner, "Primary Concern", _data.ChiefComplaintPrimary);
+                    LabeledBlock(inner, "Duration", _data.ChiefComplaintDuration);
+                    LabeledBlock(inner, "Episode Type", _data.ChiefComplaintEpisodeType);
+                    LabeledBlock(inner, "Secondary Complaints", _data.ChiefComplaintSecondary);
                 });
             });
         }
@@ -299,78 +327,16 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             c.Column(col =>
             {
                 SectionHeader(col.Item(), "HISTORY OF PRESENTING ILLNESS (HPI)");
-                col.Item().Border(1).BorderColor(BorderHex).Padding(10).Column(inner =>
+
+                col.Item().PaddingTop(4).Column(inner =>
                 {
-                    SubHeader(inner, "HPI NARRATIVE");
-                    inner.Item().PaddingBottom(12).Element(ct => RenderTextWithTags(ct, _data.HpiNarrative));
-
-                    SubHeader(inner, "FUNCTIONAL IMPACT");
-                    inner.Item().PaddingBottom(12).Element(ct => RenderFunctionalImpactGrid(ct, _data.HpiFunctionalImpact));
-
-                    if (!string.IsNullOrWhiteSpace(_data.HpiPastHistory))
-                    {
-                        SubHeader(inner, "PAST PSYCHIATRIC & MEDICAL HISTORY");
-                        inner.Item().PaddingBottom(8).Element(ct => RenderTextWithTags(ct, _data.HpiPastHistory));
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(_data.HpiCurrentMedications))
-                    {
-                        SubHeader(inner, "CURRENT MEDICATIONS & SUBSTANCES");
-                        inner.Item().PaddingBottom(8).Element(ct => RenderTextWithTags(ct, _data.HpiCurrentMedications));
-                    }
+                    inner.Spacing(6);
+                    LabeledBlock(inner, "Narrative", _data.HpiNarrative);
+                    LabeledBlock(inner, "Functional Impact", _data.HpiFunctionalImpact);
+                    LabeledBlock(inner, "Past Psychiatric & Medical History", _data.HpiPastHistory);
+                    LabeledBlock(inner, "Current Medications & Substances", _data.HpiCurrentMedications);
                 });
             });
-        }
-
-        private void RenderFunctionalImpactGrid(IContainer c, string? text)
-        {
-            if (string.IsNullOrWhiteSpace(text)) return;
-
-            var sentences = Regex.Split(text, @"(?<=[\.!\?])\s+");
-            var dict = new Dictionary<string, string>();
-
-            foreach (var s in sentences)
-            {
-                if (string.IsNullOrWhiteSpace(s)) continue;
-                var lower = s.ToLowerInvariant();
-                if (lower.Contains("work") || lower.Contains("code") || lower.Contains("manager") || lower.Contains("academic") || lower.Contains("job"))
-                    AppendToDict(dict, "WORK / ACADEMIC", s);
-                else if (lower.Contains("sleep") || lower.Contains("bed") || lower.Contains("wake") || lower.Contains("night"))
-                    AppendToDict(dict, "SLEEP", s);
-                else if (lower.Contains("appetite") || lower.Contains("weight") || lower.Contains("eat"))
-                    AppendToDict(dict, "APPETITE", s);
-                else if (lower.Contains("energy") || lower.Contains("fatigue") || lower.Contains("gym") || lower.Contains("tired"))
-                    AppendToDict(dict, "ENERGY / PSYCHOMOTOR", s);
-                else if (lower.Contains("interpersonal") || lower.Contains("fianc") || lower.Contains("family") || lower.Contains("social") || lower.Contains("friend"))
-                    AppendToDict(dict, "INTERPERSONAL", s);
-                else if (lower.Contains("self-care") || lower.Contains("hygiene") || lower.Contains("groom") || lower.Contains("bath"))
-                    AppendToDict(dict, "SELF-CARE", s);
-                else if (lower.Contains("cognition") || lower.Contains("focus") || lower.Contains("brain") || lower.Contains("concentrat") || lower.Contains("impaired"))
-                    AppendToDict(dict, "COGNITION", s);
-                else
-                    AppendToDict(dict, "OTHER", s);
-            }
-
-            c.Grid(grid =>
-            {
-                grid.Columns(2);
-                grid.Spacing(8);
-
-                foreach (var kvp in dict)
-                {
-                    grid.Item().Background(CardBgHex).Border(0.5f).BorderColor(BorderHex).Padding(8).Column(col =>
-                    {
-                        col.Item().PaddingBottom(4).Text(kvp.Key).Bold().FontSize(8).FontColor(NavyHex);
-                        RenderTextWithTags(col.Item(), kvp.Value);
-                    });
-                }
-            });
-        }
-
-        private static void AppendToDict(Dictionary<string, string> dict, string key, string value)
-        {
-            if (dict.ContainsKey(key)) dict[key] += " " + value.Trim();
-            else dict[key] = value.Trim();
         }
 
         private void ComposeMse(IContainer c)
@@ -378,22 +344,17 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             c.Column(col =>
             {
                 SectionHeader(col.Item(), "MENTAL STATE EXAMINATION (MSE)");
-                col.Item().Border(1).BorderColor(BorderHex).Padding(10).Column(inner =>
+
+                col.Item().PaddingTop(4).Column(inner =>
                 {
-                    MseSection(inner, "APPEARANCE & BEHAVIOR", _data.MseAppearance);
-                    MseSection(inner, "SPEECH, MOOD & AFFECT", _data.MseSpeechAndMood);
-                    MseSection(inner, "THOUGHT PROCESS & CONTENT", _data.MseThoughtProcess);
-                    MseSection(inner, "PERCEPTION & COGNITION", _data.MsePerception);
-                    MseSection(inner, "INSIGHT & JUDGEMENT", _data.MseInsightAndJudgement);
+                    inner.Spacing(6);
+                    LabeledBlock(inner, "Appearance & Behavior", _data.MseAppearance);
+                    LabeledBlock(inner, "Speech, Mood & Affect", _data.MseSpeechAndMood);
+                    LabeledBlock(inner, "Thought Process & Content", _data.MseThoughtProcess);
+                    LabeledBlock(inner, "Perception & Cognition", _data.MsePerception);
+                    LabeledBlock(inner, "Insight & Judgement", _data.MseInsightAndJudgement);
                 });
             });
-        }
-
-        private static void MseSection(ColumnDescriptor col, string title, string? text)
-        {
-            if (string.IsNullOrWhiteSpace(text)) return;
-            SubHeader(col, title);
-            col.Item().PaddingBottom(10).Element(ct => RenderTextWithTags(ct, text));
         }
 
         private void ComposeFormulation(IContainer c)
@@ -401,25 +362,25 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             c.Column(col =>
             {
                 SectionHeader(col.Item(), "CLINICAL FORMULATION");
-                col.Item().Border(1).BorderColor(BorderHex).Padding(10).Column(inner =>
+
+                col.Item().PaddingTop(4).Column(inner =>
                 {
+                    inner.Spacing(6);
+
                     if (!string.IsNullOrWhiteSpace(_data.FormulationNarrative))
-                    {
-                        SubHeader(inner, "FORMULATION NARRATIVE");
-                        inner.Item().PaddingBottom(10).Element(ct => RenderTextWithTags(ct, _data.FormulationNarrative));
-                    }
+                        LabeledBlock(inner, "Narrative", _data.FormulationNarrative);
 
                     if (_data.DifferentialConsiderations?.Count > 0)
                     {
-                        SubHeader(inner, "DIFFERENTIAL CONSIDERATIONS");
-                        inner.Item().PaddingBottom(8).Column(list =>
+                        inner.Item().Text("Differential Considerations").SemiBold().FontSize(9.5f).FontColor(NavyHex);
+                        inner.Item().Column(list =>
                         {
                             int i = 1;
                             foreach (var item in _data.DifferentialConsiderations)
                             {
                                 list.Item().Row(r =>
                                 {
-                                    r.ConstantItem(15).Text($"{i}.").FontSize(BodySize).FontColor("#475569");
+                                    r.ConstantItem(16).Text($"{i}.").FontSize(BodySize).FontColor(MutedHex);
                                     r.RelativeItem().Element(ct => RenderTextWithTags(ct, item));
                                 });
                                 i++;
@@ -430,24 +391,12 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
             });
         }
 
-        private void ComposeLegalDisclaimerBox(IContainer c)
+        private void ComposePharmacologicalNote(IContainer c)
         {
-            c.Background("#FFFBEB").Border(1.5f).BorderColor("#D97706").Padding(12).Column(warn =>
+            c.Column(col =>
             {
-                warn.Item().Text("⚠ AI-GENERATED CLINICAL DECISION-SUPPORT DOCUMENT")
-                    .Bold().FontColor("#B45309").FontSize(11);
-                warn.Item().PaddingTop(4).Text("MANDATORY CLINICIAN REVIEW REQUIRED BEFORE ANY CLINICAL USE")
-                    .Bold().FontColor("#B45309").FontSize(10);
-                warn.Item().PaddingTop(8).Text(SessionReportConstants.ComplianceHeaderDisclaimer)
-                    .FontSize(8.5f).FontColor("#78350F");
-                
-                if (!string.IsNullOrWhiteSpace(_data.PharmacologicalNote))
-                {
-                    warn.Item().PaddingTop(8).Text("Pharmacological Note:")
-                        .Bold().FontSize(8.5f).FontColor("#78350F");
-                    warn.Item().PaddingTop(2).Text(_data.PharmacologicalNote)
-                        .FontSize(8.5f).FontColor("#78350F");
-                }
+                SectionHeader(col.Item(), "PHARMACOLOGICAL NOTE");
+                col.Item().PaddingTop(4).Element(ct => RenderTextWithTags(ct, _data.PharmacologicalNote));
             });
         }
 
@@ -455,55 +404,87 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
 
         private static void SectionHeader(IContainer c, string title)
         {
-            c.Background(NavyHex).Padding(6).Row(row =>
-            {
-                row.RelativeItem().AlignMiddle().Text(title).Bold().FontSize(11).FontColor(Colors.White);
-                row.AutoItem().AlignMiddle().Background("#3A5A80").PaddingVertical(2).PaddingHorizontal(6)
-                   .Text("AI-ASSISTED CONTENT")
-                   .FontSize(7).FontColor(Colors.White);
-            });
+            // Bold navy title with a thin rule beneath it (3pt gap to rule, 6pt after).
+            c.PaddingBottom(6).BorderBottom(1).BorderColor(BorderHex).PaddingBottom(3)
+                .Text(title).SemiBold().FontSize(12).FontColor(NavyHex);
         }
 
         private static void SubHeader(ColumnDescriptor c, string title)
         {
-            c.Item().PaddingBottom(4).Text(title).Bold().FontSize(9).FontColor(NavyHex);
+            c.Item().PaddingTop(6).PaddingBottom(2)
+                .Text(title).SemiBold().FontSize(9).FontColor(NavyHex);
         }
 
+        private static void SoapItem(ColumnDescriptor col, string title, string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+            col.Item().Text(title).SemiBold().FontSize(9.5f).FontColor(NavyHex);
+            col.Item().Element(ct => RenderTextWithTags(ct, text));
+        }
+
+        private static void LabeledBlock(ColumnDescriptor col, string label, string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+            col.Item().Text(label).SemiBold().FontSize(9.5f).FontColor(NavyHex);
+            col.Item().Element(ct => RenderTextWithTags(ct, text));
+        }
+
+        private static void FieldCell(IContainer c, string label, string? value)
+        {
+            c.Text(t =>
+            {
+                t.Span(label + ": ").SemiBold().FontColor(NavyHex).FontSize(9);
+                t.Span(string.IsNullOrWhiteSpace(value) ? "—" : value).FontColor(SlateHex).FontSize(9);
+            });
+        }
+
+        /// <summary>
+        /// Renders a string containing '\n' line breaks as separate text lines
+        /// (used for the multi-line escalation checklists).
+        /// </summary>
+        private static void RenderMultiLine(IContainer c, string? text, string color)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+            c.Column(col =>
+            {
+                col.Spacing(1);
+                foreach (var raw in text.Split('\n'))
+                {
+                    var line = raw.Trim();
+                    if (line.Length == 0) continue;
+                    col.Item().Text(line).FontSize(8.5f).FontColor(color);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Renders body text, converting provenance tags ([STATED] / [INFERRED…] /
+        /// [VERBATIM…]) into small bold markers. No coloured pill backgrounds —
+        /// provenance stays readable but unobtrusive.
+        /// </summary>
         private static void RenderTextWithTags(IContainer container, string? text)
         {
             if (string.IsNullOrWhiteSpace(text)) return;
-            
+
             container.Text(t =>
             {
-                // Parse tags like [STATED], [INFERRED...], [VERBATIM...]
                 var matches = Regex.Matches(text, @"\[(STATED|INFERRED[^\]]*|VERBATIM[^\]]*)\]");
                 int lastIndex = 0;
-                
+
                 foreach (Match match in matches)
                 {
                     if (match.Index > lastIndex)
-                    {
-                        t.Span(text.Substring(lastIndex, match.Index - lastIndex)).FontSize(BodySize);
-                    }
-                    
+                        t.Span(text.Substring(lastIndex, match.Index - lastIndex))
+                         .FontSize(BodySize).FontColor(SlateHex);
+
                     var tagText = match.Value.Trim('[', ']');
-                    if (tagText.StartsWith("STATED")) {
-                        t.Span(" " + tagText + " ").BackgroundColor("#E2E8F0").FontColor("#334155").FontSize(7.5f).Bold();
-                    } else if (tagText.StartsWith("VERBATIM")) {
-                        t.Span(" " + tagText + " ").BackgroundColor("#FFEDD5").FontColor("#C2410C").FontSize(7.5f).Bold();
-                    } else if (tagText.StartsWith("INFERRED")) {
-                        t.Span(" " + tagText + " ").BackgroundColor("#F3E8FF").FontColor("#7E22CE").FontSize(7.5f).Bold();
-                    } else {
-                        t.Span(match.Value).FontSize(BodySize);
-                    }
-                    
+                    t.Span("[" + tagText + "] ").Bold().FontSize(8f).FontColor(MutedHex);
+
                     lastIndex = match.Index + match.Length;
                 }
-                
+
                 if (lastIndex < text.Length)
-                {
-                    t.Span(text.Substring(lastIndex)).FontSize(BodySize);
-                }
+                    t.Span(text.Substring(lastIndex)).FontSize(BodySize).FontColor(SlateHex);
             });
         }
     }
