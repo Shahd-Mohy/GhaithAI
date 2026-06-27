@@ -1,30 +1,31 @@
 <!-- ─── NAV ─── -->
 <nav class="nav-wrap">
+
   <a routerLink="/" class="nav-logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-    </div>
+    <img
+      src="assets/logo/logo1.png"
+      alt="GhaithAI"
+      class="logo-img">
     <span class="logo-text">GhaithAI</span>
   </a>
+
   <div class="nav-links">
     <a href="#features">Features</a>
     <a href="#clinicians">For Clinicians</a>
     <a href="#individuals">For Individuals</a>
     <a href="#about">About</a>
   </div>
-  <!-- nav-actions -->
-<div class="nav-actions">
-  <ng-container *ngIf="isLoggedIn; else guestButtons">
-    <button class="btn-nav" (click)="goToDashboard()">
-      My Dashboard
-    </button>
-  </ng-container>
 
-  <ng-template #guestButtons>
-    <a routerLink="/login" class="btn-ghost">Sign In</a>
-    <a routerLink="/register" class="btn-nav">Get Started</a>
-  </ng-template>
-</div>
+  <div class="nav-actions">
+    <ng-container *ngIf="isLoggedIn; else guestNav">
+  <a [routerLink]="dashboardRoute" class="btn-nav">Dashboard</a>
+</ng-container>
+<ng-template #guestNav>
+  <a routerLink="/login" class="btn-ghost">Sign In</a>
+  <a routerLink="/register" class="btn-nav">Get Started</a>
+</ng-template>
+  </div>
+
 </nav>
 
 <!-- ─── HERO ─── -->
