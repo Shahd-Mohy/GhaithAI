@@ -90,6 +90,9 @@ namespace GhaithAI.API.GaithAI.Application.Helpers
 
             services.AddScoped<INotificationService, NotificationService>();
 
+            // ── Report PDF letterhead logo (cached singleton, shared by report + preview endpoints) ──
+            services.AddSingleton<IReportLogoProvider, ReportLogoProvider>();
+
             return services;
         }
 

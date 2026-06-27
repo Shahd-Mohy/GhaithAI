@@ -19,15 +19,18 @@ namespace GhaithAI.API.GaithAI.API.Controllers
     {
         private readonly ISessionReportService _reportService;
         private readonly ISessionReportPdfService _pdfService;
+        private readonly IReportLogoProvider _logoProvider;
         private readonly ILogger<SessionReportsController> _logger;
 
         public SessionReportsController(
             ISessionReportService reportService,
             ISessionReportPdfService pdfService,
+            IReportLogoProvider logoProvider,
             ILogger<SessionReportsController> logger)
         {
             _reportService = reportService;
             _pdfService = pdfService;
+            _logoProvider = logoProvider;
             _logger = logger;
         }
 
@@ -77,7 +80,7 @@ namespace GhaithAI.API.GaithAI.API.Controllers
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         public IActionResult PreviewPdf([FromBody] PdfReportDataDto dto)
         {
-            var document = new SessionReportPdfDocument(dto);
+            var document = new SessionReportPdfDocument(dto, _logoProvider.LogoBytes);
             var pdfBytes = document.GeneratePdf();
             var fileName = "GhaithAI_Report_Preview.pdf";
             return File(pdfBytes, "application/pdf", fileName);

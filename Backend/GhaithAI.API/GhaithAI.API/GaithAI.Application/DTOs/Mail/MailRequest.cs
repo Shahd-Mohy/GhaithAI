@@ -1,3 +1,5 @@
+using MimeKit;
+
 namespace GhaithAI.API.GaithAI.Application.DTOs.Mail
 {
     /// <summary>
@@ -13,5 +15,8 @@ namespace GhaithAI.API.GaithAI.Application.DTOs.Mail
 
         /// <summary>Email body content (supports HTML).</summary>
         public string Body { get; set; } = string.Empty;
+
+        /// <summary>Optional linked resources (e.g., inline images) for CID embedding.</summary>
+        public List<MimeEntity>? LinkedResources { get; set; }
     }
 }

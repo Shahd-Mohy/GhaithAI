@@ -105,6 +105,27 @@
   background: rgba(11, 143, 172, 0.2);
   color: #0B8FAC;
 }
+/* Nav */
+.logo-icon .logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Chat avatar */
+.chat-av .logo-img {
+  height: 40px;
+  width: 40px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+/* Footer */
+.foot-logo-icon .logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
 
 .badge {
   margin-left: auto;
