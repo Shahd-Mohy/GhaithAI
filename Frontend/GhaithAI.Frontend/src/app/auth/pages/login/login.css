@@ -56,15 +56,26 @@
   z-index: 1;
 }
 
-.logo-icon {
-  width: 34px;
-  height: 34px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+/* Nav */
+.logo-icon .logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Chat avatar */
+.chat-av .logo-img {
+  height: 40px;
+  width: 40px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+/* Footer */
+.foot-logo-icon .logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
 }
 
 .logo-icon svg {

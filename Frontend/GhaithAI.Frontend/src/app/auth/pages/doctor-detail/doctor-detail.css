@@ -26,9 +26,26 @@
   font-size: 14px; font-weight: 700; color: white;
 }
 
-.logo-icon {
-  width: 28px; height: 28px; background: #0B8FAC;
-  border-radius: 7px; display: flex; align-items: center; justify-content: center;
+/* Nav */
+.logo-icon .logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Chat avatar */
+.chat-av .logo-img {
+  height: 40px;
+  width: 40px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+/* Footer */
+.foot-logo-icon .logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
 }
 .logo-icon svg { width: 14px; height: 14px; fill: white; }
 
