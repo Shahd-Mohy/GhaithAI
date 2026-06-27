@@ -6,6 +6,7 @@ using GhaithAI.API.Models;
 using GhaithAI.API.Services.Interfaces;
 using GhaithAI.GaithAI.Application.DTOs.Auth;
 using GhaithAI.GaithAI.Domain.Entities;
+using GhaithAI.GaithAI.Domain.Exceptions;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +40,7 @@ namespace GhaithAI.API.Services
             var exists = await _userManager.FindByEmailAsync(dto.Email);
 
             if (exists != null)
-                throw new Exception("Email already exists");
+                throw new ConflictException("Email already exists.");
 
             await using var transaction =
                 await _context.Database.BeginTransactionAsync();
@@ -71,7 +72,7 @@ namespace GhaithAI.API.Services
                     dto.Password);
 
                 if (!result.Succeeded)
-                    throw new Exception(
+                    throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException(
                         result.Errors.First().Description);
 
                 var roleResult =
@@ -80,7 +81,7 @@ namespace GhaithAI.API.Services
                         Roles.User);
 
                 if (!roleResult.Succeeded)
-                    throw new Exception(
+                    throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException(
                         roleResult.Errors.First().Description);
 
                 var contacts = new List<EmergencyContact>
@@ -170,21 +171,21 @@ namespace GhaithAI.API.Services
                 .FirstOrDefaultAsync(x => x.Email == dto.Email);
 
             if (user == null)
-                throw new Exception("Invalid Email or Password");
+                throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException("Invalid email or password.");
 
             if (user.DoctorsProfile != null)
             {
                 if (user.DoctorsProfile.ApprovalStatus ==
                     ApprovalStatus.Pending)
                 {
-                    throw new Exception(
+                    throw new ForbiddenException(
                         "Your account is pending approval.");
                 }
 
                 if (user.DoctorsProfile.ApprovalStatus ==
                     ApprovalStatus.Rejected)
                 {
-                    throw new Exception(
+                    throw new ForbiddenException(
                         $"Your account was rejected. Reason: {user.DoctorsProfile.RejectionReason}");
                 }
             }
@@ -192,7 +193,7 @@ namespace GhaithAI.API.Services
             if (user.IsGoogleAccount &&
                 string.IsNullOrEmpty(user.PasswordHash))
             {
-                throw new Exception(
+                throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException(
                     "This account uses Google Sign-In. Please login with Google.");
             }
 
@@ -202,7 +203,7 @@ namespace GhaithAI.API.Services
                     dto.Password);
 
             if (!valid)
-                throw new Exception("Invalid Email or Password");
+                throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException("Invalid email or password.");
 
             user.LastLoginAt = DateTime.UtcNow;
 
@@ -238,7 +239,7 @@ namespace GhaithAI.API.Services
             }
             catch
             {
-                throw new Exception("Invalid Google token. Please try again.");
+                throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException("Invalid Google token. Please try again.");
             }
 
             var user = await _userManager.FindByEmailAsync(payload.Email);
@@ -263,7 +264,7 @@ namespace GhaithAI.API.Services
                 var result = await _userManager.CreateAsync(user);
 
                 if (!result.Succeeded)
-                    throw new Exception(result.Errors.First().Description);
+                    throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException(result.Errors.First().Description);
 
                 await _userManager.AddToRoleAsync(user, Roles.User);
             }
@@ -300,7 +301,7 @@ namespace GhaithAI.API.Services
                 await _userManager.FindByEmailAsync(dto.Email);
 
             if (exists != null)
-                throw new Exception("Email already exists");
+                throw new ConflictException("Email already exists.");
 
             string pdfPath = "";
 
@@ -360,7 +361,7 @@ namespace GhaithAI.API.Services
                         dto.Password);
 
                 if (!result.Succeeded)
-                    throw new Exception(
+                    throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException(
                         result.Errors.First().Description);
 
                 var roleResult =
@@ -369,7 +370,7 @@ namespace GhaithAI.API.Services
                         Roles.Clinician);
 
                 if (!roleResult.Succeeded)
-                    throw new Exception(
+                    throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException(
                         roleResult.Errors.First().Description);
 
                 var doctor = new DoctorsProfile
@@ -433,7 +434,7 @@ namespace GhaithAI.API.Services
 
             // ✅ Debug مؤقت
             if (user == null)
-                throw new Exception($"No user found with email: {dto.Email}");
+                throw new NotFoundException($"No user found with email: {dto.Email}");
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var encodedToken = Uri.EscapeDataString(token);
@@ -447,7 +448,7 @@ namespace GhaithAI.API.Services
             }
             catch (Exception ex)
             {
-                throw new Exception($"SMTP Error: {ex.Message} | Inner: {ex.InnerException?.Message}");
+                throw new DatabaseOperationException($"Unable to send password reset email. {ex.Message}", ex);
             }
         }
 
@@ -457,7 +458,7 @@ namespace GhaithAI.API.Services
             var user = await _userManager.FindByEmailAsync(dto.Email);
 
             if (user == null)
-                throw new Exception("User not found.");
+                throw new NotFoundException("User not found.");
 
             var decodedToken = Uri.UnescapeDataString(dto.Token);
 
@@ -467,7 +468,7 @@ namespace GhaithAI.API.Services
                 dto.NewPassword);
 
             if (!result.Succeeded)
-                throw new Exception(
+                throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException(
                     string.Join(", ",
                         result.Errors.Select(e => e.Description)));
         }

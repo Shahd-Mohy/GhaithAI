@@ -1,7 +1,6 @@
 ﻿using GhaithAI.GaithAI.Application.DTOs.ClinicalSession;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -22,78 +21,29 @@ namespace GhaithAI.GaithAI.API.Controllers
         [HttpPost("start")]
         public async Task<IActionResult> StartSession([FromBody] StartSessionDto dto)
         {
-            try
-            {
-                var sessionId = await _sessionService.StartSessionAsync(dto);
-                return StatusCode(201, new { id = sessionId, message = "Session started successfully." });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
-            }
+            var sessionId = await _sessionService.StartSessionAsync(dto);
+            return StatusCode(201, new { id = sessionId, message = "Session started successfully." });
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetSession([FromRoute] Guid id)
         {
-            try
-            {
-                var session = await _sessionService.GetSessionByIdAsync(id);
-                return Ok(session);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
-            }
+            var session = await _sessionService.GetSessionByIdAsync(id);
+            return Ok(session);
         }
 
-        // GET /api/sessions/by-booking/{bookingId}
         [HttpGet("by-booking/{bookingId:guid}")]
         public async Task<IActionResult> GetSessionByBookingId([FromRoute] Guid bookingId)
         {
-            try
-            {
-                var session = await _sessionService.GetSessionByBookingIdAsync(bookingId);
-                return Ok(session);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
-            }
+            var session = await _sessionService.GetSessionByBookingIdAsync(bookingId);
+            return Ok(session);
         }
 
         [HttpPut("{id:guid}/end")]
         public async Task<IActionResult> EndSession([FromRoute] Guid id)
         {
-            try
-            {
-                await _sessionService.EndSessionAsync(id);
-                return Ok(new { message = "Session ended successfully." });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
-            }
+            await _sessionService.EndSessionAsync(id);
+            return Ok(new { message = "Session ended successfully." });
         }
 
         [HttpGet("doctor")]
@@ -105,33 +55,15 @@ namespace GhaithAI.GaithAI.API.Controllers
             if (userId == null)
                 return Unauthorized(new { message = "Invalid or missing identifiers in token." });
 
-            try
-            {
-                var sessions = await _sessionService.GetDoctorSessionsAsync(userId, status, date);
-                return Ok(sessions);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
-            }
+            var sessions = await _sessionService.GetDoctorSessionsAsync(userId, status, date);
+            return Ok(sessions);
         }
 
         [HttpGet("patient/{patientId}")]
         public async Task<IActionResult> GetPatientSessions([FromRoute] string patientId)
         {
-            try
-            {
-                var sessions = await _sessionService.GetPatientSessionsAsync(patientId);
-                return Ok(sessions);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
-            }
+            var sessions = await _sessionService.GetPatientSessionsAsync(patientId);
+            return Ok(sessions);
         }
 
         private string? GetCurrentUserId()
