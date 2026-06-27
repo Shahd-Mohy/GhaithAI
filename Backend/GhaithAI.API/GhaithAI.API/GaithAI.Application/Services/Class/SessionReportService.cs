@@ -69,10 +69,10 @@ namespace GhaithAI.API.GaithAI.Application.Services.Class
                 report.Id, clinicalSessionId);
 
             await _notificationService.SendAsync(
-                patientId,
+                doctorId.ToString(),
                 GhaithAI.GaithAI.Domain.Enums.NotificationType.SessionReportReady,
                 "Session Report Ready",
-                "Your session report is ready and available for review.",
+                "A session report has been generated and is available for your review.",
                 report.Id);
 
             return ToResponseDto(report, versionNumber: 1, generatedAt: report.CreatedAt);

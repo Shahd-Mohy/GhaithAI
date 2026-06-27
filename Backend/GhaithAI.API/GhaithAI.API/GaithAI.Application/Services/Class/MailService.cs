@@ -142,6 +142,16 @@ namespace GhaithAI.API.Services.Class
 
             // Set body (HTML)
             var bodyBuilder = new BodyBuilder { HtmlBody = mailRequest.Body };
+
+            // Attach any linked resources (e.g., inline images) if provided
+            if (mailRequest.LinkedResources != null)
+            {
+                foreach (var resource in mailRequest.LinkedResources)
+                {
+                    bodyBuilder.LinkedResources.Add(resource);
+                }
+            }
+
             email.Body = bodyBuilder.ToMessageBody();
 
             return email;
