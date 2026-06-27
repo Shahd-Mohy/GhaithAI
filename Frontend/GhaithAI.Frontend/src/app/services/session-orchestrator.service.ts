@@ -16,7 +16,6 @@ import { AudioRecorderService } from './audio-recorder.service';
 // ─────────────────────────────────────────────────────────────────────────────
 @Injectable()
 export class SessionOrchestratorService implements OnDestroy {
-
   private sessionId = '';
   private role: 'doctor' | 'patient' = 'doctor';
   private subs: Subscription[] = [];
@@ -34,13 +33,13 @@ export class SessionOrchestratorService implements OnDestroy {
   constructor(
     private signalr: SessionSignalrService,
     private webrtc: WebrtcService,
-    private recorder: AudioRecorderService
-  ) { }
+    private recorder: AudioRecorderService,
+  ) {}
 
   async startCall(
     sessionId: string,
     role: 'doctor' | 'patient',
-    accessToken: string
+    accessToken: string,
   ): Promise<void> {
     this.sessionId = sessionId;
     this.role = role;
@@ -79,15 +78,12 @@ export class SessionOrchestratorService implements OnDestroy {
 
     if (role === 'doctor') {
       await this.webrtc.createOffer();
-    } else {
-      await this.signalr.notifyPatientReady(sessionId);
     }
   }
 
   async endCall(): Promise<Blob> {
-    const audioBlob = this.role === 'doctor'
-      ? await this.recorder.stop()
-      : new Blob([], { type: 'audio/webm' });
+    const audioBlob =
+      this.role === 'doctor' ? await this.recorder.stop() : new Blob([], { type: 'audio/webm' });
 
     this.webrtc.close();
     await this.signalr.disconnect();
@@ -121,17 +117,11 @@ export class SessionOrchestratorService implements OnDestroy {
       await this.webrtc.addRemoteIceCandidate(msg.candidate);
     });
 
-    const patientReadySub = this.signalr.patientReady$.subscribe(async (msg) => {
-      if (this.role !== 'doctor') return;
-      if (msg.sessionId !== this.sessionId) return;
-      await this.webrtc.createOffer();
-    });
-
-    this.subs.push(offerSub, answerSub, iceSub, patientReadySub);
+    this.subs.push(offerSub, answerSub, iceSub);
   }
 
   private cleanupSubs(): void {
-    this.subs.forEach(s => s.unsubscribe());
+    this.subs.forEach((s) => s.unsubscribe());
     this.subs = [];
   }
 

@@ -7,15 +7,13 @@ using GhaithAI.API.GaithAI.Application.Helpers;
 using GhaithAI.API.Interfaces.InterfaceService;
 using GhaithAI.API.Seeders;
 using GhaithAI.API.Services;
-using GhaithAI.GaithAI.API.Middlewares;
+using GhaithAI.API.SignalR;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using GhaithAI.GaithAI.Infrastructure.Seeders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using GhaithAI.API.BackgroundJobs;
-using GhaithAI.API.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
