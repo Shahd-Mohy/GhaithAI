@@ -15,15 +15,26 @@
   margin-bottom: 40px;
 }
 
-.logo-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: #0f8f86;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* Nav */
+.logo-icon .logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Chat avatar */
+.chat-av .logo-img {
+  height: 40px;
+  width: 40px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+/* Footer */
+.foot-logo-icon .logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
 }
 
 .logo-section h2 {
