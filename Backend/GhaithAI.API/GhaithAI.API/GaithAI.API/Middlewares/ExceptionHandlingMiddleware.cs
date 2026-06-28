@@ -38,8 +38,8 @@ namespace GhaithAI.GaithAI.API.Middlewares
             {
                 NotFoundException => StatusCodes.Status404NotFound,
                 ForbiddenException => StatusCodes.Status403Forbidden,
+                GhaithAI.GaithAI.Domain.Exceptions.ValidationException => StatusCodes.Status400BadRequest,
                 BadRequestException => StatusCodes.Status400BadRequest,
-                ValidationException => StatusCodes.Status400BadRequest,
                 ConflictException => StatusCodes.Status409Conflict,
                 UserAccountSuspendedException => StatusCodes.Status403Forbidden,
                 AiConsentRequiredException => StatusCodes.Status428PreconditionRequired,

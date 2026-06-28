@@ -1,3 +1,3 @@
 export const environment = {
-  apiUrl: 'https://rectify-laurel-laboring.ngrok-free.dev/api',
+  apiUrl: 'https://idiom-giggle-antiquity.ngrok-free.dev/api',
 };

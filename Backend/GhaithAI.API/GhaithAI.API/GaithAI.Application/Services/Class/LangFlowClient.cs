@@ -1,9 +1,5 @@
 ﻿using GhaithAI.GaithAI.Domain.Exceptions;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace GhaithAI.GaithAI.Application.Services.Class
 {
@@ -69,7 +65,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             catch (Exception ex)
             {
                 _logger.LogError(ex, "LangFlow call failed for flow {FlowId}", flowId);
-                throw new ExternalServiceException("The AI service failed while processing your request.", ex);
+                throw new ExternalServiceException("The AI service failed while processing your request.");
             }
         }
     }

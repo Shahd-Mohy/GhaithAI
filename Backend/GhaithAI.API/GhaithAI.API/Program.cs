@@ -143,7 +143,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular", policy =>
     {
         var frontendUrl = builder.Configuration["FrontendUrl"]
-            ?? "https://twenty-turret-revolving.ngrok-free.dev ";
+            ?? "https://sanded-botany-entering.ngrok-free.dev";
 
         policy.AllowAnyHeader()
               .AllowAnyMethod()
