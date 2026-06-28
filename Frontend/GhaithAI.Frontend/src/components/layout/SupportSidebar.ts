@@ -27,18 +27,24 @@ interface NavItem {
   exact?: boolean;
 }
 
+interface SidebarUserProfile {
+  fullName?: string;
+  email?: string;
+  profilePicture?: string;
+}
+
 const YOUR_SPACE_ITEMS: NavItem[] = [
   { label: 'Home',            icon: 'bi-house-fill',    path: '/dashboard',     queryParams: { page: 'home' },          exact: true },
   { label: 'Talk to AI',      icon: 'bi-chat-dots-fill',path: '/support/chat',                                          exact: false },
   { label: 'Mood Tracker',    icon: 'bi-graph-up-arrow',path: '/dashboard',     queryParams: { page: 'mood' },          exact: true },
   { label: 'Journal',         icon: 'bi-journal-text',  path: '/dashboard',     queryParams: { page: 'journal' },       exact: true },
   { label: 'Self-Help Tools', icon: 'bi-sliders',       path: '/dashboard',     queryParams: { page: 'tools' },         exact: true },
-  { label: 'Learn',           icon: 'bi-book-open',     path: '/dashboard',     queryParams: { page: 'learn' },         exact: true },
 ];
 
 const GET_HELP_ITEMS: NavItem[] = [
   { label: 'Find a Professional', icon: 'bi-person-badge-fill', path: '/dashboard', queryParams: { page: 'professionals' }, exact: true },
   { label: 'Crisis Support',      icon: 'bi-telephone-fill',    path: '/support/crisis',                                    exact: false },
+  { label: 'My Appointment',      icon: 'bi-camera-video-fill', path: '/dashboard', queryParams: { page: 'session' },        exact: true },
 ];
 
 @Component({
@@ -82,20 +88,19 @@ const GET_HELP_ITEMS: NavItem[] = [
     }
 
     .logo-icon {
-      width: 38px;
-      height: 38px;
-      background: #0B8FAC;
-      border-radius: 10px;
+      width: 48px;
+      height: 48px;
+      background: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
 
-    .logo-icon svg {
-      width: 20px;
-      height: 20px;
-      fill: white;
+    .logo-icon .logo-img {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
     }
 
     .logo-name {
@@ -598,11 +603,9 @@ const GET_HELP_ITEMS: NavItem[] = [
     ══════════════════════════════════════════════════════ -->
     <a class="sidebar-logo"
        routerLink="/dashboard"
-       [queryParams]="{ page: 'home' }">
+      [queryParams]="{ page: 'home' }">
       <div class="logo-icon">
-        <svg viewBox="0 0 24 24" fill="white">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-        </svg>
+        <img src="assets/logo/logo1.png" alt="GhaithAI" class="logo-img" />
       </div>
       <div>
         <div class="logo-name">GhaithAI</div>
@@ -852,13 +855,22 @@ export class SupportSidebar implements OnInit, OnDestroy {
   readonly getHelpItems   = GET_HELP_ITEMS;
 
   // ── User profile from localStorage ────────────────────────────────────────
-  private readonly _user = signal<{ fullName?: string; email?: string; profilePicture?: string } | null>(
+  private readonly _user = signal<SidebarUserProfile | null>(
     this.readUser()
   );
 
-  readonly userName    = computed(() => this._user()?.fullName || 'My Account');
-  readonly userEmail   = computed(() => this._user()?.email   || '');
-  readonly userInitial = computed(() => (this._user()?.fullName?.[0] ?? '?').toUpperCase());
+  readonly userName = computed(() => {
+    const user = this._user();
+    const name = user?.fullName?.trim();
+
+    if (name) {
+      return name.split(/\s+/)[0];
+    }
+
+    return user?.email?.split('@')[0] || 'Welcome';
+  });
+  readonly userEmail   = computed(() => this._user()?.email || 'Free Plan');
+  readonly userInitial = computed(() => (this.userName()[0] ?? 'W').toUpperCase());
   readonly userAvatarUrl = computed(() => this._user()?.profilePicture || null);
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -867,14 +879,33 @@ export class SupportSidebar implements OnInit, OnDestroy {
     this.loadSessions();
   }
 
-  private readUser(): { fullName?: string; email?: string; profilePicture?: string } | null {
-    try {
-      const raw = localStorage.getItem('registered_users');
-
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
+  private readUser(): SidebarUserProfile | null {
+    const authUser = this.auth.getUser();
+    if (authUser) {
+      return authUser;
     }
+
+    for (const key of ['user', 'currentUser', 'authUser', 'profile', 'registered_users']) {
+      try {
+        const raw = localStorage.getItem(key) || sessionStorage.getItem(key);
+        if (!raw) continue;
+
+        const parsed = JSON.parse(raw);
+        const user = Array.isArray(parsed) ? parsed[0] : parsed;
+
+        if (user?.fullName || user?.displayName || user?.name || user?.email) {
+          return {
+            fullName: user.fullName || user.displayName || user.name,
+            email: user.email,
+            profilePicture: user.profilePicture,
+          };
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
   }
 
   loadSessions(): void {

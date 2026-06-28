@@ -229,6 +229,90 @@ const NEAR_BOTTOM_THRESHOLD = 120;
       color: #ffffff;
       transform: scale(1.1) rotate(-5deg);
     }
+
+    @media (max-width: 576px) {
+      .scroll-area {
+        padding: 0.75rem 0.875rem 0;
+      }
+
+      .empty-state-container {
+        justify-content: flex-start;
+        min-height: 100%;
+        padding: 2rem 1rem 8.5rem;
+        overflow-y: auto;
+      }
+
+      .orb-container {
+        width: 72px;
+        height: 72px;
+        margin-bottom: 1.25rem;
+      }
+
+      .orb-core {
+        width: 58px;
+        height: 58px;
+      }
+
+      .orb-core i {
+        font-size: 1.75rem;
+      }
+
+      .empty-state-title {
+        width: 100%;
+        max-width: 320px;
+        font-size: 1.35rem;
+        line-height: 1.25;
+        margin-bottom: 0.625rem;
+        text-align: center;
+      }
+
+      .empty-state-subtitle {
+        max-width: 320px;
+        font-size: 0.9rem;
+        line-height: 1.55;
+        margin-bottom: 1.25rem;
+      }
+
+      .prompts-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        margin-top: 0;
+        max-width: 320px;
+      }
+
+      .prompt-card {
+        min-height: 64px;
+        padding: 0.875rem 1rem;
+        gap: 0.75rem;
+      }
+
+      .prompt-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+      }
+
+      .prompt-text {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.92rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .empty-state-container {
+        padding-inline: 0.75rem;
+        padding-top: 1.25rem;
+      }
+
+      .empty-state-title,
+      .empty-state-subtitle,
+      .prompts-grid {
+        max-width: 100%;
+      }
+    }
   `],
   template: `
     <!-- ── Scrollable Messages Area ─────────────────────────── -->

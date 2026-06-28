@@ -145,6 +145,59 @@ const WARN_THRESHOLD = 1800;
       letter-spacing: 0.01em;
       pointer-events: auto;
     }
+
+    @media (max-width: 576px) {
+      .floating-deck-wrapper {
+        padding: 0 0.875rem calc(0.625rem + env(safe-area-inset-bottom));
+        background: linear-gradient(to top, #ffffff 72%, rgba(255,255,255,0));
+      }
+
+      .floating-deck {
+        border-radius: 24px;
+        padding: 0.25rem 0.375rem 0.25rem 1rem;
+        min-height: 48px;
+      }
+
+      .input-row {
+        gap: 0.5rem;
+      }
+
+      textarea {
+        min-width: 0;
+        font-size: 0.92rem;
+        line-height: 1.4;
+        min-height: 1.35rem;
+        max-height: 92px;
+        padding: 0.55rem 0;
+      }
+
+      .send-btn {
+        width: 36px;
+        height: 36px;
+      }
+
+      .page-footer-zone {
+        max-width: 330px;
+        margin-top: 0.5rem;
+        padding: 0 0.25rem;
+        font-size: 0.68rem;
+        line-height: 1.35;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .floating-deck-wrapper {
+        padding-inline: 0.625rem;
+      }
+
+      .floating-deck {
+        padding-left: 0.875rem;
+      }
+
+      textarea {
+        font-size: 0.875rem;
+      }
+    }
   `],
   template: `
     <div class="floating-deck-wrapper">

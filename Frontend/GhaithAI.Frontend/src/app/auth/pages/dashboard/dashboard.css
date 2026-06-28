@@ -32,6 +32,7 @@
   height: 100vh;
   overflow: hidden;
   width: 100%;
+  position: relative;
 }
 
 /* ─── SIDEBAR ─── */
@@ -44,6 +45,7 @@
   padding: 24px 16px 16px;
   flex-shrink: 0;
   overflow-y: auto;
+  z-index: 30;
 }
 
 .sidebar-logo {
@@ -52,6 +54,48 @@
   gap: 10px;
   margin-bottom: 32px;
   padding: 0 4px;
+}
+
+.sidebar-close-btn,
+.sidebar-toggle-btn,
+.sidebar-backdrop {
+  border: 0;
+  font: inherit;
+}
+
+.sidebar-close-btn,
+.sidebar-toggle-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #F4F9FB;
+  color: #0D1B3E;
+  cursor: pointer;
+  transition: background .15s, color .15s, transform .15s;
+}
+
+.sidebar-close-btn:hover,
+.sidebar-toggle-btn:hover {
+  background: rgba(11, 143, 172, .08);
+  color: #076E86;
+}
+
+.sidebar-toggle-btn:active {
+  transform: scale(.98);
+}
+
+.sidebar-close-btn svg,
+.sidebar-toggle-btn svg {
+  width: 21px;
+  height: 21px;
+  fill: currentColor;
+}
+
+.sidebar-backdrop {
+  display: none;
 }
 
 /* Nav */
@@ -279,6 +323,13 @@
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
+}
+
+.topbar-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .page-title {
@@ -871,11 +922,51 @@
 
 @media (max-width: 768px) {
   .sidebar {
-    display: none;
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(82vw, 292px);
+    max-width: 292px;
+    height: 100dvh;
+    transform: translateX(-100%);
+    box-shadow: 18px 0 48px rgba(13, 27, 62, .18);
+    transition: transform .22s ease;
+    z-index: 40;
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(13, 27, 62, .42);
+    cursor: pointer;
+  }
+
+  .sidebar-logo {
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .sidebar-close-btn,
+  .sidebar-toggle-btn {
+    display: inline-flex;
   }
 
   .topbar {
     padding: 0 20px;
+    gap: 12px;
+  }
+
+  .topbar-title-group {
+    flex: 1;
+  }
+
+  .topbar-right {
+    gap: 10px !important;
   }
 
   .scroll-area {
@@ -888,6 +979,39 @@
 
   .suggestion-card {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar {
+    height: auto;
+    min-height: 72px;
+    padding: 12px 16px;
+  }
+
+  .page-title {
+    font-size: 18px;
+    letter-spacing: 0;
+  }
+
+  .page-sub {
+    font-size: 12px;
+  }
+
+  .date-badge {
+    display: none;
+  }
+
+  .scroll-area {
+    padding: 16px;
+  }
+
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 18px;
   }
 }
 

@@ -1,6 +1,6 @@
 import {
   Component, OnInit, AfterViewInit, OnDestroy,
-  ElementRef, ViewChild, inject, ChangeDetectorRef, NgZone
+  ElementRef, ViewChild, inject, ChangeDetectorRef, NgZone, HostListener
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
@@ -54,6 +54,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   hasError = false;
   vm: DashboardViewModel | null = null;
   showUserMenu = false;
+  isSidebarOpen = false;
   /** Config passed to <app-mood-tracker> to auto-open the modal.
    *  A new object reference on every call guarantees ngOnChanges fires. */
   moodOpenConfig: { date: string; moodKey: string | null } | null = null;
@@ -96,7 +97,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     { name: 'Talk to AI', desc: 'Have a supportive conversation', page: 'chat', colorClass: 'teal', icon: 'chat' },
     { name: 'Breathing Exercise', desc: 'Practical self-help techniques', page: 'breathing', colorClass: 'green', icon: 'breath' },
     { name: 'Journal Entry', desc: 'Write your thoughts', page: 'journal', colorClass: 'amber', icon: 'journal' },
-    { name: 'Learn Something', desc: 'Explore psychoeducation', page: 'learn', colorClass: 'purple', icon: 'learn' },
   ];
 
   // ── lifecycle ─────────────────────────────────────────────────────
@@ -148,6 +148,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ── navigation ───────────────────────────────────────────────────
   navigate(page: string, sessionId?: string): void {
+    this.closeSidebar();
+
     if (page === 'chat') {
       this.router.navigate(['/support/chat']); return;
     }
@@ -183,6 +185,19 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Called from the "My Appointment" nav item — opens the session panel. */
   openSession(): void {
     this.navigate('session');
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  closeSidebar(): void {
+    this.isSidebarOpen = false;
+  }
+
+  @HostListener('window:keydown.escape')
+  closeSidebarOnEscape(): void {
+    this.closeSidebar();
   }
 
   selectMood(key: string): void { this.selectedMood = key; }

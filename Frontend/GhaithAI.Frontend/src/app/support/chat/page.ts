@@ -247,6 +247,68 @@ import { CrisisOverlay } from '../../../components/chat/CrisisOverlay';
     .input-wrapper {
       flex-shrink: 0;
     }
+
+    @media (max-width: 576px) {
+      :host {
+        height: 100dvh;
+      }
+
+      .chat-header {
+        padding: 0.625rem 1rem;
+        gap: 0.75rem;
+      }
+
+      .brand-cluster {
+        min-width: 0;
+        flex: 1;
+        gap: 0.5rem;
+      }
+
+      .brand-icon-wrap {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+      }
+
+      .brand-wordmark {
+        min-width: 0;
+        font-size: 1rem;
+        white-space: nowrap;
+      }
+
+      .conn-badge {
+        padding: 2px 7px;
+        font-size: 0.65rem;
+      }
+
+      .btn-crisis {
+        width: 42px;
+        height: 36px;
+        justify-content: center;
+        padding: 0;
+        border-radius: 14px;
+        flex-shrink: 0;
+      }
+
+      .btn-crisis .crisis-dot {
+        width: 6px;
+        height: 6px;
+      }
+
+      .chat-page-inner {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .chat-header {
+        padding-inline: 0.75rem;
+      }
+
+      .conn-badge {
+        display: none;
+      }
+    }
   `],
   template: `
     <!-- ══════════════════════════════════════════════════════
