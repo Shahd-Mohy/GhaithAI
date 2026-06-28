@@ -1,4 +1,5 @@
 using GhaithAI.GaithAI.Application.DTOs.Admin;
+using GhaithAI.GaithAI.Domain.Exceptions;
 using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 
 namespace GhaithAI.GaithAI.Application.Services.Class
@@ -51,7 +52,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (doctor == null)
-                throw new Exception("Doctor not found");
+                throw new NotFoundException("Doctor not found.");
 
             return MapToDTO(doctor);
         }
@@ -63,7 +64,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (doctor == null)
-                throw new Exception("Doctor not found");
+                throw new NotFoundException("Doctor not found.");
 
             doctor.ApprovalStatus = ApprovalStatus.Approved;
             doctor.RejectionReason = null;
@@ -90,7 +91,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (doctor == null)
-                throw new Exception("Doctor not found");
+                throw new NotFoundException("Doctor not found.");
 
             doctor.ApprovalStatus = ApprovalStatus.Rejected;
             doctor.RejectionReason = reason;

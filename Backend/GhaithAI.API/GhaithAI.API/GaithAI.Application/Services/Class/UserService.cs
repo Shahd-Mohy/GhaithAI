@@ -3,6 +3,7 @@ using GhaithAI.API.Models;
 using GhaithAI.API.Interfaces.InterfaceService;
 using Microsoft.AspNetCore.Identity;
 using GhaithAI.API.Services.Interfaces;
+using GhaithAI.GaithAI.Domain.Exceptions;
 
 namespace GhaithAI.API.Services
 {
@@ -26,7 +27,7 @@ namespace GhaithAI.API.Services
 
             if (user == null)
             {
-                throw new Exception("User not found");
+                throw new NotFoundException("User not found.");
             }
 
             return new UserProfileDTO
@@ -59,7 +60,7 @@ namespace GhaithAI.API.Services
 
             if (user == null)
             {
-                throw new Exception("User not found");
+                throw new NotFoundException("User not found.");
             }
 
             user.FullName =

@@ -89,7 +89,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
                 if (!patientExists)
                 {
-                    throw new KeyNotFoundException("Patient profile not found or does not belong to this clinic.");
+                    throw new NotFoundException("Patient profile not found or does not belong to this clinic.");
                 }
 
 
@@ -99,7 +99,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             {
                 if (dto.NewPatientInfo == null)
                 {
-                    throw new ArgumentException("New patient information is required.");
+                    throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException("New patient information is required.");
                 }
 
 
@@ -128,7 +128,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             if (result <= 0)
             {
-                throw new Exception("An unexpected error occurred while saving the booking data.");
+                throw new DatabaseOperationException("An unexpected error occurred while saving the booking data.");
             }
 
             // Notification for Doctor
@@ -152,8 +152,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             if (doctorProfile == null)
             {
-                //_logger.LogWarning("Operation failed: No doctor profile found for User ID {UserId}", userId);
-                throw new KeyNotFoundException("Doctor profile not found in the system. Please ensure your profile is complete.");
+                throw new NotFoundException("Doctor profile not found in the system. Please ensure your profile is complete.");
             }
 
             return doctorProfile.Id;
@@ -205,7 +204,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             var result = await _unitOfWork.CompleteAsync();
 
             if (result <= 0)
-                throw new Exception("An unexpected error occurred while saving the booking data.");
+                throw new DatabaseOperationException("An unexpected error occurred while saving the booking data.");
 
             // Notification for Patient
             await _notificationService.SendAsync(
@@ -293,13 +292,13 @@ namespace GhaithAI.GaithAI.Application.Services.Class
                 ?? throw new KeyNotFoundException("Booking not found.");
 
             if (booking.Status == BookingStatus.Cancelled)
-                throw new InvalidOperationException("Booking is already cancelled.");
+                throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException("Booking is already cancelled.");
 
             var bookingDateTime = booking.BookingDate + booking.SlotTime;
             var hoursUntil = (bookingDateTime - DateTime.UtcNow).TotalHours;
 
             if (hoursUntil < 1)
-                throw new InvalidOperationException(
+                throw new GhaithAI.GaithAI.Domain.Exceptions.ValidationException(
                     "Cannot cancel a booking less than 1 hour before the appointment.");
 
             booking.Status = BookingStatus.Cancelled;
@@ -309,7 +308,7 @@ namespace GhaithAI.GaithAI.Application.Services.Class
             var result = await _unitOfWork.CompleteAsync();
 
             if (result <= 0)
-                throw new Exception("An unexpected error occurred while cancelling the booking.");
+                throw new DatabaseOperationException("An unexpected error occurred while cancelling the booking.");
 
             var doctor = await _unitOfWork.DoctorProfile.GetByIdAsync(booking.DoctorId);
 

@@ -4,7 +4,7 @@ import { AppNotification, NotificationService } from '../../../services/Notifica
 
 @Component({
   selector: 'app-notifecation-exception',
-  standalone: true, // تأكد من إضافة هذه الخاصية
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './notifecation-exception.html',
   styleUrl: './notifecation-exception.css',
@@ -12,7 +12,7 @@ import { AppNotification, NotificationService } from '../../../services/Notifica
 export class NotifecationException implements OnInit {
   currentNotification: AppNotification | null = null;
 
-  // قمنا بحقن ChangeDetectorRef لإجبار المكون على التحديث
+
   constructor(
     private notificationService: NotificationService,
     private cdr: ChangeDetectorRef
@@ -23,15 +23,15 @@ export class NotifecationException implements OnInit {
       next: (note) => {
         this.currentNotification = note;
 
-        // إجبار الـ UI على التحديث فور وصول البيانات
+
         this.cdr.detectChanges();
 
-        // إخفاء التنبيه بعد 4 ثوانٍ
+
         if (note) {
           setTimeout(() => {
             this.currentNotification = null;
             this.cdr.detectChanges();
-          }, 4000);
+          }, 10000);
         }
       }
     });

@@ -7,7 +7,6 @@ namespace GhaithAI.API.GaithAI.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-
     public class SelfHelpController : ControllerBase
     {
         private readonly ISelfHelpUserService _userService;
@@ -15,8 +14,8 @@ namespace GhaithAI.API.GaithAI.API.Controllers
 
         public SelfHelpController(ISelfHelpUserService userService, ILogger<SelfHelpController> logger)
         {
-            _userService = userService ??throw new ArgumentNullException(nameof(userService));
-            _logger=logger ?? throw new ArgumentNullException(nameof(logger));
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [HttpGet]
@@ -44,22 +43,15 @@ namespace GhaithAI.API.GaithAI.API.Controllers
                 _logger.LogWarning("GetById requested with an empty Guid.");
                 return BadRequest(new { message = "The provided ID is invalid or empty." });
             }
-            try
-            {
-                var result = await _userService.GetContentByIdAsync(id);
-                if (result == null)
-                {
-                    _logger.LogInformation("Content with ID: {ContentId} was not found or is inactive.", id);
-                    return NotFound(new { message = "The requested self-help content is not available." });
-                }
-                return Ok(result);
 
-            }
-            catch (ApplicationException ex)
+            var result = await _userService.GetContentByIdAsync(id);
+            if (result == null)
             {
-                _logger.LogError(ex, "Application exception caught in Controller for ID: {ContentId}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                _logger.LogInformation("Content with ID: {ContentId} was not found or is inactive.", id);
+                return NotFound(new { message = "The requested self-help content is not available." });
             }
+
+            return Ok(result);
         }
     }
 }
