@@ -9,6 +9,8 @@ export class WebrtcService {
   private localStream: MediaStream | null = null;
   private remoteStream: MediaStream | null = null;
   private sessionId = '';
+  private pendingCandidates: RTCIceCandidateInit[] = [];
+  private isRemoteDescSet = false;
 
   private readonly ICE_SERVERS: RTCConfiguration = {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
@@ -48,7 +50,8 @@ export class WebrtcService {
     this.remoteStream = new MediaStream();
 
     this.peerConnection.ontrack = (event) => {
-      event.streams[0].getTracks().forEach(track => {
+      const stream = event.streams && event.streams[0] ? event.streams[0] : new MediaStream([event.track]);
+      stream.getTracks().forEach(track => {
         this.remoteStream!.addTrack(track);
       });
       // Emit immediately — subscriber attaches this stream to <audio>
@@ -84,11 +87,16 @@ export class WebrtcService {
   async handleRemoteAnswer(sdp: string): Promise<void> {
     if (!this.peerConnection) throw new Error('Peer connection not initialised.');
     await this.peerConnection.setRemoteDescription({ type: 'answer', sdp });
+    this.isRemoteDescSet = true;
+    await this.flushIceCandidates();
   }
 
   async handleRemoteOfferAndAnswer(sdp: string): Promise<void> {
     if (!this.peerConnection) throw new Error('Peer connection not initialised.');
     await this.peerConnection.setRemoteDescription({ type: 'offer', sdp });
+    this.isRemoteDescSet = true;
+    await this.flushIceCandidates();
+
     const answer = await this.peerConnection.createAnswer();
     await this.peerConnection.setLocalDescription(answer);
     await this.signalr.sendAnswer(this.sessionId, answer.sdp!);
@@ -96,7 +104,19 @@ export class WebrtcService {
 
   async addRemoteIceCandidate(candidate: RTCIceCandidateInit): Promise<void> {
     if (!this.peerConnection) return;
+    if (!this.isRemoteDescSet) {
+      this.pendingCandidates.push(candidate);
+      return;
+    }
     await this.peerConnection.addIceCandidate(candidate);
+  }
+
+  private async flushIceCandidates(): Promise<void> {
+    if (!this.peerConnection) return;
+    for (const candidate of this.pendingCandidates) {
+      await this.peerConnection.addIceCandidate(candidate);
+    }
+    this.pendingCandidates = [];
   }
 
   close(): void {
@@ -105,5 +125,7 @@ export class WebrtcService {
     this.localStream?.getTracks().forEach(t => t.stop());
     this.localStream = null;
     this.remoteStream = null;
+    this.pendingCandidates = [];
+    this.isRemoteDescSet = false;
   }
 }

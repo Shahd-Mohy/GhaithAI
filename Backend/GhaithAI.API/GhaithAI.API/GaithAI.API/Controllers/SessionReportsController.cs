@@ -34,6 +34,40 @@ namespace GhaithAI.API.GaithAI.API.Controllers
             _logger = logger;
         }
 
+        // Centralized safe executor for consistent try/catch and logging.
+        private async Task<IActionResult> SafeExecute(Func<Task<IActionResult>> action)
+        {
+            try
+            {
+                return await action();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Resource not found: {Message}", ex.Message);
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Bad request: {Message}", ex.Message);
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (GhaithAI.GaithAI.Domain.Exceptions.ConflictException ex)
+            {
+                _logger.LogWarning(ex, "Conflict: {Message}", ex.Message);
+                return Conflict(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Forbidden/Unauthorized: {Message}", ex.Message);
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled error in SessionReportsController: {Message}", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An internal error occurred. Please try again later." });
+            }
+        }
+
         [HttpPost("{sessionId}/generate")]
         [ProducesResponseType(typeof(SessionReportResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -43,8 +77,11 @@ namespace GhaithAI.API.GaithAI.API.Controllers
             [FromQuery] Guid doctorId,
             [FromQuery] string patientId)
         {
-            var result = await _reportService.GenerateReportAsync(sessionId, doctorId, patientId);
-            return CreatedAtAction(nameof(GetReport), new { reportId = result.ReportId }, result);
+            return await SafeExecute(async () =>
+            {
+                var result = await _reportService.GenerateReportAsync(sessionId, doctorId, patientId);
+                return CreatedAtAction(nameof(GetReport), new { reportId = result.ReportId }, result);
+            });
         }
 
         [HttpGet("{reportId:guid}")]
@@ -52,8 +89,11 @@ namespace GhaithAI.API.GaithAI.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetReport([FromRoute] Guid reportId)
         {
-            var result = await _reportService.GetReportAsync(reportId);
-            return Ok(result);
+            return await SafeExecute(async () =>
+            {
+                var result = await _reportService.GetReportAsync(reportId);
+                return Ok(result);
+            });
         }
 
         [HttpGet("by-session/{sessionId:guid}")]
@@ -61,8 +101,11 @@ namespace GhaithAI.API.GaithAI.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetReportBySession([FromRoute] Guid sessionId)
         {
-            var result = await _reportService.GetReportBySessionAsync(sessionId);
-            return Ok(result);
+            return await SafeExecute(async () =>
+            {
+                var result = await _reportService.GetReportBySessionAsync(sessionId);
+                return Ok(result);
+            });
         }
 
         [HttpGet("{reportId:guid}/export-pdf")]
@@ -70,20 +113,22 @@ namespace GhaithAI.API.GaithAI.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ExportPdf([FromRoute] Guid reportId)
         {
-            var pdfBytes = await _pdfService.GeneratePdfAsync(reportId);
-            var fileName = $"GhaithAI_Report_{reportId:N}.pdf";
-            return File(pdfBytes, "application/pdf", fileName);
+            return await SafeExecute(async () =>
+            {
+                var pdfBytes = await _pdfService.GeneratePdfAsync(reportId);
+                var fileName = $"GhaithAI_Report_{reportId:N}.pdf";
+                return File(pdfBytes, "application/pdf", fileName);
+            });
         }
 
         [HttpPost("preview-pdf")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
-        public IActionResult PreviewPdf([FromBody] PdfReportDataDto dto)
+        public async Task<IActionResult> PreviewPdf([FromBody] PdfReportDataDto dto)
         {
-            var document = new SessionReportPdfDocument(dto, _logoProvider.LogoBytes);
-            var pdfBytes = document.GeneratePdf();
-            var fileName = "GhaithAI_Report_Preview.pdf";
-            return File(pdfBytes, "application/pdf", fileName);
+            return await SafeExecute(() => Task.FromResult<IActionResult>(
+                File(new SessionReportPdfDocument(dto, _logoProvider.LogoBytes).GeneratePdf(), "application/pdf", "GhaithAI_Report_Preview.pdf")
+            ));
         }
 
         [HttpPut("{reportId:guid}")]
@@ -96,8 +141,11 @@ namespace GhaithAI.API.GaithAI.API.Controllers
             [FromQuery] Guid doctorId,
             [FromBody] UpdateReportDto dto)
         {
-            var result = await _reportService.UpdateReportAsync(reportId, doctorId, dto);
-            return Ok(result);
+            return await SafeExecute(async () =>
+            {
+                var result = await _reportService.UpdateReportAsync(reportId, doctorId, dto);
+                return Ok(result);
+            });
         }
 
         [HttpPost("{reportId:guid}/approve")]
@@ -108,8 +156,11 @@ namespace GhaithAI.API.GaithAI.API.Controllers
             [FromRoute] Guid reportId,
             [FromQuery] Guid doctorId)
         {
-            var result = await _reportService.ApproveReportAsync(reportId, doctorId);
-            return Ok(result);
+            return await SafeExecute(async () =>
+            {
+                var result = await _reportService.ApproveReportAsync(reportId, doctorId);
+                return Ok(result);
+            });
         }
 
         [HttpPost("{reportId:guid}/lock")]
@@ -120,16 +171,22 @@ namespace GhaithAI.API.GaithAI.API.Controllers
             [FromRoute] Guid reportId,
             [FromQuery] Guid doctorId)
         {
-            var result = await _reportService.LockReportAsync(reportId, doctorId);
-            return Ok(result);
+            return await SafeExecute(async () =>
+            {
+                var result = await _reportService.LockReportAsync(reportId, doctorId);
+                return Ok(result);
+            });
         }
 
         [HttpGet("{reportId:guid}/versions")]
         [ProducesResponseType(typeof(IEnumerable<SessionReportVersionDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetVersions([FromRoute] Guid reportId)
         {
-            var versions = await _reportService.GetVersionsAsync(reportId);
-            return Ok(versions);
+            return await SafeExecute(async () =>
+            {
+                var versions = await _reportService.GetVersionsAsync(reportId);
+                return Ok(versions);
+            });
         }
 
         [HttpGet("{reportId:guid}/versions/{versionNumber:int?}")]
@@ -139,8 +196,11 @@ namespace GhaithAI.API.GaithAI.API.Controllers
             [FromRoute] Guid reportId,
             [FromRoute] int? versionNumber = null)
         {
-            var version = await _reportService.GetVersionAsync(reportId, versionNumber);
-            return Ok(version);
+            return await SafeExecute(async () =>
+            {
+                var version = await _reportService.GetVersionAsync(reportId, versionNumber);
+                return Ok(version);
+            });
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace GhaithAI.API.GaithAI.API.Hubs;
 
@@ -15,6 +15,9 @@ public class SessionHub : Hub
 
     public async Task SendAnswer(string sessionId, string sdp)
         => await Clients.OthersInGroup(sessionId).SendAsync("ReceiveAnswer", new { sessionId, sdp });
+
+    public async Task DoctorJoined(string sessionId)
+        => await Clients.OthersInGroup(sessionId).SendAsync("DoctorJoined", new { sessionId });
 
     public async Task SendIceCandidate(string sessionId, object candidate)
         => await Clients.OthersInGroup(sessionId).SendAsync("ReceiveIceCandidate", new { sessionId, candidate });

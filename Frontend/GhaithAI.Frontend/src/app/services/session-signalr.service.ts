@@ -22,6 +22,10 @@ export interface PatientReadyMessage {
   sessionId: string;
 }
 
+export interface DoctorJoinedMessage {
+  sessionId: string;
+}
+
 @Injectable()
 export class SessionSignalrService {
 
@@ -31,6 +35,7 @@ export class SessionSignalrService {
   readonly answerReceived$ = new Subject<RtcAnswerMessage>();
   readonly iceCandidateReceived$ = new Subject<RtcIceCandidateMessage>();
   readonly patientReady$ = new Subject<PatientReadyMessage>();
+  readonly doctorJoined$ = new Subject<DoctorJoinedMessage>();
 
   async connect(sessionId: string, accessToken: string): Promise<void> {
     const hubUrl = `${environment.apiUrl.replace('/api', '')}/hubs/session?sessionId=${sessionId}`;
@@ -76,10 +81,18 @@ export class SessionSignalrService {
     this.hubConnection.on('PatientReady', (msg: PatientReadyMessage) => {
       this.patientReady$.next(msg);
     });
+
+    this.hubConnection.on('DoctorJoined', (msg: DoctorJoinedMessage) => {
+      this.doctorJoined$.next(msg);
+    });
   }
 
   async notifyPatientReady(sessionId: string): Promise<void> {
     await this.hubConnection?.invoke('PatientReady', sessionId);
+  }
+
+  async notifyDoctorJoined(sessionId: string): Promise<void> {
+    await this.hubConnection?.invoke('DoctorJoined', sessionId);
   }
 
   async sendOffer(sessionId: string, sdp: string): Promise<void> {

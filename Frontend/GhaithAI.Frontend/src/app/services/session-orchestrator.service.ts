@@ -20,10 +20,17 @@ export class SessionOrchestratorService implements OnDestroy {
   private role: 'doctor' | 'patient' = 'doctor';
   private subs: Subscription[] = [];
 
-  // Audio mixer: combines local mic + remote (patient) audio into one stream
-  // so both sides of the conversation are captured in the recording.
+  // ─── Dual-channel recording setup ───────────────────────────────────────────
+  // Instead of mixing both speakers into a mono track (which forces AssemblyAI
+  // to *guess* who is who), we route each side onto a dedicated stereo channel:
+  //   Channel 1 (Left)  → Doctor  (local microphone)
+  //   Channel 2 (Right) → Patient (WebRTC remote track)
+  // AssemblyAI's multichannel mode reads the physical channel index, giving us
+  // 100% deterministic speaker attribution with zero labelling errors.
+  // ─────────────────────────────────────────────────────────────────────────────
   private audioCtx: AudioContext | null = null;
   private mixerDest: MediaStreamAudioDestinationNode | null = null;
+  private merger: ChannelMergerNode | null = null;
 
   // Emits the remote MediaStream the moment the first audio track arrives.
   // PatientSessionRoomComponent subscribes to this instead of polling
@@ -53,10 +60,22 @@ export class SessionOrchestratorService implements OnDestroy {
       if (this.audioCtx.state === 'suspended') {
         await this.audioCtx.resume();
       }
-      this.mixerDest = this.audioCtx.createMediaStreamDestination();
 
+      // ── Stereo destination: 2 channels required ─────────────────────────────
+      this.mixerDest = this.audioCtx.createMediaStreamDestination();
+      this.mixerDest.channelCount = 2;
+      this.mixerDest.channelCountMode = 'explicit';
+      this.mixerDest.channelInterpretation = 'discrete';
+
+      // ── ChannelMerger: 2 inputs → 1 stereo output ──────────────────────────
+      // Input 0 → Channel 1 (Left)  = Doctor
+      // Input 1 → Channel 2 (Right) = Patient
+      this.merger = this.audioCtx.createChannelMerger(2);
+      this.merger.connect(this.mixerDest);
+
+      // Doctor mic → merger input 0 (Left / Channel 1)
       const localSource = this.audioCtx.createMediaStreamSource(localStream);
-      localSource.connect(this.mixerDest);
+      localSource.connect(this.merger, 0, 0);
 
       this.recorder.start(this.mixerDest.stream);
     }
@@ -66,9 +85,10 @@ export class SessionOrchestratorService implements OnDestroy {
 
     if (role === 'doctor') {
       const remoteSub = this.remoteTrackArrived$.subscribe((remoteStream: MediaStream) => {
-        if (this.audioCtx && this.mixerDest) {
+        // Patient remote audio → merger input 1 (Right / Channel 2)
+        if (this.audioCtx && this.merger) {
           const remoteSource = this.audioCtx.createMediaStreamSource(remoteStream);
-          remoteSource.connect(this.mixerDest);
+          remoteSource.connect(this.merger, 0, 1);
         }
       });
       this.subs.push(remoteSub);
@@ -77,7 +97,25 @@ export class SessionOrchestratorService implements OnDestroy {
     this.registerSignalRListeners();
 
     if (role === 'doctor') {
-      await this.webrtc.createOffer();
+      await this.signalr.notifyDoctorJoined(sessionId);
+
+      const patientReadySub = this.signalr.patientReady$.subscribe(async (msg) => {
+        const sid = (msg as any).sessionId || (msg as any).SessionId;
+        if (sid?.toLowerCase() !== this.sessionId.toLowerCase()) return;
+        await this.webrtc.createOffer();
+      });
+      this.subs.push(patientReadySub);
+    }
+
+    if (role === 'patient') {
+      await this.signalr.notifyPatientReady(sessionId);
+
+      const doctorJoinedSub = this.signalr.doctorJoined$.subscribe(async (msg) => {
+        const sid = (msg as any).sessionId || (msg as any).SessionId;
+        if (sid?.toLowerCase() !== this.sessionId.toLowerCase()) return;
+        await this.signalr.notifyPatientReady(this.sessionId);
+      });
+      this.subs.push(doctorJoinedSub);
     }
   }
 
@@ -103,18 +141,21 @@ export class SessionOrchestratorService implements OnDestroy {
 
   private registerSignalRListeners(): void {
     const offerSub = this.signalr.offerReceived$.subscribe(async (msg) => {
-      if (msg.sessionId !== this.sessionId) return;
-      await this.webrtc.handleRemoteOfferAndAnswer(msg.sdp);
+      const sid = (msg as any).sessionId || (msg as any).SessionId;
+      if (sid?.toLowerCase() !== this.sessionId.toLowerCase()) return;
+      await this.webrtc.handleRemoteOfferAndAnswer(msg.sdp || (msg as any).Sdp);
     });
 
     const answerSub = this.signalr.answerReceived$.subscribe(async (msg) => {
-      if (msg.sessionId !== this.sessionId) return;
-      await this.webrtc.handleRemoteAnswer(msg.sdp);
+      const sid = (msg as any).sessionId || (msg as any).SessionId;
+      if (sid?.toLowerCase() !== this.sessionId.toLowerCase()) return;
+      await this.webrtc.handleRemoteAnswer(msg.sdp || (msg as any).Sdp);
     });
 
     const iceSub = this.signalr.iceCandidateReceived$.subscribe(async (msg) => {
-      if (msg.sessionId !== this.sessionId) return;
-      await this.webrtc.addRemoteIceCandidate(msg.candidate);
+      const sid = (msg as any).sessionId || (msg as any).SessionId;
+      if (sid?.toLowerCase() !== this.sessionId.toLowerCase()) return;
+      await this.webrtc.addRemoteIceCandidate(msg.candidate || (msg as any).Candidate);
     });
 
     this.subs.push(offerSub, answerSub, iceSub);
@@ -130,6 +171,7 @@ export class SessionOrchestratorService implements OnDestroy {
       this.audioCtx.close();
       this.audioCtx = null;
       this.mixerDest = null;
+      this.merger = null;
     }
   }
 

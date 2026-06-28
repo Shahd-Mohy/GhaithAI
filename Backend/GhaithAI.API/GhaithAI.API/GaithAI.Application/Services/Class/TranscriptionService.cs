@@ -1,4 +1,4 @@
-﻿using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
+using GhaithAI.GaithAI.Domain.Interfaces.InterfaceService;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -100,16 +100,21 @@ namespace GhaithAI.GaithAI.Application.Services.Class
         }
 
         // ── Step 2: Submit transcription job ──
-        // NOTE: speaker_labels (diarization) is a paid feature on AssemblyAI.
-        // On the free tier, combining speaker_labels=true with any language causes an error.
-        // We keep speaker_labels=true with language_code="en" which works on the free tier.
-        // If you upgrade to a paid plan, you can switch language_code to "ar".
+        // NOTE: We use multichannel=true instead of speaker_labels (AI diarization).
+        // The doctor's browser records a stereo file:
+        //   Channel 1 (Left)  = Doctor  (local microphone)
+        //   Channel 2 (Right) = Patient (WebRTC remote track)
+        // AssemblyAI reads the physical channel index and returns it per utterance,
+        // giving us 100% deterministic speaker attribution with zero labelling errors.
+        // Speaker diarization (speaker_labels) forces AssemblyAI to *guess* who is who
+        // from a mono mix, which is unreliable — especially with Arabic audio on
+        // the free tier where diarization may silently fall back to a single segment.
         private async Task<string> SubmitTranscriptionAsync(string audioUrl)
         {
             var body = JsonSerializer.Serialize(new
             {
                 audio_url = audioUrl,
-                speaker_labels = true,
+                multichannel = true,
                 language_code = "ar",
                 punctuate = true,
                 format_text = true
@@ -162,15 +167,19 @@ namespace GhaithAI.GaithAI.Application.Services.Class
         }
 
         // ── Step 4: Parse utterances into segments ──
+        // With multichannel=true, AssemblyAI returns a "channel" integer per utterance:
+        //   channel == 1  →  Doctor  (Left channel, recorded from local mic)
+        //   channel == 2  →  Patient (Right channel, recorded from WebRTC remote)
+        // This is fully deterministic — no AI guesswork about who is speaking.
         private List<TranscriptSegmentRaw> ParseSegments(JsonElement root)
         {
             var segments = new List<TranscriptSegmentRaw>();
 
-            // AssemblyAI returns speaker_labels in "utterances" when diarization is on
+            // AssemblyAI returns multichannel utterances in "utterances"
             if (!root.TryGetProperty("utterances", out var utterances))
             {
-                // Fallback: if no utterances (e.g. diarization not available),
-                // treat the full transcript as a single Doctor segment
+                // Fallback: if utterances is absent (e.g. very short silence-only audio),
+                // treat the full transcript as a single Doctor segment to avoid data loss.
                 if (root.TryGetProperty("text", out var fullText))
                 {
                     segments.Add(new TranscriptSegmentRaw
@@ -187,14 +196,25 @@ namespace GhaithAI.GaithAI.Application.Services.Class
 
             foreach (var utterance in utterances.EnumerateArray())
             {
-                var speaker = utterance.GetProperty("speaker").GetString();
                 var text = utterance.GetProperty("text").GetString() ?? string.Empty;
                 var start = utterance.GetProperty("start").GetInt64();
                 var end = utterance.GetProperty("end").GetInt64();
 
-                // AssemblyAI labels speakers as "A", "B", "C"...
-                // First speaker (A) = Doctor, second (B) = Patient
-                var role = speaker == "A" ? SpeakerRole.Doctor : SpeakerRole.Patient;
+                // Read the channel field — AssemblyAI multichannel returns this as an
+                // integer (1-indexed) matching the physical audio channel in the file.
+                int channelIndex = 1; // Default to Channel 1 (Doctor) as a safe fallback
+                if (utterance.TryGetProperty("channel", out var chanProp))
+                {
+                    if (chanProp.ValueKind == JsonValueKind.Number)
+                        channelIndex = chanProp.GetInt32();
+                    else if (chanProp.ValueKind == JsonValueKind.String
+                             && int.TryParse(chanProp.GetString(), out var parsedChan))
+                        channelIndex = parsedChan;
+                }
+
+                // Channel 1 (Left)  = Doctor
+                // Channel 2 (Right) = Patient
+                var role = channelIndex == 1 ? SpeakerRole.Doctor : SpeakerRole.Patient;
 
                 segments.Add(new TranscriptSegmentRaw
                 {
