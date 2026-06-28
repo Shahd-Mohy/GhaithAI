@@ -21,6 +21,11 @@ export class SessionOrchestratorService implements OnDestroy {
   private role: 'doctor' | 'patient' = 'doctor';
   private subs: Subscription[] = [];
 
+  // Audio mixer: combines local mic + remote (patient) audio into one stream
+  // so both sides of the conversation are captured in the recording.
+  private audioCtx: AudioContext | null = null;
+  private mixerDest: MediaStreamAudioDestinationNode | null = null;
+
   // Emits the remote MediaStream the moment the first audio track arrives.
   // PatientSessionRoomComponent subscribes to this instead of polling
   // getRemoteStream() every 500 ms — no race condition, instant transition.
@@ -45,11 +50,30 @@ export class SessionOrchestratorService implements OnDestroy {
     const localStream = await this.webrtc.getLocalStream();
 
     if (role === 'doctor') {
-      this.recorder.start(localStream);
+      this.audioCtx = new AudioContext();
+      if (this.audioCtx.state === 'suspended') {
+        await this.audioCtx.resume();
+      }
+      this.mixerDest = this.audioCtx.createMediaStreamDestination();
+
+      const localSource = this.audioCtx.createMediaStreamSource(localStream);
+      localSource.connect(this.mixerDest);
+
+      this.recorder.start(this.mixerDest.stream);
     }
 
     // Pass remoteTrackArrived$ so WebrtcService can emit it from ontrack
     this.webrtc.createPeerConnection(sessionId, this.remoteTrackArrived$);
+
+    if (role === 'doctor') {
+      const remoteSub = this.remoteTrackArrived$.subscribe((remoteStream: MediaStream) => {
+        if (this.audioCtx && this.mixerDest) {
+          const remoteSource = this.audioCtx.createMediaStreamSource(remoteStream);
+          remoteSource.connect(this.mixerDest);
+        }
+      });
+      this.subs.push(remoteSub);
+    }
 
     this.registerSignalRListeners();
 
@@ -68,6 +92,7 @@ export class SessionOrchestratorService implements OnDestroy {
     this.webrtc.close();
     await this.signalr.disconnect();
     this.cleanupSubs();
+    this.closeAudioContext();
 
     return audioBlob;
   }
@@ -110,7 +135,16 @@ export class SessionOrchestratorService implements OnDestroy {
     this.subs = [];
   }
 
+  private closeAudioContext(): void {
+    if (this.audioCtx) {
+      this.audioCtx.close();
+      this.audioCtx = null;
+      this.mixerDest = null;
+    }
+  }
+
   ngOnDestroy(): void {
     this.cleanupSubs();
+    this.closeAudioContext();
   }
 }

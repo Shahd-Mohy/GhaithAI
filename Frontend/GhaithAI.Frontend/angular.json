@@ -25,16 +25,16 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
-  {
-    "glob": "**/*",
-    "input": "public"
-  },
-  {
-    "glob": "**/*",
-    "input": "src/assets",
-    "output": "assets"
-  }
-],
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
+              }
+            ],
             "styles": [
               "src/styles.scss",
               "src/material-theme.scss",
@@ -76,7 +76,8 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "allowedHosts": [
-              ".ngrok-free.app"
+              ".ngrok-free.app",
+              ".ngrok-free.dev"
             ]
           },
           "configurations": {

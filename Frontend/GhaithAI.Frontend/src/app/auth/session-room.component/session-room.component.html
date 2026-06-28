@@ -23,7 +23,7 @@
       </div>
       <!-- Cancel / Dismiss -->
       <button class="cancel-btn" (click)="handleCancel()" type="button">
-        {{ state === 'InCall' ? 'End Session' : state === 'Reviewable' ? 'Done' : 'Cancel' }}
+        {{ state === 'InCall' ? 'End Session' : 'Cancel' }}
       </button>
     </div>
   </div>
@@ -102,17 +102,6 @@
             </svg>
           </button>
 
-          <!-- REVIEWABLE → go to review -->
-          <button
-            *ngIf="state === 'Reviewable'"
-            class="mic-btn mic-btn--done"
-            (click)="goToTranscriptReview()"
-            type="button"
-            title="Review transcript">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-            </svg>
-          </button>
         </div>
 
         <!-- Consent badge -->
@@ -186,18 +175,6 @@
               <p>Start the session or type notes directly</p>
             </div>
           </div>
-        </div>
-
-        <!-- Reviewable: transcript-ready banner sits ABOVE the footer, notes still visible -->
-        <div class="transcript-ready-banner" *ngIf="state === 'Reviewable'">
-          <div class="ready-icon">✅</div>
-          <div class="ready-text">
-            <p class="ready-title">Transcript ready for review</p>
-            <p class="ready-sub">Your session notes are saved. Review the AI-generated transcript below.</p>
-          </div>
-          <button class="btn-review" (click)="goToTranscriptReview()" type="button">
-            Review Transcript →
-          </button>
         </div>
 
         <!-- Notes Footer Actions -->

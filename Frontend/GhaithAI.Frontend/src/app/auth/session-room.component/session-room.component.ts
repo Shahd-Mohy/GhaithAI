@@ -23,7 +23,6 @@ type CallState =
   | 'Ending'
   | 'Uploading'
   | 'Processing'
-  | 'Reviewable'
   | 'Error';
 
 @Component({
@@ -87,7 +86,7 @@ export class SessionRoomComponent implements OnInit, AfterViewInit, OnDestroy {
     const map: Record<CallState, string> = {
       Idle: 'Ready', Connecting: 'Connecting…', InCall: 'In Call',
       Ending: 'Ending…', Uploading: 'Uploading…', Processing: 'Processing…',
-      Reviewable: 'Review Ready', Error: 'Error'
+      Error: 'Error'
     };
     return map[this.state] ?? this.state;
   }
@@ -99,7 +98,6 @@ export class SessionRoomComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.state === 'Ending') return 'Closing session…';
     if (this.state === 'Uploading') return 'Uploading…';
     if (this.state === 'Processing') return 'Transcribing…';
-    if (this.state === 'Reviewable') return 'Session complete';
     return '';
   }
 
@@ -111,7 +109,6 @@ export class SessionRoomComponent implements OnInit, AfterViewInit, OnDestroy {
 
   handleCancel(): void {
     if (this.state === 'InCall') this.endSession();
-    else if (this.state === 'Reviewable') this.goToTranscriptReview();
     else this.router.navigate(['/clinician-dashboard']);
   }
 
@@ -215,8 +212,7 @@ export class SessionRoomComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => {
         this.ngZone.run(() => {
           if (res.status === 'Completed') {
-            this.state = 'Reviewable';
-            this.cdr.detectChanges();
+            this.router.navigate(['/clinical-session', this.sessionId, 'report']);
           } else if (res.status === 'Failed') {
             this.state = 'Error';
             this.errorMessage = 'Transcription failed. You can retry from the session details page.';
@@ -234,10 +230,6 @@ export class SessionRoomComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       }
     });
-  }
-
-  goToTranscriptReview(): void {
-    this.router.navigate(['/clinical-session', this.sessionId, 'transcript']);
   }
 
   loadNotes(): void {

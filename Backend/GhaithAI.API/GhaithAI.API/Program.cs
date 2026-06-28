@@ -145,7 +145,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular", policy =>
     {
         var frontendUrl = builder.Configuration["FrontendUrl"]
-            ?? "https://f5b5-197-59-178-222.ngrok-free.app";
+            ?? "https://twenty-turret-revolving.ngrok-free.dev ";
 
         policy.AllowAnyHeader()
               .AllowAnyMethod()
