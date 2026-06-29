@@ -38,8 +38,10 @@ export class SessionSignalrService {
   readonly doctorJoined$ = new Subject<DoctorJoinedMessage>();
 
   async connect(sessionId: string, accessToken: string): Promise<void> {
-    const hubUrl = `${environment.apiUrl.replace('/api', '')}/hubs/session?sessionId=${sessionId}`;
+    const cleanSessionId = sessionId.trim().toLowerCase();
+    const hubUrl = `${environment.apiUrl.replace('/api', '')}/hubs/session?sessionId=${cleanSessionId}`;
 
+    console.log(`[SignalR] Connecting to ${hubUrl}...`);
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl, {
         accessTokenFactory: () => accessToken
@@ -49,65 +51,71 @@ export class SessionSignalrService {
 
     this.registerHandlers();
     await this.hubConnection.start();
-
-    // ── THE MISSING STEP ─────────────────────────────────────────────────────
-    // SessionHub.JoinSession() is what actually adds this connection to the
-    // SignalR group named after sessionId. Nothing on the server does this
-    // automatically just because ?sessionId=... is in the connection URL —
-    // that query param is only there for routing/logging, SignalR itself
-    // never reads it. Without this call, SendOffer/SendAnswer/SendIceCandidate
-    // all target a group with zero members in it: the call goes out, nobody
-    // receives it, and there's no error anywhere because nothing failed —
-    // it just had no one to deliver to. Both doctor and patient must call
-    // this before either one sends anything.
-    await this.hubConnection.invoke('JoinSession', sessionId);
+    console.log(`[SignalR] Connected successfully. Invoking JoinSession with: ${cleanSessionId}`);
+    await this.hubConnection.invoke('JoinSession', cleanSessionId);
   }
 
   private registerHandlers(): void {
     if (!this.hubConnection) return;
 
     this.hubConnection.on('ReceiveOffer', (msg: RtcOfferMessage) => {
+      console.log('[SignalR] ReceiveOffer received:', msg);
       this.offerReceived$.next(msg);
     });
 
     this.hubConnection.on('ReceiveAnswer', (msg: RtcAnswerMessage) => {
+      console.log('[SignalR] ReceiveAnswer received:', msg);
       this.answerReceived$.next(msg);
     });
 
     this.hubConnection.on('ReceiveIceCandidate', (msg: RtcIceCandidateMessage) => {
+      console.log('[SignalR] ReceiveIceCandidate received:', msg);
       this.iceCandidateReceived$.next(msg);
     });
 
     this.hubConnection.on('PatientReady', (msg: PatientReadyMessage) => {
+      console.log('[SignalR] PatientReady received:', msg);
       this.patientReady$.next(msg);
     });
 
     this.hubConnection.on('DoctorJoined', (msg: DoctorJoinedMessage) => {
+      console.log('[SignalR] DoctorJoined received:', msg);
       this.doctorJoined$.next(msg);
     });
   }
 
   async notifyPatientReady(sessionId: string): Promise<void> {
-    await this.hubConnection?.invoke('PatientReady', sessionId);
+    const cleanId = sessionId.trim().toLowerCase();
+    console.log('[SignalR] notifyPatientReady:', cleanId);
+    await this.hubConnection?.invoke('PatientReady', cleanId);
   }
 
   async notifyDoctorJoined(sessionId: string): Promise<void> {
-    await this.hubConnection?.invoke('DoctorJoined', sessionId);
+    const cleanId = sessionId.trim().toLowerCase();
+    console.log('[SignalR] notifyDoctorJoined:', cleanId);
+    await this.hubConnection?.invoke('DoctorJoined', cleanId);
   }
 
   async sendOffer(sessionId: string, sdp: string): Promise<void> {
-    await this.hubConnection?.invoke('SendOffer', sessionId, sdp);
+    const cleanId = sessionId.trim().toLowerCase();
+    console.log('[SignalR] sendOffer:', cleanId);
+    await this.hubConnection?.invoke('SendOffer', cleanId, sdp);
   }
 
   async sendAnswer(sessionId: string, sdp: string): Promise<void> {
-    await this.hubConnection?.invoke('SendAnswer', sessionId, sdp);
+    const cleanId = sessionId.trim().toLowerCase();
+    console.log('[SignalR] sendAnswer:', cleanId);
+    await this.hubConnection?.invoke('SendAnswer', cleanId, sdp);
   }
 
   async sendIceCandidate(sessionId: string, candidate: RTCIceCandidateInit): Promise<void> {
-    await this.hubConnection?.invoke('SendIceCandidate', sessionId, candidate);
+    const cleanId = sessionId.trim().toLowerCase();
+    console.log('[SignalR] sendIceCandidate:', cleanId);
+    await this.hubConnection?.invoke('SendIceCandidate', cleanId, candidate);
   }
 
   async disconnect(): Promise<void> {
+    console.log('[SignalR] Disconnecting...');
     await this.hubConnection?.stop();
     this.hubConnection = null;
   }

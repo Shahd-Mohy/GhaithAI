@@ -142,8 +142,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        var frontendUrl = builder.Configuration["FrontendUrl"]
-            ?? "https://sanded-botany-entering.ngrok-free.dev";
+        var frontendUrl = builder.Configuration["FrontendUrl"]?.TrimEnd('/')
+            ?? "http://localhost:4200";
 
         policy.AllowAnyHeader()
               .AllowAnyMethod()
@@ -153,6 +153,9 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Ensure routing is enabled before CORS, auth, and endpoints so CORS middleware runs for preflight requests.
+app.UseRouting();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

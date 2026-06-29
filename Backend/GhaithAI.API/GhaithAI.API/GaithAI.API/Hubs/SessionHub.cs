@@ -5,20 +5,20 @@ namespace GhaithAI.API.GaithAI.API.Hubs;
 public class SessionHub : Hub
 {
     public async Task JoinSession(string sessionId)
-        => await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
+        => await Groups.AddToGroupAsync(Context.ConnectionId, (sessionId ?? "").ToLowerInvariant());
 
     public async Task PatientReady(string sessionId)
-        => await Clients.OthersInGroup(sessionId).SendAsync("PatientReady", new { sessionId });
+        => await Clients.OthersInGroup((sessionId ?? "").ToLowerInvariant()).SendAsync("PatientReady", new { sessionId = (sessionId ?? "").ToLowerInvariant() });
 
     public async Task SendOffer(string sessionId, string sdp)
-        => await Clients.OthersInGroup(sessionId).SendAsync("ReceiveOffer", new { sessionId, sdp });
+        => await Clients.OthersInGroup((sessionId ?? "").ToLowerInvariant()).SendAsync("ReceiveOffer", new { sessionId = (sessionId ?? "").ToLowerInvariant(), sdp });
 
     public async Task SendAnswer(string sessionId, string sdp)
-        => await Clients.OthersInGroup(sessionId).SendAsync("ReceiveAnswer", new { sessionId, sdp });
+        => await Clients.OthersInGroup((sessionId ?? "").ToLowerInvariant()).SendAsync("ReceiveAnswer", new { sessionId = (sessionId ?? "").ToLowerInvariant(), sdp });
 
     public async Task DoctorJoined(string sessionId)
-        => await Clients.OthersInGroup(sessionId).SendAsync("DoctorJoined", new { sessionId });
+        => await Clients.OthersInGroup((sessionId ?? "").ToLowerInvariant()).SendAsync("DoctorJoined", new { sessionId = (sessionId ?? "").ToLowerInvariant() });
 
     public async Task SendIceCandidate(string sessionId, object candidate)
-        => await Clients.OthersInGroup(sessionId).SendAsync("ReceiveIceCandidate", new { sessionId, candidate });
+        => await Clients.OthersInGroup((sessionId ?? "").ToLowerInvariant()).SendAsync("ReceiveIceCandidate", new { sessionId = (sessionId ?? "").ToLowerInvariant(), candidate });
 }

@@ -288,12 +288,17 @@ export class PatientSessionRoomComponent implements OnInit, OnDestroy {
         await this.orchestrator.startCall(this.sessionId, 'patient', token);
 
         this.trackSub = this.orchestrator.remoteTrackArrived$.subscribe((stream: MediaStream) => {
+          console.log('[Patient Component] remoteTrackArrived$ emitted:', stream);
           this.ngZone.run(() => {
             this.state = 'InCall';
             this.startDurationTimer();
             setTimeout(() => {
               if (this.remoteAudioRef?.nativeElement) {
+                console.log('[Patient Component] Setting srcObject of remoteAudio to stream.');
                 this.remoteAudioRef.nativeElement.srcObject = stream;
+                this.remoteAudioRef.nativeElement.play().catch(err => console.error('[Patient Component] Play remote audio failed:', err));
+              } else {
+                console.warn('[Patient Component] remoteAudioRef is not available!');
               }
             }, 0);
             this.cdr.detectChanges();

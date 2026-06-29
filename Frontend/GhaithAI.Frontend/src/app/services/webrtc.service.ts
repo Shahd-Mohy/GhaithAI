@@ -104,17 +104,34 @@ export class WebrtcService {
 
   async addRemoteIceCandidate(candidate: RTCIceCandidateInit): Promise<void> {
     if (!this.peerConnection) return;
+    
+    // Some browsers send null candidates or empty candidate strings at the end of gathering
+    if (!candidate || !candidate.candidate) {
+      return;
+    }
+
     if (!this.isRemoteDescSet) {
       this.pendingCandidates.push(candidate);
       return;
     }
-    await this.peerConnection.addIceCandidate(candidate);
+
+    try {
+      await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (e) {
+      console.warn('[WebRTC] Error adding remote ICE candidate directly:', e, candidate);
+    }
   }
 
   private async flushIceCandidates(): Promise<void> {
     if (!this.peerConnection) return;
+    console.log(`[WebRTC] Flushing ${this.pendingCandidates.length} buffered ICE candidates...`);
     for (const candidate of this.pendingCandidates) {
-      await this.peerConnection.addIceCandidate(candidate);
+      if (!candidate || !candidate.candidate) continue;
+      try {
+        await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (e) {
+        console.warn('[WebRTC] Error adding flushed ICE candidate:', e, candidate);
+      }
     }
     this.pendingCandidates = [];
   }

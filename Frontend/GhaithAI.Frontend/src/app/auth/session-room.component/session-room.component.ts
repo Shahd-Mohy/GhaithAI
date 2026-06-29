@@ -155,14 +155,18 @@ export class SessionRoomComponent implements OnInit, AfterViewInit, OnDestroy {
         // Wire up remote audio immediately (if patient already joined)
         const remoteStream = this.orchestrator.getRemoteStream();
         if (remoteStream && this.remoteAudioRef) {
+          console.log('[Doctor Component] Wire up remote audio immediately:', remoteStream);
           this.remoteAudioRef.nativeElement.srcObject = remoteStream;
+          this.remoteAudioRef.nativeElement.play().catch(err => console.error('[Doctor Component] Play remote audio failed:', err));
         }
 
         // Also subscribe for when patient joins AFTER the doctor is in InCall
         this.orchestrator.remoteTrackArrived$.subscribe((stream: MediaStream) => {
+          console.log('[Doctor Component] remoteTrackArrived$ emitted:', stream);
           this.ngZone.run(() => {
             if (this.remoteAudioRef?.nativeElement) {
               this.remoteAudioRef.nativeElement.srcObject = stream;
+              this.remoteAudioRef.nativeElement.play().catch(err => console.error('[Doctor Component] Play remote audio from stream failed:', err));
             }
           });
         });

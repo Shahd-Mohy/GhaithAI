@@ -1,4 +1,3 @@
-using GhaithAI.GaithAI.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace GhaithAI.API.Models
@@ -44,7 +43,7 @@ namespace GhaithAI.API.Models
         public ICollection<JournalEntry> JournalEntries { get; set; }
 
         public ICollection<UserActivity> UserActivities { get; set; }
-        
+
         public ICollection<EmergencyContact> EmergencyContacts { get; set; }
 
         public ICollection<WeeklyInsightReport> WeeklyInsightReports { get; set; }
@@ -57,6 +56,7 @@ namespace GhaithAI.API.Models
 
         public bool IsGoogleAccount { get; set; } = false;
 
+        //[NotMapped]
         public Gender Gender { get; set; }
     }
 }
